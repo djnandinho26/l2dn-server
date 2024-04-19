@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using L2Dn.Events;
 using L2Dn.GameServer.Data.Sql;
@@ -16,6 +17,7 @@ using L2Dn.GameServer.Model.Zones.Types;
 using L2Dn.GameServer.Network.Enums;
 using L2Dn.GameServer.Network.OutgoingPackets;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Model.Enums;
 using Microsoft.EntityFrameworkCore;
 using NLog;
 using Clan = L2Dn.GameServer.Model.Clans.Clan;
@@ -218,7 +220,7 @@ public class Castle: AbstractResidence, IEventContainerProvider
 		}
 	}
 	
-	public Castle(int castleId): base(castleId)
+	public Castle(int castleId, string castleName): base(castleId, castleName)
 	{
 		_eventContainer = new($"Castle template {castleId}", GlobalEvents.Global);
 		
@@ -633,7 +635,6 @@ public class Castle: AbstractResidence, IEventContainerProvider
 			var record = ctx.Castles.SingleOrDefault(r => r.Id == castleId);
 			if (record != null)
 			{
-				setName(record.Name);
 				_siegeDate = record.SiegeTime;
 				_siegeTimeRegistrationEndDate = record.RegistrationEndTime;
 				_isTimeRegistrationOver = record.RegistrationTimeOver;
@@ -1204,7 +1205,7 @@ public class Castle: AbstractResidence, IEventContainerProvider
 		}
 	}
 	
-	public List<CastleSpawnHolder> getSideSpawns()
+	public ImmutableArray<CastleSpawnHolder> getSideSpawns()
 	{
 		return CastleData.getInstance().getSpawnsForSide(getResidenceId(), getSide());
 	}

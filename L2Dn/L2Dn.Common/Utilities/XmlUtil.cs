@@ -1,5 +1,7 @@
 ﻿using System.Globalization;
+using System.Xml;
 using System.Xml.Linq;
+using System.Xml.Schema;
 using System.Xml.Serialization;
 using NLog;
 
@@ -12,6 +14,36 @@ public static class XmlUtil
     public static T Deserialize<T>(string filePath)
         where T: class
     {
+        // Read schema path.
+        using FileStream fileStream = File.OpenRead(filePath);
+        XmlDocument document = new();
+        document.Load(fileStream);
+
+        XmlReaderSettings config = new();
+        
+        string? schemaLocation = document.DocumentElement?.Attributes["xsi:noNamespaceSchemaLocation"]?.Value;
+        if (!string.IsNullOrEmpty(schemaLocation))
+        {
+            // Configure XmlReader validation to use schema.
+            config.ValidationType = ValidationType.Schema;
+            config.ValidationFlags |= XmlSchemaValidationFlags.ReportValidationWarnings;
+            config.ValidationFlags |= XmlSchemaValidationFlags.ProcessSchemaLocation;
+            config.ValidationEventHandler += (_, args) => _logger.Error($"Invalid XML '{filePath}': {args.Message}");
+
+            string? directory = Path.GetDirectoryName(filePath);
+            string schemaPath = string.IsNullOrEmpty(directory)
+                ? schemaLocation
+                : Path.GetFullPath(Path.Combine(directory, schemaLocation));
+
+            using FileStream schemaFileStream = File.OpenRead(schemaPath);
+            using XmlReader schemaReader = XmlReader.Create(schemaFileStream);
+            config.Schemas.Add(null, schemaReader);
+        }
+
+        // Get the XmlReader object with the configured settings.
+        fileStream.Position = 0;
+        using XmlReader reader = XmlReader.Create(fileStream, config);
+        
         XmlSerializer serializer = new(typeof(T));
 
         serializer.UnknownElement += (_, args)
@@ -20,8 +52,7 @@ public static class XmlUtil
         serializer.UnknownAttribute += (_, args) =>
             _logger.Warn($"Unknown attribute '{args.Attr.Name}' in XML file '{filePath}'.");
         
-        using FileStream stream = new(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-        return (T?)serializer.Deserialize(stream) ??
+        return (T?)serializer.Deserialize(reader) ??
                throw new InvalidOperationException(
                    $"Could not deserialize XML file '{filePath}' to object of type '{typeof(T).FullName}'");
     }

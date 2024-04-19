@@ -109,8 +109,7 @@ namespace L2Dn.GameServer.Db.Migrations
 
                     b.Property<string>("Value")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("text");
 
                     b.HasKey("AccountId", "Name");
 
@@ -1216,8 +1215,7 @@ namespace L2Dn.GameServer.Db.Migrations
 
                     b.Property<string>("Value")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("text");
 
                     b.HasKey("CharacterId", "Name");
 
@@ -1784,8 +1782,7 @@ namespace L2Dn.GameServer.Db.Migrations
 
                     b.Property<string>("Value")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("text");
 
                     b.HasKey("ClanId", "Name");
 
@@ -2316,8 +2313,7 @@ namespace L2Dn.GameServer.Db.Migrations
 
                     b.Property<string>("Value")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("text");
 
                     b.HasKey("ItemId", "Name");
 
@@ -2445,8 +2441,7 @@ namespace L2Dn.GameServer.Db.Migrations
 
                     b.Property<string>("Value")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("text");
 
                     b.HasKey("NpcId", "Name");
 
@@ -2756,8 +2751,7 @@ namespace L2Dn.GameServer.Db.Migrations
 
                     b.Property<string>("Value")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("text");
 
                     b.HasKey("Name");
 
