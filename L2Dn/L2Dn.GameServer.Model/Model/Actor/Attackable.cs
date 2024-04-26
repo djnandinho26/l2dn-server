@@ -22,6 +22,7 @@ using L2Dn.GameServer.Network.OutgoingPackets;
 using L2Dn.GameServer.TaskManagers;
 using L2Dn.GameServer.Utilities;
 using L2Dn.Model.Enums;
+using L2Dn.Utilities;
 using ThreadPool = L2Dn.GameServer.Utilities.ThreadPool;
 
 namespace L2Dn.GameServer.Model.Actor;
@@ -1697,7 +1698,7 @@ public class Attackable: Npc
 		
 		if (hasAI() && (getSpawn() != null))
 		{
-			getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, getSpawn().getLocation());
+			getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, getSpawn().Location);
 		}
 	}
 	

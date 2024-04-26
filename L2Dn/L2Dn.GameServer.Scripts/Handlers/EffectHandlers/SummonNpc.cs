@@ -8,6 +8,7 @@ using L2Dn.GameServer.Model.Items.Instances;
 using L2Dn.GameServer.Model.Skills;
 using L2Dn.GameServer.Model.Skills.Targets;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Utilities;
 
 namespace L2Dn.GameServer.Scripts.Handlers.EffectHandlers;
 
@@ -157,11 +158,11 @@ public class SummonNpc: AbstractEffect
 					LOGGER.Warn(GetType().Name + ": Unable to create spawn. " + e);
 					return;
 				}
-				
-				spawn.setXYZ(x, y, z);
-				spawn.setHeading(player.getHeading());
+
+				spawn.Location.setXYZ(x, y, z);
+				spawn.Location.setHeading(player.getHeading());
 				spawn.stopRespawn();
-				
+
 				Npc npc = spawn.doSpawn(_isSummonSpawn);
 				player.addSummonedNpc(npc); // npc.setSummoner(player);
 				npc.setName(npcTemplate.getName());

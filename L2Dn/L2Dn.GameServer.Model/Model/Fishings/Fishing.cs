@@ -19,6 +19,7 @@ using L2Dn.GameServer.Network.OutgoingPackets;
 using L2Dn.GameServer.Network.OutgoingPackets.Fishing;
 using L2Dn.GameServer.Utilities;
 using L2Dn.Model.Enums;
+using L2Dn.Utilities;
 using NLog;
 using ThreadPool = L2Dn.GameServer.Utilities.ThreadPool;
 
@@ -360,7 +361,7 @@ public class Fishing
 		int distMax = FishingData.getInstance().getBaitDistanceMax();
 		int distance = Rnd.get(distMin, distMax);
 		double angle = Util.convertHeadingToDegree(_player.getHeading());
-		double radian = MathUtil.toRadians(angle);
+		double radian = double.DegreesToRadians(angle);
 		double sin = Math.Sin(radian);
 		double cos = Math.Cos(radian);
 		int baitX = (int) (_player.getX() + (cos * distance));

@@ -198,7 +198,7 @@ public class SiegeGuardManager
 	 * @param pos the object containing the spawn location coordinates
 	 * @param holder SiegeGuardHolder holder
 	 */
-	private void spawnMercenary(IPositionable pos, SiegeGuardHolder holder)
+	private void spawnMercenary(ILocational pos, SiegeGuardHolder holder)
 	{
 		NpcTemplate template = NpcData.getInstance().getTemplate(holder.getNpcId());
 		if (template != null)
@@ -268,8 +268,8 @@ public class SiegeGuardManager
 			{
 				Spawn spawn = new Spawn(record.NpcId);
 				spawn.setAmount(1);
-				spawn.setXYZ(record.X, record.Y, record.Z);
-				spawn.setHeading(record.Heading);
+				spawn.Location.setXYZ(record.X, record.Y, record.Z);
+				spawn.Location.setHeading(record.Heading);
 				spawn.setRespawnDelay(record.RespawnDelay);
 				spawn.setLocationId(0);
 
@@ -287,7 +287,7 @@ public class SiegeGuardManager
 	 * @param npcId the ID of NPC
 	 * @param pos
 	 */
-	public void removeSiegeGuard(int npcId, IPositionable pos)
+	public void removeSiegeGuard(int npcId, ILocational pos)
 	{
 		try
 		{

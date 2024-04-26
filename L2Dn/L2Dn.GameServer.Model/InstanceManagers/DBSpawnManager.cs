@@ -7,6 +7,7 @@ using L2Dn.GameServer.Model.Actor;
 using L2Dn.GameServer.Model.Actor.Templates;
 using L2Dn.GameServer.Model.Spawns;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Utilities;
 using Microsoft.EntityFrameworkCore;
 using NLog;
 using ThreadPool = L2Dn.GameServer.Utilities.ThreadPool;
@@ -67,9 +68,9 @@ public class DBSpawnManager
 				if (template != null)
 				{
 					Spawn spawn = new Spawn(template);
-					spawn.setXYZ(record.X, record.Y, record.Z);
+					spawn.Location.setXYZ(record.X, record.Y, record.Z);
 					spawn.setAmount(1);
-					spawn.setHeading(record.Heading);
+					spawn.Location.setHeading(record.Heading);
 					
 					List<NpcSpawnTemplate> spawns = SpawnData.getInstance().getNpcSpawns(npc => (npc.getId() == template.getId()) && npc.hasDBSave());
 					if (spawns.isEmpty())
@@ -274,10 +275,10 @@ public class DBSpawnManager
 				ctx.NpcRespawns.Add(new NpcRespawn()
 				{
 					Id = spawn.getId(),
-					X = spawn.getX(),
-					Y = spawn.getY(),
-					Z = spawn.getZ(),
-					Heading = spawn.getHeading(),
+					X = spawn.Location.getX(),
+					Y = spawn.Location.getY(),
+					Z = spawn.Location.getZ(),
+					Heading = spawn.Location.getHeading(),
 					RespawnTime = respawnTime,
 					CurrentHp = currentHP,
 					CurrentMp = currentMP,
@@ -334,10 +335,10 @@ public class DBSpawnManager
 				ctx.NpcRespawns.Add(new NpcRespawn()
 				{
 					Id = spawn.getId(),
-					X = spawn.getX(),
-					Y = spawn.getY(),
-					Z = spawn.getZ(),
-					Heading = spawn.getHeading(),
+					X = spawn.Location.getX(),
+					Y = spawn.Location.getY(),
+					Z = spawn.Location.getZ(),
+					Heading = spawn.Location.getHeading(),
 					CurrentHp = npc.getMaxHp(),
 					CurrentMp = npc.getMaxMp(),
 				});

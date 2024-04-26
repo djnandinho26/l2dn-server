@@ -33,6 +33,7 @@ using L2Dn.GameServer.Network.OutgoingPackets;
 using L2Dn.GameServer.TaskManagers;
 using L2Dn.GameServer.Utilities;
 using L2Dn.Model.Enums;
+using L2Dn.Utilities;
 using FortManager = L2Dn.GameServer.InstanceManagers.FortManager;
 using ThreadPool = L2Dn.GameServer.Utilities.ThreadPool;
 
@@ -1396,7 +1397,7 @@ public class Npc: Creature
 	 */
 	public bool staysInSpawnLoc()
 	{
-		return ((_spawn != null) && (_spawn.getX() == getX()) && (_spawn.getY() == getY()));
+		return ((_spawn != null) && (_spawn.Location.getX() == getX()) && (_spawn.Location.getY() == getY()));
 	}
 	
 	/**

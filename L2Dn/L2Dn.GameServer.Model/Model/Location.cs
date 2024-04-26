@@ -1,37 +1,22 @@
 ﻿using L2Dn.GameServer.Model.Interfaces;
-using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 
 namespace L2Dn.GameServer.Model;
-
-// public readonly record struct Location(int X, int Y, int Z)
-// {
-//     // world dimensions: 1048576 * 1048576 = 1099511627776
-//     public static int WorldXMin = -655360;
-//     public static int WorldXMax = 393215;
-//     public static int WorldYMin = -589824;
-//     public static int WorldYMax = 458751;
-//
-//     public Location AddX(int dx) => this with { X = X + dx };
-//     public Location AddY(int dy) => this with { Y = Y + dy };
-//     public Location AddZ(int dz) => this with { Y = Y + dz };
-// }
 
 /**
  * A datatype used to retain a 3D (x/y/z/heading) point. It got the capability to be set and cleaned.
  */
-public class Location : Point2D, IPositionable
+public sealed class Location : ILocational, ILocation3D
 {
-	protected volatile int _z;
-	protected volatile int _heading;
+	private int _x;
+	private int _y;
+	private int _z;
+	private int _heading;
 	
-	public Location(int x, int y, int z): base(x, y)
+	public Location(int x, int y, int z, int heading = 0)
 	{
-		_z = z;
-		_heading = 0;
-	}
-	
-	public Location(int x, int y, int z, int heading): base(x, y)
-	{
+		_x = x;
+		_y = y;
 		_z = z;
 		_heading = heading;
 	}
@@ -39,18 +24,12 @@ public class Location : Point2D, IPositionable
 	public Location(WorldObject obj): this(obj.getX(), obj.getY(), obj.getZ(), obj.getHeading())
 	{
 	}
-	
-	public Location(StatSet set): base(set.getInt("x", 0), set.getInt("y", 0))
-	{
-		_z = set.getInt("z", 0);
-		_heading = set.getInt("heading", 0);
-	}
-	
+
 	/**
 	 * Get the x coordinate.
 	 * @return the x coordinate
 	 */
-	public override int getX()
+	public int getX()
 	{
 		return _x;
 	}
@@ -59,7 +38,7 @@ public class Location : Point2D, IPositionable
 	 * Get the y coordinate.
 	 * @return the y coordinate
 	 */
-	public override int getY()
+	public int getY()
 	{
 		return _y;
 	}
@@ -125,21 +104,10 @@ public class Location : Point2D, IPositionable
 		_z = loc.getZ();
 		_heading = loc.getHeading();
 	}
-	
-	public override void clean()
-	{
-		base.clean();
-		_z = 0;
-	}
-	
-	public override Location clone()
-	{
-		return new Location(_x, _y, _z);
-	}
-	
+
 	public override int GetHashCode()
 	{
-		return HashCode.Combine(base.GetHashCode(), _z);
+		return HashCode.Combine(_x, _y, _z);
 	}
 	
 	public override bool Equals(Object? obj)
@@ -156,4 +124,13 @@ public class Location : Point2D, IPositionable
 	{
 		return "[" + GetType().Name + "] X: " + _x + " Y: " + _y + " Z: " + _z + " Heading: " + _heading;
 	}
+
+	public Location3D ToLocation3D()
+	{
+		return new Location3D(_x, _y, _z);
+	}
+
+	public int X => _x;
+	public int Y => _y;
+	public int Z => _z;
 }
