@@ -2,6 +2,7 @@
 using L2Dn.GameServer.Enums;
 using L2Dn.GameServer.Model.Actor.Templates;
 using L2Dn.GameServer.Network.OutgoingPackets;
+using L2Dn.Geometry;
 using NLog;
 
 namespace L2Dn.GameServer.Model.Actor.Instances;
@@ -44,15 +45,15 @@ public class Boat: Vehicle
         Location loc = getOustLoc();
         if (player.isOnline())
         {
-            player.teleToLocation(loc.getX(), loc.getY(), loc.getZ());
+            player.teleToLocation(loc);
         }
         else
         {
-            player.setXYZInvisible(loc.getX(), loc.getY(), loc.getZ()); // disconnects handling
+            player.setXYZInvisible(loc.Location3D); // disconnects handling
         }
     }
 
-    public override void stopMove(Location loc)
+    public override void stopMove(Location? loc)
     {
         base.stopMove(loc);
 

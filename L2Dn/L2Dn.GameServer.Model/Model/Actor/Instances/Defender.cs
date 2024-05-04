@@ -6,6 +6,7 @@ using L2Dn.GameServer.Model.Actor.Templates;
 using L2Dn.GameServer.Model.Sieges;
 using L2Dn.GameServer.Model.Skills;
 using L2Dn.GameServer.Network.OutgoingPackets;
+using L2Dn.Geometry;
 
 namespace L2Dn.GameServer.Model.Actor.Instances;
 
@@ -72,13 +73,13 @@ public class Defender : Attackable
 		{
 			return;
 		}
-		if (!isInsideRadius2D(getSpawn().Location, 40))
+		if (!this.IsInsideRadius2D(getSpawn(), 40))
 		{
 			clearAggroList();
 			
 			if (hasAI())
 			{
-				getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, getSpawn().Location);
+				getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, getSpawn().Location.Location3D);
 			}
 		}
 	}
@@ -87,8 +88,8 @@ public class Defender : Attackable
 	{
 		base.onSpawn();
 		
-		_fort = InstanceManagers.FortManager.getInstance().getFort(getX(), getY(), getZ());
-		_castle = CastleManager.getInstance().getCastle(getX(), getY(), getZ());
+		_fort = InstanceManagers.FortManager.getInstance().getFort(Location.Location3D);
+		_castle = CastleManager.getInstance().getCastle(Location.Location3D);
 		if ((_fort == null) && (_castle == null))
 		{
 			LOGGER.Warn("Defender spawned outside of Fortress or Castle zone!" + this);

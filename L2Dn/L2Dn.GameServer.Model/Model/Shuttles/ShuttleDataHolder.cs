@@ -1,4 +1,6 @@
-﻿namespace L2Dn.GameServer.Model.Shuttles;
+﻿using L2Dn.Geometry;
+
+namespace L2Dn.GameServer.Model.Shuttles;
 
 public class ShuttleDataHolder
 {
@@ -19,10 +21,7 @@ public class ShuttleDataHolder
         return _id;
     }
 
-    public Location getLocation()
-    {
-        return _loc;
-    }
+    public Location Location => _loc;
 
     public void addDoor(int id)
     {

@@ -1,10 +1,8 @@
 using L2Dn.GameServer.Model.Actor;
+using L2Dn.Geometry;
 
 namespace L2Dn.GameServer.Model.Holders;
 
-/**
- * @author Mobius
- */
 public class SummonRequestHolder
 {
 	private readonly Player _summoner;
@@ -13,9 +11,7 @@ public class SummonRequestHolder
 	public SummonRequestHolder(Player summoner)
 	{
 		_summoner = summoner;
-		_location = summoner == null
-			? null
-			: new Location(summoner.getX(), summoner.getY(), summoner.getZ(), summoner.getHeading());
+		_location = summoner.Location;
 	}
 
 	public Player getSummoner()
@@ -23,8 +19,5 @@ public class SummonRequestHolder
 		return _summoner;
 	}
 
-	public Location getLocation()
-	{
-		return _location;
-	}
+	public Location Location => _location;
 }

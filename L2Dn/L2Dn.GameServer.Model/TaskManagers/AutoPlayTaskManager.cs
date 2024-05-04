@@ -11,6 +11,7 @@ using L2Dn.GameServer.Model.Skills;
 using L2Dn.GameServer.Model.Zones;
 using L2Dn.GameServer.Network.OutgoingPackets.AutoPlay;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Model.Enums;
 using ThreadPool = L2Dn.GameServer.Utilities.ThreadPool;
 
@@ -59,7 +60,7 @@ public class AutoPlayTaskManager
 					continue; // play
 				}
 				
-				if (player.isSitting() || player.isCastingNow() || (player.getQueuedSkill() != null))
+				if (player.isSitting() || player.isCastingNow() || player.getQueuedSkill() != null)
 				{
 					continue; // play
 				}
@@ -70,7 +71,7 @@ public class AutoPlayTaskManager
 				// Skip thinking.
 				WorldObject target = player.getTarget();
 				Creature creature;
-				if ((target != null) && target.isCreature())
+				if (target != null && target.isCreature())
 				{
 					creature = (Creature) target;
 					if (creature.isAlikeDead() || !isTargetModeValid(targetMode, player, creature))
@@ -81,15 +82,15 @@ public class AutoPlayTaskManager
 							Skill sweeper = player.getKnownSkill(42); // TODO: Check skill ids 254 and 42, add to CommonSkills 
 							if (sweeper != null)
 							{
-								Monster monster = ((Monster) target);
+								Monster monster = (Monster) target;
 								if (monster.checkSpoilOwner(player, false))
 								{
 									// Move to target.
-									if (player.calculateDistance2D(target) > 40)
+									if (player.Distance2D(target) > 40)
 									{
 										if (!player.isMoving())
 										{
-											player.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, target);
+											player.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, target.Location.Location3D);
 										}
 										continue; // play
 									}
@@ -104,7 +105,7 @@ public class AutoPlayTaskManager
 						// Clear target.
 						player.setTarget(null);
 					}
-					else if ((creature.getTarget() == player) || (creature.getTarget() == null))
+					else if (creature.getTarget() == player || creature.getTarget() == null)
 					{
 						// GeoEngine can see target check.
 						if (!GeoEngine.getInstance().canSeeTarget(player, creature))
@@ -119,8 +120,8 @@ public class AutoPlayTaskManager
 							foreach (Summon summon in player.getServitors().values())
 							{
 								if (summon.hasAI() && !summon.isMoving() && !summon.isDisabled() &&
-								    (summon.getAI().getIntention() != CtrlIntention.AI_INTENTION_ATTACK) &&
-								    (summon.getAI().getIntention() != CtrlIntention.AI_INTENTION_CAST) &&
+								    summon.getAI().getIntention() != CtrlIntention.AI_INTENTION_ATTACK &&
+								    summon.getAI().getIntention() != CtrlIntention.AI_INTENTION_CAST &&
 								    creature.isAutoAttackable(player) &&
 								    GeoEngine.getInstance().canSeeTarget(player, creature))
 								{
@@ -131,7 +132,7 @@ public class AutoPlayTaskManager
 
 						// Pet Attack.
 						Pet pet = player.getPet();
-						if ((pet != null) && player.getAutoUseSettings().getAutoActions().Contains(PET_ATTACK_ACTION) && pet.hasAI() && !pet.isMoving() && !pet.isDisabled() && (pet.getAI().getIntention() != CtrlIntention.AI_INTENTION_ATTACK) && (pet.getAI().getIntention() != CtrlIntention.AI_INTENTION_CAST) && creature.isAutoAttackable(player) && GeoEngine.getInstance().canSeeTarget(player, creature))
+						if (pet != null && player.getAutoUseSettings().getAutoActions().Contains(PET_ATTACK_ACTION) && pet.hasAI() && !pet.isMoving() && !pet.isDisabled() && pet.getAI().getIntention() != CtrlIntention.AI_INTENTION_ATTACK && pet.getAI().getIntention() != CtrlIntention.AI_INTENTION_CAST && creature.isAutoAttackable(player) && GeoEngine.getInstance().canSeeTarget(player, creature))
 						{
 							pet.getAI().setIntention(CtrlIntention.AI_INTENTION_ATTACK, creature);
 						}
@@ -141,7 +142,7 @@ public class AutoPlayTaskManager
 						{
 							foreach (Summon summon in player.getServitors().values())
 							{
-								if (summon.hasAI() && !summon.isMoving() && !summon.isDisabled() && (summon.getAI().getIntention() != CtrlIntention.AI_INTENTION_ATTACK) && (summon.getAI().getIntention() != CtrlIntention.AI_INTENTION_CAST) && creature.isAutoAttackable(player) && GeoEngine.getInstance().canSeeTarget(player, creature))
+								if (summon.hasAI() && !summon.isMoving() && !summon.isDisabled() && summon.getAI().getIntention() != CtrlIntention.AI_INTENTION_ATTACK && summon.getAI().getIntention() != CtrlIntention.AI_INTENTION_CAST && creature.isAutoAttackable(player) && GeoEngine.getInstance().canSeeTarget(player, creature))
 								{
 									summon.getAI().setIntention(CtrlIntention.AI_INTENTION_ATTACK, creature);
 								}
@@ -180,20 +181,20 @@ public class AutoPlayTaskManager
 									if (idleCount > 10)
 									{
 										bool ranged = weapon.getItemType().isRanged();
-										double angle = Util.calculateHeadingFrom(player, creature);
+										double angle = new Location2D(player.getX(), player.getY()).HeadingTo(new Location2D(creature.getX(), creature.getY()));
 										double radian = double.DegreesToRadians(angle);
 										double course = double.DegreesToRadians(180);
 										double distance = (ranged ? player.getCollisionRadius() : player.getCollisionRadius() + creature.getCollisionRadius()) * 2;
 										int x1 = (int) (Math.Cos(Math.PI + radian + course) * distance);
 										int y1 = (int) (Math.Sin(Math.PI + radian + course) * distance);
-										Location location;
+										Location3D location;
 										if (ranged)
 										{
-											location = new Location(player.getX() + x1, player.getY() + y1, player.getZ());
+											location = new Location3D(player.getX() + x1, player.getY() + y1, player.getZ());
 										}
 										else
 										{
-											location = new Location(creature.getX() + x1, creature.getY() + y1, player.getZ());
+											location = new Location3D(creature.getX() + x1, creature.getY() + y1, player.getZ());
 										}
 										player.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, location);
 										IDLE_COUNT.remove(player);
@@ -220,19 +221,19 @@ public class AutoPlayTaskManager
 					foreach (Item droppedItem in World.getInstance().getVisibleObjectsInRange<Item>(player, 200))
 					{
 						// Check if item is reachable.
-						if ((droppedItem == null) //
-							|| (!droppedItem.isSpawned()) //
-							|| !GeoEngine.getInstance().canMoveToTarget(player.getX(), player.getY(), player.getZ(), droppedItem.getX(), droppedItem.getY(), droppedItem.getZ(), player.getInstanceWorld()))
+						if (droppedItem == null //
+							|| !droppedItem.isSpawned() //
+							|| !GeoEngine.getInstance().canMoveToTarget(player.Location.Location3D, droppedItem.Location.Location3D, player.getInstanceWorld()))
 						{
 							continue; // pick up
 						}
 						
 						// Move to item.
-						if (player.calculateDistance2D(droppedItem) > 70)
+						if (player.Distance2D(droppedItem) > 70)
 						{
 							if (!player.isMoving())
 							{
-								player.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, droppedItem);
+								player.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, droppedItem.Location.Location3D);
 							}
 
 							gotoPlay = true;
@@ -240,7 +241,7 @@ public class AutoPlayTaskManager
 						}
 						
 						// Try to pick it up.
-						if (!droppedItem.isProtected() || (droppedItem.getOwnerId() == player.getObjectId()))
+						if (!droppedItem.isProtected() || droppedItem.getOwnerId() == player.getObjectId())
 						{
 							player.doPickupItem(droppedItem);
 							
@@ -257,16 +258,16 @@ public class AutoPlayTaskManager
 				creature = null;
 				Party party = player.getParty();
 				Player leader = party == null ? null : party.getLeader();
-				if (Config.ENABLE_AUTO_ASSIST && (party != null) && (leader != null) && (leader != player) && !leader.isDead())
+				if (Config.ENABLE_AUTO_ASSIST && party != null && leader != null && leader != player && !leader.isDead())
 				{
-					if (leader.calculateDistance3D(player) < (Config.ALT_PARTY_RANGE * 2 /* 2? */))
+					if (leader.Distance3D(player) < Config.ALT_PARTY_RANGE * 2 /* 2? */)
 					{
 						WorldObject leaderTarget = leader.getTarget();
-						if ((leaderTarget != null) && (leaderTarget.isAttackable() || (leaderTarget.isPlayable() && !party.containsPlayer(leaderTarget.getActingPlayer()))))
+						if (leaderTarget != null && (leaderTarget.isAttackable() || (leaderTarget.isPlayable() && !party.containsPlayer(leaderTarget.getActingPlayer()))))
 						{
 							creature = (Creature) leaderTarget;
 						}
-						else if ((player.getAI().getIntention() != CtrlIntention.AI_INTENTION_FOLLOW) && !player.isDisabled())
+						else if (player.getAI().getIntention() != CtrlIntention.AI_INTENTION_FOLLOW && !player.isDisabled())
 						{
 							player.getAI().setIntention(CtrlIntention.AI_INTENTION_FOLLOW, leader);
 						}
@@ -275,16 +276,16 @@ public class AutoPlayTaskManager
 				else
 				{
 					double closestDistance = double.MaxValue;
-					foreach (Creature nearby in World.getInstance().getVisibleObjectsInRange<Creature>(player, player.getAutoPlaySettings().isShortRange() && (targetMode != 2 /* Characters */) && (targetMode != 4 /* Counterattack */) ? 600 : 1400))
+					foreach (Creature nearby in World.getInstance().getVisibleObjectsInRange<Creature>(player, player.getAutoPlaySettings().isShortRange() && targetMode != 2 /* Characters */ && targetMode != 4 /* Counterattack */ ? 600 : 1400))
 					{
 						// Skip unavailable creatures.
-						if ((nearby == null) || nearby.isAlikeDead())
+						if (nearby == null || nearby.isAlikeDead())
 						{
 							continue; // target
 						}
 						
 						// Check creature target.
-						if (player.getAutoPlaySettings().isRespectfulHunting() && !nearby.isPlayable() && (nearby.getTarget() != null) && (nearby.getTarget() != player) && !player.getServitors().containsKey(nearby.getTarget().getObjectId()))
+						if (player.getAutoPlaySettings().isRespectfulHunting() && !nearby.isPlayable() && nearby.getTarget() != null && nearby.getTarget() != player && !player.getServitors().containsKey(nearby.getTarget().getObjectId()))
 						{
 							continue; // target
 						}
@@ -296,9 +297,11 @@ public class AutoPlayTaskManager
 						}
 						
 						// Check if creature is reachable.
-						if ((Math.Abs(player.getZ() - nearby.getZ()) < 180) && GeoEngine.getInstance().canSeeTarget(player, nearby) && GeoEngine.getInstance().canMoveToTarget(player.getX(), player.getY(), player.getZ(), nearby.getX(), nearby.getY(), nearby.getZ(), player.getInstanceWorld()))
+						if (Math.Abs(player.getZ() - nearby.getZ()) < 180 &&
+						    GeoEngine.getInstance().canSeeTarget(player, nearby) && GeoEngine.getInstance()
+							    .canMoveToTarget(player.Location.Location3D, nearby.Location.Location3D, player.getInstanceWorld()))
 						{
-							double creatureDistance = player.calculateDistance2D(nearby);
+							double creatureDistance = player.Distance2D(nearby);
 							if (creatureDistance < closestDistance)
 							{
 								creature = nearby;
@@ -333,7 +336,7 @@ public class AutoPlayTaskManager
 			}
 			
 			// Non Essence like.
-			return player.isMageClass() && (player.getRace() != Race.ORC);
+			return player.isMageClass() && player.getRace() != Race.ORC;
 		}
 		
 		private bool isTargetModeValid(int mode, Player player, Creature creature)
@@ -354,7 +357,7 @@ public class AutoPlayTaskManager
 				}
 				case 4: // Counterattack
 				{
-					return creature.isMonster() || (creature.isPlayer() && ((creature.getTarget() == player) && (creature.getActingPlayer().getEinhasadOverseeingLevel() >= 1)));
+					return creature.isMonster() || (creature.isPlayer() && creature.getTarget() == player && creature.getActingPlayer().getEinhasadOverseeingLevel() >= 1);
 				}
 				default: // Any Target
 				{

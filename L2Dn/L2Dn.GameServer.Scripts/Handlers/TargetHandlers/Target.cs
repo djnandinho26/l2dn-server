@@ -5,6 +5,7 @@ using L2Dn.GameServer.Model.Actor;
 using L2Dn.GameServer.Model.Skills;
 using L2Dn.GameServer.Model.Skills.Targets;
 using L2Dn.GameServer.Network.Enums;
+using L2Dn.Geometry;
 
 namespace L2Dn.GameServer.Scripts.Handlers.TargetHandlers;
 
@@ -44,7 +45,7 @@ public class Target: ITargetTypeHandler
 		}
 		
 		// Check for cast range if character cannot move. TODO: char will start follow until within castrange, but if his moving is blocked by geodata, this msg will be sent.
-		if (dontMove && (creature.calculateDistance2D(target) > skill.getCastRange()))
+		if (dontMove && (creature.Distance2D(target) > skill.getCastRange()))
 		{
 			if (sendMessage)
 			{
@@ -54,7 +55,7 @@ public class Target: ITargetTypeHandler
 			return null;
 		}
 		
-		if (skill.isFlyType() && !GeoEngine.getInstance().canMoveToTarget(creature.getX(), creature.getY(), creature.getZ(), target.getX(), target.getY(), target.getZ(), creature.getInstanceWorld()))
+		if (skill.isFlyType() && !GeoEngine.getInstance().canMoveToTarget(creature.Location.Location3D, target.Location.Location3D, creature.getInstanceWorld()))
 		{
 			if (sendMessage)
 			{

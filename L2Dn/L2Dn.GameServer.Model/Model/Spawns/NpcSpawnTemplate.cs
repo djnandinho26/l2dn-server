@@ -9,6 +9,7 @@ using L2Dn.GameServer.Model.InstanceZones;
 using L2Dn.GameServer.Model.Interfaces;
 using L2Dn.GameServer.Model.Zones.Types;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Model.DataPack;
 using L2Dn.Utilities;
 using NLog;
@@ -237,46 +238,43 @@ public class NpcSpawnTemplate: IParameterized<StatSet>
 			foreach (ChanceLocation loc in _locations)
 			{
 				if (locRandom <= (cumulativeChance += loc.getChance()))
-				{
 					return loc.Location;
-				}
 			}
+
 			_logger.Warn("Couldn't match location by chance turning first...");
 			return null;
 		}
-		
+
 		if (_zone != null)
 		{
-			Location loc = _zone.getRandomPoint();
-			loc.setHeading(-1);
-			return loc;
+			Location3D loc = _zone.getRandomPoint();
+			return new Location(loc, -1);
 		}
-		
+
 		if (!_group.getTerritories().isEmpty())
 		{
 			SpawnTerritory territory = _group.getTerritories().get(Rnd.get(_group.getTerritories().size()));
 			for (int i = 0; i < 100; i++)
 			{
-				Location loc = territory.getRandomPoint();
+				Location3D loc = territory.getRandomPoint();
 				if (_group.getBannedTerritories().isEmpty())
 				{
-					loc.setHeading(-1);
-					return loc;
+					return new Location(loc, -1);
 				}
-				
+
 				bool insideBannedTerritory = false;
 				foreach (BannedSpawnTerritory bannedTerritory in _group.getBannedTerritories())
 				{
-					if (bannedTerritory.isInsideZone(loc.getX(), loc.getY(), loc.getZ()))
+					if (bannedTerritory.isInsideZone(loc.X, loc.Y, loc.Z))
 					{
 						insideBannedTerritory = true;
 						break;
 					}
 				}
+
 				if (!insideBannedTerritory)
 				{
-					loc.setHeading(-1);
-					return loc;
+					return new Location(loc, -1);
 				}
 			}
 		}
@@ -285,29 +283,29 @@ public class NpcSpawnTemplate: IParameterized<StatSet>
 			SpawnTerritory territory = _spawnTemplate.getTerritories().get(Rnd.get(_spawnTemplate.getTerritories().size()));
 			for (int i = 0; i < 100; i++)
 			{
-				Location loc = territory.getRandomPoint();
+				Location3D loc = territory.getRandomPoint();
 				if (_spawnTemplate.getBannedTerritories().isEmpty())
 				{
-					loc.setHeading(-1);
-					return loc;
+					return new Location(loc, -1);
 				}
-				
+
 				bool insideBannedTerritory = false;
 				foreach (BannedSpawnTerritory bannedTerritory in _spawnTemplate.getBannedTerritories())
 				{
-					if (bannedTerritory.isInsideZone(loc.getX(), loc.getY(), loc.getZ()))
+					if (bannedTerritory.isInsideZone(loc.X, loc.Y, loc.Z))
 					{
 						insideBannedTerritory = true;
 						break;
 					}
 				}
+
 				if (!insideBannedTerritory)
 				{
-					loc.setHeading(-1);
-					return loc;
+					return new Location(loc, -1);
 				}
 			}
 		}
+
 		return null;
 	}
 	
@@ -363,8 +361,7 @@ public class NpcSpawnTemplate: IParameterized<StatSet>
 		
 		spawn.setInstanceId(instance != null ? instance.getId() : 0);
 		spawn.setAmount(1);
-		spawn.Location.setXYZ(loc);
-		spawn.Location.setHeading(loc.getHeading());
+		spawn.Location = loc.Value;
 		TimeSpan respawn = TimeSpan.Zero;
 		TimeSpan respawnRandom = TimeSpan.Zero;
 		SchedulingPattern respawnPattern = null;
@@ -396,9 +393,9 @@ public class NpcSpawnTemplate: IParameterized<StatSet>
 		
 		if (_saveInDb)
 		{
-			if (!DBSpawnManager.getInstance().isDefined(_id))
+			if (!DbSpawnManager.getInstance().isDefined(_id))
 			{
-				Npc spawnedNpc = DBSpawnManager.getInstance().addNewSpawn(spawn, true);
+				Npc spawnedNpc = DbSpawnManager.getInstance().addNewSpawn(spawn, true);
 				if (spawnedNpc != null && spawnedNpc.isMonster() && _minions != null)
 				{
 					((Monster) spawnedNpc).getMinionList().spawnMinions(_minions);

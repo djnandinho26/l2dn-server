@@ -14,6 +14,7 @@ using L2Dn.GameServer.Network.Enums;
 using L2Dn.GameServer.Network.OutgoingPackets;
 using L2Dn.GameServer.TaskManagers;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using ThreadPool = L2Dn.GameServer.Utilities.ThreadPool;
 
 namespace L2Dn.GameServer.AI;
@@ -35,10 +36,10 @@ public class CreatureAI: AbstractAI
 	public class IntentionCommand
 	{
 		protected readonly CtrlIntention _crtlIntention;
-		protected readonly object _arg0;
-		protected readonly object _arg1;
+		protected readonly object? _arg0;
+		protected readonly object? _arg1;
 		
-		public IntentionCommand(CtrlIntention pIntention, object pArg0, object pArg1)
+		public IntentionCommand(CtrlIntention pIntention, object? pArg0, object? pArg1)
 		{
 			_crtlIntention = pIntention;
 			_arg0 = pArg0;
@@ -330,7 +331,7 @@ public class CreatureAI: AbstractAI
 	 * <li>Move the actor to Location (x,y,z) server side AND client side by sending Server->Client packet MoveToLocation (broadcast)</li>
 	 * </ul>
 	 */
-	protected override void onIntentionMoveTo(ILocational loc)
+	protected override void onIntentionMoveTo(Location3D destination)
 	{
 		if (getIntention() == CtrlIntention.AI_INTENTION_REST)
 		{
@@ -347,7 +348,7 @@ public class CreatureAI: AbstractAI
 		}
 		
 		// Set the Intention of this AbstractAI to AI_INTENTION_MOVE_TO
-		changeIntention(CtrlIntention.AI_INTENTION_MOVE_TO, loc);
+		changeIntention(CtrlIntention.AI_INTENTION_MOVE_TO, destination);
 		
 		// Stop the actor auto-attack client side by sending Server->Client packet AutoAttackStop (broadcast)
 		clientStopAutoAttack();
@@ -356,7 +357,7 @@ public class CreatureAI: AbstractAI
 		_actor.abortAttack();
 		
 		// Move the actor to Location (x,y,z) server side AND client side by sending Server->Client packet MoveToLocation (broadcast)
-		moveTo(loc.getX(), loc.getY(), loc.getZ());
+		moveTo(destination);
 	}
 	
 	/**
@@ -850,20 +851,14 @@ public class CreatureAI: AbstractAI
 		// do nothing
 	}
 	
-	protected bool maybeMoveToPosition(ILocational worldPosition, int offset)
+	protected bool maybeMoveToPosition(Location3D worldPosition, int offset)
 	{
-		if (worldPosition == null)
-		{
-			// LOGGER.warning("maybeMoveToPosition: worldPosition == NULL!");
-			return false;
-		}
-		
 		if (offset < 0)
 		{
 			return false; // skill radius -1
 		}
 		
-		if (!_actor.isInsideRadius2D(worldPosition, offset + _actor.getTemplate().getCollisionRadius()))
+		if (!_actor.IsInsideRadius2D(worldPosition.Location2D, offset + _actor.getTemplate().getCollisionRadius()))
 		{
 			if (_actor.isMovementDisabled() || (_actor.getMoveSpeed() <= 0))
 			{
@@ -880,8 +875,8 @@ public class CreatureAI: AbstractAI
 			int x = _actor.getX();
 			int y = _actor.getY();
 			
-			double dx = worldPosition.getX() - x;
-			double dy = worldPosition.getY() - y;
+			double dx = worldPosition.X - x;
+			double dy = worldPosition.Y - y;
 			double dist = MathUtil.hypot(dx, dy);
 			
 			double sin = dy / dist;
@@ -889,7 +884,7 @@ public class CreatureAI: AbstractAI
 			dist -= offset - 5;
 			x += (int) (dist * cos);
 			y += (int) (dist * sin);
-			moveTo(x, y, worldPosition.getZ());
+			moveTo(new Location3D(x, y, worldPosition.Z));
 			return true;
 		}
 		
@@ -938,13 +933,13 @@ public class CreatureAI: AbstractAI
 			offsetWithCollision += ((Creature) target).getTemplate().getCollisionRadius();
 		}
 		
-		if (!_actor.isInsideRadius2D(target, offsetWithCollision))
+		if (!_actor.IsInsideRadius2D(target, offsetWithCollision))
 		{
 			// Caller should be Playable and thinkAttack/thinkCast/thinkInteract/thinkPickUp
 			if (isFollowing())
 			{
 				// allow larger hit range when the target is moving (check is run only once per second)
-				if (!_actor.isInsideRadius2D(target, offsetWithCollision + 100))
+				if (!_actor.IsInsideRadius2D(target, offsetWithCollision + 100))
 				{
 					return true;
 				}
@@ -1058,7 +1053,7 @@ public class CreatureAI: AbstractAI
 	protected bool checkTargetLost(WorldObject target)
 	{
 		if (target == null || (_actor != null && _skill != null && _skill.isBad() && _skill.getAffectRange() > 0 && (_actor.isPlayer() && _actor.isMoving() ? 
-			    !GeoEngine.getInstance().canMoveToTarget(_actor, target) : !GeoEngine.getInstance().canSeeTarget(_actor, target))))
+			    !GeoEngine.getInstance().canMoveToTarget(_actor.Location.Location3D, target.Location.Location3D) : !GeoEngine.getInstance().canSeeTarget(_actor, target))))
 		{
 			setIntention(CtrlIntention.AI_INTENTION_ACTIVE);
 			return true;

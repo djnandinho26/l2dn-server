@@ -32,6 +32,7 @@ using L2Dn.GameServer.Network.Enums;
 using L2Dn.GameServer.Network.OutgoingPackets;
 using L2Dn.GameServer.TaskManagers;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Model.Enums;
 using L2Dn.Utilities;
 using FortManager = L2Dn.GameServer.InstanceManagers.FortManager;
@@ -403,30 +404,37 @@ public class Npc: Creature
 		{
 			return false;
 		}
-		else if (player.isDead() || player.isFakeDeath())
+
+		if (player.isDead() || player.isFakeDeath())
 		{
 			return false;
 		}
-		else if (player.isSitting())
+
+		if (player.isSitting())
 		{
 			return false;
 		}
-		else if (player.getPrivateStoreType() != PrivateStoreType.NONE)
+
+		if (player.getPrivateStoreType() != PrivateStoreType.NONE)
 		{
 			return false;
 		}
-		else if (!isInsideRadius3D(player, INTERACTION_DISTANCE))
+
+		if (!this.IsInsideRadius3D(player, INTERACTION_DISTANCE))
 		{
 			return false;
 		}
-		else if (player.getInstanceWorld() != getInstanceWorld())
+
+		if (player.getInstanceWorld() != getInstanceWorld())
 		{
 			return false;
 		}
-		else if (_isBusy)
+
+		if (_isBusy)
 		{
 			return false;
 		}
+
 		return true;
 	}
 	
@@ -484,11 +492,11 @@ public class Npc: Creature
 	{
 		if (getId() == 33360) // Provisional Hall Manager
 		{
-			foreach (ZoneType zone in ZoneManager.getInstance().getZones(this))
+			foreach (ZoneType zone in ZoneManager.getInstance().getZones(Location.Location3D))
 			{
 				if (zone is ClanHallZone)
 				{
-					ClanHall clanHall = ClanHallData.getInstance().getClanHallById(((ClanHallZone) zone).getResidenceId());
+					ClanHall? clanHall = ClanHallData.getInstance().getClanHallById(((ClanHallZone) zone).getResidenceId());
 					if (clanHall != null)
 					{
 						return clanHall;
@@ -937,7 +945,7 @@ public class Npc: Creature
 				{
 					foreach (Player member in party.getMembers())
 					{
-						if ((member != killerPlayer) && (member.calculateDistance3D(getX(), getY(), getZ()) <= Config.ALT_PARTY_RANGE))
+						if ((member != killerPlayer) && (member.Distance3D(this) <= Config.ALT_PARTY_RANGE))
 						{
 							new MpRewardTask(member, this);
 							foreach (Summon summon in member.getServitors().values())
@@ -950,7 +958,7 @@ public class Npc: Creature
 			}
 		}
 		
-		DBSpawnManager.getInstance().updateStatus(this, true);
+		DbSpawnManager.getInstance().updateStatus(this, true);
 		return true;
 	}
 	
@@ -1073,7 +1081,7 @@ public class Npc: Creature
 		base.onDecay();
 		
 		// Decrease its spawn counter
-		if ((_spawn != null) && !DBSpawnManager.getInstance().isDefined(getId()))
+		if ((_spawn != null) && !DbSpawnManager.getInstance().isDefined(getId()))
 		{
 			_spawn.decreaseCount(this);
 		}
@@ -1130,7 +1138,7 @@ public class Npc: Creature
 			getSkillChannelized().abortChannelization();
 		}
 		
-		ZoneManager.getInstance().getRegion(this).removeFromZones(this);
+		ZoneManager.getInstance().getRegion(Location.Location2D)?.removeFromZones(this);
 		
 		return base.deleteMe();
 	}
@@ -1397,7 +1405,7 @@ public class Npc: Creature
 	 */
 	public bool staysInSpawnLoc()
 	{
-		return ((_spawn != null) && (_spawn.Location.getX() == getX()) && (_spawn.Location.getY() == getY()));
+		return ((_spawn != null) && (_spawn.Location.X == getX()) && (_spawn.Location.Y == getY()));
 	}
 	
 	/**
@@ -1454,16 +1462,16 @@ public class Npc: Creature
 	 * @param radiusMax maximal range from NPC (not further than)
 	 * @return Location in given range from this NPC
 	 */
-	public Location getPointInRange(int radiusMin, int radiusMax)
+	public Location3D getPointInRange(int radiusMin, int radiusMax)
 	{
 		if ((radiusMax == 0) || (radiusMax < radiusMin))
 		{
-			return new Location(getX(), getY(), getZ());
+			return new Location3D(getX(), getY(), getZ());
 		}
 		
 		int radius = Rnd.get(radiusMin, radiusMax);
 		double angle = Rnd.nextDouble() * 2 * Math.PI;
-		return new Location((int) (getX() + (radius * Math.Cos(angle))), (int) (getY() + (radius * Math.Sin(angle))), getZ());
+		return new Location3D((int) (getX() + (radius * Math.Cos(angle))), (int) (getY() + (radius * Math.Sin(angle))), getZ());
 	}
 	
 	/**
@@ -1500,7 +1508,7 @@ public class Npc: Creature
 			int newY = (getY() + Rnd.get((RANDOM_ITEM_DROP_LIMIT * 2) + 1)) - RANDOM_ITEM_DROP_LIMIT;
 			int newZ = getZ() + 20;
 			
-			item.dropMe(this, newX, newY, newZ);
+			item.dropMe(this, new Location3D(newX, newY, newZ));
 			
 			// Add drop to auto destroy item task.
 			if (!Config.LIST_PROTECTED_ITEMS.Contains(itemId) && (((Config.AUTODESTROY_ITEM_AFTER > 0) && !item.getTemplate().hasExImmediateEffect()) || ((Config.HERB_AUTO_DESTROY_TIME > 0) && item.getTemplate().hasExImmediateEffect())))

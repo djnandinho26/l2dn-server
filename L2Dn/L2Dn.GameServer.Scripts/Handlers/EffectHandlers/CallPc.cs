@@ -11,6 +11,7 @@ using L2Dn.GameServer.Model.Skills.Targets;
 using L2Dn.GameServer.Model.Zones;
 using L2Dn.GameServer.Network.Enums;
 using L2Dn.GameServer.Network.OutgoingPackets;
+using L2Dn.Geometry;
 
 namespace L2Dn.GameServer.Scripts.Handlers.EffectHandlers;
 
@@ -66,7 +67,7 @@ public class CallPc: AbstractEffect
 
 				target.addScript(new SummonRequestHolder(player));
 				
-				ConfirmDialogPacket confirm = new ConfirmDialogPacket(30000, player.getObjectId(), SystemMessageId.C1_WANTS_TO_SUMMON_YOU_TO_S2_ACCEPT);
+				ConfirmDialogPacket confirm = new(30000, player.getObjectId(), SystemMessageId.C1_WANTS_TO_SUMMON_YOU_TO_S2_ACCEPT);
 				confirm.Params.addString(player.getName());
 				confirm.Params.addZoneName(player.getX(), player.getY(), player.getZ());
 				target.sendPacket(confirm);
@@ -79,13 +80,13 @@ public class CallPc: AbstractEffect
 				effected.abortCast();
 				effected.abortAttack();
 				effected.stopMove(null);
-				effected.sendPacket(new FlyToLocationPacket(effected, effector, FlyType.DUMMY, 0, 0, 0));
-				effected.setLocation(effector.getLocation());
+				effected.sendPacket(new FlyToLocationPacket(effected, new Location3D(effector.getX(), effector.getY(), effector.getZ()), FlyType.DUMMY));
+				effected.setLocation(effector.Location);
 			}
 			else
 			{
 				WorldObject previousTarget = target.getTarget();
-				target.teleToLocation(effector);
+				target.teleToLocation(effector.Location);
 				target.setTarget(previousTarget);
 			}
 		}

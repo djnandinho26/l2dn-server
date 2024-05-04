@@ -1,5 +1,6 @@
 ﻿using L2Dn.GameServer.Enums;
 using L2Dn.GameServer.Handlers;
+using L2Dn.GameServer.Model;
 using L2Dn.GameServer.Model.Actor;
 using L2Dn.GameServer.Model.Events.Impl.Players;
 using L2Dn.GameServer.Model.Holders;
@@ -128,7 +129,7 @@ public struct DialogAnswerPacket: IIncomingPacket<GameSession>
 		    SummonRequestHolder holder = player.removeScript<SummonRequestHolder>();
 		    if (_answer == 1 && holder != null && holder.getSummoner().getObjectId() == _requesterId)
 		    {
-			    player.teleToLocation(holder.getLocation(), true);
+			    player.teleToLocation(holder.Location, true);
 		    }
 	    }
 	    else if (_messageId == SystemMessageId.WOULD_YOU_LIKE_TO_OPEN_THE_GATE)

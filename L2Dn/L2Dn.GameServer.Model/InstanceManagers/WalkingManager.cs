@@ -130,17 +130,12 @@ public class WalkingManager: DataReaderBase
 					int z = r.GetAttributeValueAsInt32("spawnZ");
 					if (NpcData.getInstance().getTemplate(npcId) != null)
 					{
-						NpcRoutesHolder holder = _routesToAttach.containsKey(npcId)
-							? _routesToAttach.get(npcId)
-							: new NpcRoutesHolder();
-						
-						holder.addRoute(routeName, new Location(x, y, z));
-						_routesToAttach.put(npcId, holder);
+						NpcRoutesHolder holder = _routesToAttach.GetValueOrDefault(npcId) ?? new NpcRoutesHolder();
+						holder.addRoute(routeName, new Location3D(x, y, z));
+						_routesToAttach[npcId] = holder;
 
 						if (!_targetedNpcIds.Contains(npcId))
-						{
-							_targetedNpcIds.add(npcId);
-						}
+							_targetedNpcIds.Add(npcId);
 					}
 					else
 					{
@@ -230,15 +225,15 @@ public class WalkingManager: DataReaderBase
 						node = walk.getCurrentNode();
 					}
 					
-					if (!npc.getLocation().IsInsideRadius3D(node.Location, 3000))
+					if (!npc.IsInsideRadius3D(node.Location, 3000))
 					{
 						LOGGER.Warn(GetType().Name + ": " + "Route '" + routeName + "': NPC (id=" + npc.getId() +
 							", x=" + npc.getX() + ", y=" + npc.getY() + ", z=" + npc.getZ() +
 							") is too far from starting point (node x=" + node.Location.X + ", y=" + node.Location.Y +
-							", z=" + node.Location.Z + ", range=" + npc.getLocation().Distance3D(node.Location) +
+							", z=" + node.Location.Z + ", range=" + npc.Distance3D(node.Location) +
 							"). Teleporting to proper location.");
 
-						Location teleLoc = new Location(node.Location.X, node.Location.Y, node.Location.Z, npc.getHeading());
+						Location teleLoc = new(node.Location, npc.getHeading());
 						npc.teleToLocation(teleLoc);
 					}
 					
@@ -250,7 +245,7 @@ public class WalkingManager: DataReaderBase
 					{
 						npc.setWalking();
 					}
-					npc.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, node);
+					npc.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, node.Location);
 					
 					ScheduledFuture task = _repeatMoveTasks.get(npc);
 					if ((task == null) || task.isCancelled() || task.isDone())
@@ -298,7 +293,7 @@ public class WalkingManager: DataReaderBase
 					{
 						npc.setWalking();
 					}
-					npc.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, node);
+					npc.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, node.Location);
 					walk.setBlocked(false);
 					walk.setStoppedByAttack(false);
 				}
@@ -395,7 +390,7 @@ public class WalkingManager: DataReaderBase
 		
 		List<NpcWalkerNode> nodelist = walk.getRoute().getNodeList();
 		NpcWalkerNode node = nodelist.get(Math.Min(walk.getCurrentNodeId(), nodelist.size() - 1));
-		if (!npc.getLocation().IsInsideRadius2D(node.Location, 10))
+		if (!npc.IsInsideRadius2D(node.Location, 10))
 		{
 			return;
 		}

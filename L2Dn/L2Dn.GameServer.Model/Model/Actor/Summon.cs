@@ -25,6 +25,7 @@ using L2Dn.GameServer.Network.OutgoingPackets;
 using L2Dn.GameServer.Network.OutgoingPackets.Pets;
 using L2Dn.GameServer.TaskManagers;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Model.Enums;
 using L2Dn.Utilities;
 using ThreadPool = L2Dn.GameServer.Utilities.ThreadPool;
@@ -59,13 +60,14 @@ public abstract class Summon: Playable
 		getAI();
 
 		// Make sure summon does not spawn in a wall.
-		int x = owner.getX();
-		int y = owner.getY();
-		int z = owner.getZ();
-		Location location = GeoEngine.getInstance().getValidLocation(x, y, z, x + Rnd.get(-100, 100),
-			y + Rnd.get(-100, 100), z, getInstanceWorld());
-		
-		setXYZInvisible(location.getX(), location.getY(), location.getZ());
+		Location3D ownerLocation = owner.Location.Location3D;
+		Location3D randomLocation = new(ownerLocation.X + Rnd.get(-100, 100), ownerLocation.Y + Rnd.get(-100, 100),
+			ownerLocation.Z);
+
+		Location3D location =
+			GeoEngine.getInstance().getValidLocation(ownerLocation, randomLocation, getInstanceWorld());
+
+		setXYZInvisible(location);
 	}
 
 	public override void onSpawn()
@@ -438,17 +440,17 @@ public abstract class Summon: Playable
 				}
 			}
 			
-			ZoneRegion oldRegion = ZoneManager.getInstance().getRegion(this);
+			ZoneRegion? oldRegion = ZoneManager.getInstance().getRegion(Location.Location2D);
 			decayMe();
-			oldRegion.removeFromZones(this);
+			oldRegion?.removeFromZones(this);
 			
 			setTarget(null);
 			if (owner != null)
 			{
 				foreach (int itemId in owner.getAutoSoulShot())
 				{
-					String handler = ((EtcItem) ItemData.getInstance().getTemplate(itemId)).getHandlerName();
-					if ((handler != null) && handler.Contains("Beast"))
+					string? handler = ((EtcItem?)ItemData.getInstance().getTemplate(itemId))?.getHandlerName();
+					if (handler != null && handler.Contains("Beast"))
 					{
 						owner.disableAutoShot(itemId);
 					}
@@ -870,7 +872,7 @@ public abstract class Summon: Playable
 	public override void onTeleported()
 	{
 		base.onTeleported();
-		sendPacket(new TeleportToLocationPacket(this, getX(), getY(), getZ(), getHeading()));
+		sendPacket(new TeleportToLocationPacket(getObjectId(), Location));
 	}
 	
 	public override bool isUndead()

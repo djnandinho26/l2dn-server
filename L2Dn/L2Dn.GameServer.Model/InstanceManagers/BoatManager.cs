@@ -3,6 +3,7 @@ using L2Dn.GameServer.Model.Actor;
 using L2Dn.GameServer.Model.Actor.Instances;
 using L2Dn.GameServer.Model.Actor.Templates;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Packets;
 
 namespace L2Dn.GameServer.InstanceManagers;
@@ -81,7 +82,7 @@ public class BoatManager
 		Boat boat = new Boat(template);
 		_boats.put(boat.getObjectId(), boat);
 		boat.setHeading(heading);
-		boat.setXYZInvisible(x, y, z);
+		boat.setXYZInvisible(new Location3D(x, y, z));
 		boat.spawnMe();
 		return boat;
 	}
@@ -155,9 +156,9 @@ public class BoatManager
 	private PacketSendUtil broadcastPacketsToPlayers(VehiclePathPoint point1, VehiclePathPoint point2)
 	{
 		IEnumerable<Player> players = World.getInstance().getPlayers().Where(player =>
-			(MathUtil.hypot(player.getX() - point1.Location.getX(), player.getY() - point1.Location.getY()) <
+			(MathUtil.hypot(player.getX() - point1.Location.X, player.getY() - point1.Location.Y) <
 			 Config.BOAT_BROADCAST_RADIUS) || //
-			(MathUtil.hypot(player.getX() - point2.Location.getX(), player.getY() - point2.Location.getY()) <
+			(MathUtil.hypot(player.getX() - point2.Location.X, player.getY() - point2.Location.Y) <
 			 Config.BOAT_BROADCAST_RADIUS));
 
 		return new PacketSendUtil(players);

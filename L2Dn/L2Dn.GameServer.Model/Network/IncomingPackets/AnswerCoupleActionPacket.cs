@@ -2,7 +2,7 @@
 using L2Dn.GameServer.Model.Actor;
 using L2Dn.GameServer.Network.Enums;
 using L2Dn.GameServer.Network.OutgoingPackets;
-using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Network;
 using L2Dn.Packets;
 
@@ -40,7 +40,7 @@ public struct AnswerCoupleActionPacket: IIncomingPacket<GameSession>
         }
         else if (_answer == 1) // approve
         {
-            int distance = (int) player.calculateDistance2D(target);
+            int distance = (int)player.Distance2D(target);
             if (distance > 125 || distance < 15 || player.getObjectId() == target.getObjectId())
             {
                 player.sendPacket(SystemMessageId.THE_REQUEST_CANNOT_BE_COMPLETED_BECAUSE_THE_TARGET_DOES_NOT_MEET_LOCATION_REQUIREMENTS);
@@ -48,10 +48,10 @@ public struct AnswerCoupleActionPacket: IIncomingPacket<GameSession>
                 return ValueTask.CompletedTask;
             }
             
-            int heading = Util.calculateHeadingFrom(player, target);
+            int heading = player.HeadingTo(target);
             player.broadcastPacket(new ExRotationPacket(player.getObjectId(), heading));
             player.setHeading(heading);
-            heading = Util.calculateHeadingFrom(target, player);
+            heading = target.HeadingTo(player);
             target.setHeading(heading);
             target.broadcastPacket(new ExRotationPacket(target.getObjectId(), heading));
             player.broadcastPacket(new SocialActionPacket(player.getObjectId(), _actionId));

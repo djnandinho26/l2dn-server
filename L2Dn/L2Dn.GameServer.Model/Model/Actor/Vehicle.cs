@@ -3,7 +3,7 @@ using L2Dn.GameServer.Enums;
 using L2Dn.GameServer.InstanceManagers;
 using L2Dn.GameServer.Model.Actor.Stats;
 using L2Dn.GameServer.Model.Actor.Templates;
-using L2Dn.GameServer.Model.Interfaces;
+using L2Dn.GameServer.Model.InstanceZones;
 using L2Dn.GameServer.Model.Items;
 using L2Dn.GameServer.Model.Items.Instances;
 using L2Dn.GameServer.Model.Zones;
@@ -11,6 +11,7 @@ using L2Dn.GameServer.Network.Enums;
 using L2Dn.GameServer.Network.OutgoingPackets;
 using L2Dn.GameServer.TaskManagers;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Packets;
 using ThreadPool = L2Dn.GameServer.Utilities.ThreadPool;
 
@@ -20,17 +21,17 @@ public abstract class Vehicle : Creature
 {
 	protected int _dockId;
 	protected readonly Set<Player> _passengers = new();
-	protected Location _oustLoc;
+	protected Location? _oustLoc;
 	private Runnable _engine;
 	
 	protected VehiclePathPoint[] _currentPath;
 	protected int _runState;
 	private ScheduledFuture _monitorTask;
-	private readonly Location _monitorLocation;
+	private Location3D _monitorLocation;
 	
 	public Vehicle(CreatureTemplate template): base(template)
 	{
-		_monitorLocation = new Location(this);
+		_monitorLocation = base.Location.Location3D;
 		setInstanceType(InstanceType.Vehicle);
 		setFlying(true);
 	}
@@ -98,8 +99,7 @@ public abstract class Vehicle : Creature
 				{
 					if (point.getMoveSpeed() == 0)
 					{
-						point.Location.setHeading(point.getRotationSpeed());
-						teleToLocation(point.Location, false);
+						this.teleToLocation(new Location(point.Location, point.getRotationSpeed()));
 						if (_monitorTask != null)
 						{
 							_monitorTask.cancel(true);
@@ -121,15 +121,15 @@ public abstract class Vehicle : Creature
 						MoveData m = new MoveData();
 						m.disregardingGeodata = false;
 						m.onGeodataPathIndex = -1;
-						m.xDestination = point.Location.getX();
-						m.yDestination = point.Location.getY();
-						m.zDestination = point.Location.getZ();
+						m.xDestination = point.Location.X;
+						m.yDestination = point.Location.Y;
+						m.zDestination = point.Location.Z;
 						m.heading = 0;
 						
-						double distance = MathUtil.hypot(point.Location.getX() - getX(), point.Location.getY() - getY());
+						double distance = MathUtil.hypot(point.Location.X - getX(), point.Location.Y - getY());
 						if (distance > 1)
 						{
-							setHeading(Util.calculateHeadingFrom(getX(), getY(), point.Location.getX(), point.Location.getY()));
+							setHeading(new Location2D(getX(), getY()).HeadingTo(point.Location));
 						}
 						
 						m.moveStartTime = GameTimeTaskManager.getInstance().getGameTicks();
@@ -141,7 +141,7 @@ public abstract class Vehicle : Creature
 						{
 							_monitorTask = ThreadPool.scheduleAtFixedRate(() =>
 							{
-								if (!isInDock() && (calculateDistance3D(_monitorLocation) == 0))
+								if (!isInDock() && (this.Distance3D(_monitorLocation) == 0))
 								{
 									if (_currentPath != null)
 									{
@@ -158,7 +158,7 @@ public abstract class Vehicle : Creature
 								}
 								else
 								{
-									_monitorLocation.setXYZ(this);
+									_monitorLocation = Location.Location3D;
 								}
 							}, 1000, 1000);
 						}
@@ -214,7 +214,10 @@ public abstract class Vehicle : Creature
 	
 	public Location getOustLoc()
 	{
-		return _oustLoc != null ? _oustLoc : MapRegionManager.getInstance().getTeleToLocation(this, TeleportWhereType.TOWN);
+		if (_oustLoc != null)
+			return _oustLoc.Value;
+
+		return MapRegionManager.getInstance().getTeleToLocation(this, TeleportWhereType.TOWN);
 	}
 	
 	public virtual void oustPlayers()
@@ -233,7 +236,6 @@ public abstract class Vehicle : Creature
 	public virtual void oustPlayer(Player player)
 	{
 		player.setVehicle(null);
-		player.setInVehiclePosition(null);
 		removePassenger(player);
 	}
 	
@@ -308,7 +310,7 @@ public abstract class Vehicle : Creature
 					if ((ticket == null) || (player.getInventory().destroyItem("Boat", ticket, count, player, this) == null))
 					{
 						player.sendPacket(SystemMessageId.YOU_DO_NOT_POSSESS_THE_CORRECT_TICKET_TO_BOARD_THE_BOAT);
-						player.teleToLocation(new Location(oustX, oustY, oustZ), true);
+						player.teleToLocation(new Location(oustX, oustY, oustZ, 0), true);
 						return;
 					}
 					
@@ -334,7 +336,7 @@ public abstract class Vehicle : Creature
 		return result;
 	}
 	
-	public override void teleToLocation(ILocational loc, bool allowRandomOffset)
+	public override void teleToLocation(Location location, Instance? instance)
 	{
 		if (isMoving())
 		{
@@ -349,30 +351,30 @@ public abstract class Vehicle : Creature
 		{
 			if (player != null)
 			{
-				player.teleToLocation(loc, false);
+				player.teleToLocation(location, instance);
 			}
 		}
 		
 		decayMe();
-		setXYZ(loc);
+		setXYZ(location.Location3D);
 		
 		// temporary fix for heading on teleports
-		if (loc.getHeading() != 0)
+		if (location.Heading != 0)
 		{
-			setHeading(loc.getHeading());
+			setHeading(location.Heading);
 		}
 		
 		onTeleported();
 		revalidateZone(true);
 	}
 	
-	public override void stopMove(Location loc)
+	public override void stopMove(Location? loc)
 	{
 		_move = null;
 		if (loc != null)
 		{
-			setXYZ(loc);
-			setHeading(loc.getHeading());
+			setXYZ(loc.Value.Location3D);
+			setHeading(loc.Value.Heading);
 			revalidateZone(true);
 		}
 	}
@@ -402,7 +404,7 @@ public abstract class Vehicle : Creature
 			LOGGER.Error("Failed oustPlayers(): " + e);
 		}
 		
-		ZoneRegion oldZoneRegion = ZoneManager.getInstance().getRegion(this);
+		ZoneRegion? oldZoneRegion = ZoneManager.getInstance().getRegion(Location.Location2D);
 		
 		try
 		{
@@ -413,7 +415,7 @@ public abstract class Vehicle : Creature
 			LOGGER.Error("Failed decayMe(): " + e);
 		}
 		
-		oldZoneRegion.removeFromZones(this);
+		oldZoneRegion?.removeFromZones(this);
 		
 		return base.deleteMe();
 	}

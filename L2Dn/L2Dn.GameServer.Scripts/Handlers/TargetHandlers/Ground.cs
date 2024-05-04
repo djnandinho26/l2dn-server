@@ -7,6 +7,7 @@ using L2Dn.GameServer.Model.Skills;
 using L2Dn.GameServer.Model.Skills.Targets;
 using L2Dn.GameServer.Model.Zones;
 using L2Dn.GameServer.Network.Enums;
+using L2Dn.Geometry;
 
 namespace L2Dn.GameServer.Scripts.Handlers.TargetHandlers;
 
@@ -25,15 +26,15 @@ public class Ground: ITargetTypeHandler
 	{
 		if (creature.isPlayer())
 		{
-			Location worldPosition = creature.getActingPlayer().getCurrentSkillWorldPosition();
+			Location3D? worldPosition = creature.getActingPlayer().getCurrentSkillWorldPosition();
 			if (worldPosition != null)
 			{
-				if (dontMove && !creature.isInsideRadius2D(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), skill.getCastRange() + creature.getTemplate().getCollisionRadius()))
+				if (dontMove && !creature.IsInsideRadius2D(worldPosition.Value.Location2D, skill.getCastRange() + creature.getTemplate().getCollisionRadius()))
 				{
 					return null;
 				}
 				
-				if (!GeoEngine.getInstance().canSeeTarget(creature, worldPosition))
+				if (!GeoEngine.getInstance().canSeeTarget(creature, worldPosition.Value))
 				{
 					if (sendMessage)
 					{
@@ -41,9 +42,9 @@ public class Ground: ITargetTypeHandler
 					}
 					return null;
 				}
-				
-				ZoneRegion zoneRegion = ZoneManager.getInstance().getRegion(creature);
-				if (skill.isBad() && !creature.isInInstance() && !zoneRegion.checkEffectRangeInsidePeaceZone(skill, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()))
+
+				ZoneRegion? zoneRegion = ZoneManager.getInstance().getRegion(creature.Location.Location2D);
+				if (skill.isBad() && !creature.isInInstance() && !zoneRegion.checkEffectRangeInsidePeaceZone(skill, worldPosition.Value.X, worldPosition.Value.Y, worldPosition.Value.Z))
 				{
 					if (sendMessage)
 					{
@@ -51,7 +52,7 @@ public class Ground: ITargetTypeHandler
 					}
 					return null;
 				}
-				
+
 				return creature; // Return yourself to know that your ground location is legit.
 			}
 		}

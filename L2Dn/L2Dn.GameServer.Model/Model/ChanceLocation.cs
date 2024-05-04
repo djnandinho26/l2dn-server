@@ -1,4 +1,6 @@
-﻿namespace L2Dn.GameServer.Model;
+﻿using L2Dn.Geometry;
+
+namespace L2Dn.GameServer.Model;
 
 public class ChanceLocation
 {

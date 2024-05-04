@@ -6,6 +6,7 @@ using L2Dn.GameServer.Network;
 using L2Dn.GameServer.Network.Enums;
 using L2Dn.GameServer.Network.OutgoingPackets;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using NLog;
 
 namespace L2Dn.GameServer.Scripts.Handlers.AdminCommandHandlers;
@@ -47,7 +48,7 @@ public class AdminMenu: IAdminCommandHandler
 				Player player = World.getInstance().getPlayer(playerName);
 				if (player != null)
 				{
-					teleportCharacter(player, new Location(int.Parse(data[2]), int.Parse(data[3]), int.Parse(data[4])), activeChar, "Admin is teleporting you.");
+					teleportCharacter(player, new Location(int.Parse(data[2]), int.Parse(data[3]), int.Parse(data[4]), 0), activeChar, "Admin is teleporting you.");
 				}
 			}
 			showMainPage(activeChar);
@@ -58,7 +59,7 @@ public class AdminMenu: IAdminCommandHandler
 			{
 				String targetName = command.Substring(23);
 				Player player = World.getInstance().getPlayer(targetName);
-				teleportCharacter(player, activeChar.getLocation(), activeChar, "Admin is teleporting you.");
+				teleportCharacter(player, activeChar.Location, activeChar, "Admin is teleporting you.");
 			}
 			catch (IndexOutOfRangeException e)
 			{
@@ -79,12 +80,12 @@ public class AdminMenu: IAdminCommandHandler
 				if (!player.isInParty())
 				{
 					BuilderUtil.sendSysMessage(activeChar, "Player is not in party.");
-					teleportCharacter(player, activeChar.getLocation(), activeChar, "Admin is teleporting you.");
+					teleportCharacter(player, activeChar.Location, activeChar, "Admin is teleporting you.");
 					return true;
 				}
 				foreach (Player pm in player.getParty().getMembers())
 				{
-					teleportCharacter(pm, activeChar.getLocation(), activeChar, "Your party is being teleported by an Admin.");
+					teleportCharacter(pm, activeChar.Location, activeChar, "Your party is being teleported by an Admin.");
 				}
 			}
 			catch (Exception e)
@@ -107,13 +108,13 @@ public class AdminMenu: IAdminCommandHandler
 				if (clan == null)
 				{
 					BuilderUtil.sendSysMessage(activeChar, "Player is not in a clan.");
-					teleportCharacter(player, activeChar.getLocation(), activeChar, "Admin is teleporting you.");
+					teleportCharacter(player, activeChar.Location, activeChar, "Admin is teleporting you.");
 					return true;
 				}
 				
 				foreach(Player member in clan.getOnlineMembers(0))
 				{
-					teleportCharacter(member, activeChar.getLocation(), activeChar, "Your clan is being teleported by an Admin.");
+					teleportCharacter(member, activeChar.Location, activeChar, "Your clan is being teleported by an Admin.");
 				}
 			}
 			catch (Exception e)
@@ -236,6 +237,7 @@ public class AdminMenu: IAdminCommandHandler
 			player.sendMessage(message);
 			player.teleToLocation(loc, true);
 		}
+
 		showMainPage(activeChar);
 	}
 	
@@ -254,7 +256,7 @@ public class AdminMenu: IAdminCommandHandler
 		}
 		else
 		{
-			activeChar.teleToLocation(player.getLocation(), true, player.getInstanceWorld());
+			activeChar.teleToLocation(player.Location, player.getInstanceWorld(), true);
 			BuilderUtil.sendSysMessage(activeChar, "You're teleporting yourself to character " + player.getName());
 		}
 		showMainPage(activeChar);

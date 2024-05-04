@@ -48,9 +48,9 @@ internal struct RequestMovePacket: IIncomingPacket<GameSession>
 		}
 
 		// Check for possible door logout and move over exploit. Also checked at ValidatePosition.
-		if (DoorData.getInstance().checkIfDoorsBetween(player.getLastServerPosition(), player.getLocation(), player.getInstanceWorld()))
+		if (DoorData.getInstance().checkIfDoorsBetween(player.getLastServerPosition(), player.Location.Location3D, player.getInstanceWorld()))
 		{
-			player.stopMove(player.getLastServerPosition());
+			player.stopMove(new Location(player.getLastServerPosition(), 0));
 			player.sendPacket(ActionFailedPacket.STATIC_PACKET);
 			return ValueTask.CompletedTask;
 		}
@@ -60,7 +60,7 @@ internal struct RequestMovePacket: IIncomingPacket<GameSession>
 			player.setCursorKeyMovement(false);
 			if (player.Events.HasSubscribers<OnPlayerMoveRequest>())
 			{
-				OnPlayerMoveRequest onPlayerMoveRequest = new(player, new Location(_target.X, _target.Y, _target.Z));
+				OnPlayerMoveRequest onPlayerMoveRequest = new(player, _target);
 				if (player.Events.Notify(onPlayerMoveRequest) && onPlayerMoveRequest.Terminate)
 				{
 					player.sendPacket(ActionFailedPacket.STATIC_PACKET);
@@ -76,7 +76,7 @@ internal struct RequestMovePacket: IIncomingPacket<GameSession>
 			}
 
 			player.setCursorKeyMovement(true);
-			player.setLastServerPosition(player.getX(), player.getY(), player.getZ());
+			player.setLastServerPosition(player.Location.Location3D);
 		}
 
 		// Correcting targetZ from floor level to head level.
@@ -90,7 +90,7 @@ internal struct RequestMovePacket: IIncomingPacket<GameSession>
 			case AdminTeleportType.DEMONIC:
 			{
 				player.sendPacket(ActionFailedPacket.STATIC_PACKET);
-				player.teleToLocation(new Location(_target.X, _target.Y, _target.Z));
+				player.teleToLocation(new Location(_target.X, _target.Y, _target.Z, player.getHeading()));
 				player.setTeleMode(AdminTeleportType.NORMAL);
 				break;
 			}
@@ -106,7 +106,7 @@ internal struct RequestMovePacket: IIncomingPacket<GameSession>
 			{
 				player.setXYZ(_target.X, _target.Y, _target.Z);
 				Broadcast.toSelfAndKnownPlayers(player, new MagicSkillUsePacket(player, 30012, 10, TimeSpan.FromMilliseconds(500), TimeSpan.Zero));
-				Broadcast.toSelfAndKnownPlayers(player, new FlyToLocationPacket(player, _target.X, _target.Y, _target.Z, FlyType.CHARGE));
+				Broadcast.toSelfAndKnownPlayers(player, new FlyToLocationPacket(player, new Location3D(_target.X, _target.Y, _target.Z), FlyType.CHARGE));
 				Broadcast.toSelfAndKnownPlayers(player, new MagicSkillLaunchedPacket(player, 30012, 10));
 				player.sendPacket(ActionFailedPacket.STATIC_PACKET);
 				break;
@@ -122,7 +122,7 @@ internal struct RequestMovePacket: IIncomingPacket<GameSession>
 					return ValueTask.CompletedTask;
 				}
 				
-				player.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, new Location(_target.X, _target.Y, _target.Z));
+				player.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, _target);
 				break;
 			}
 		}

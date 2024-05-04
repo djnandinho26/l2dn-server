@@ -7,6 +7,7 @@ using L2Dn.GameServer.Model.Skills;
 using L2Dn.GameServer.Network.OutgoingPackets;
 using L2Dn.GameServer.TaskManagers;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 
 namespace L2Dn.GameServer.AI;
 
@@ -23,7 +24,7 @@ public abstract class AbstractAI : Ctrl
 	/** Current long-term intention */
 	protected CtrlIntention _intention = CtrlIntention.AI_INTENTION_IDLE;
 	/** Current long-term intention parameter */
-	protected object[] _intentionArgs;
+	protected object?[]? _intentionArgs;
 	
 	/** Flags about client's state, in order to know which messages to send */
 	protected volatile bool _clientMoving;
@@ -33,12 +34,12 @@ public abstract class AbstractAI : Ctrl
 	protected int _clientMovingToPawnOffset;
 	
 	/** Different targets this AI maintains */
-	private WorldObject _target;
-	private WorldObject _castTarget;
+	private WorldObject? _target;
+	private WorldObject? _castTarget;
 	
 	/** The skill we are currently casting by INTENTION_CAST */
-	protected Skill _skill;
-	protected Item _item;
+	protected Skill? _skill;
+	protected Item? _item;
 	protected bool _forceUse;
 	protected bool _dontMove;
 	
@@ -94,29 +95,19 @@ public abstract class AbstractAI : Ctrl
 	 * @param args The first parameter of the Intention
 	 */
 	[MethodImpl(MethodImplOptions.Synchronized)]
-	protected virtual void changeIntention(CtrlIntention intention, params object[] args)
+	protected virtual void changeIntention(CtrlIntention intention, params object?[] args)
 	{
 		_intention = intention;
 		_intentionArgs = args;
 	}
-	
-	/**
-	 * Launch the CreatureAI onIntention method corresponding to the new Intention.<br>
-	 * <font color=#FF0000><b><u>Caution</u>: Stop the FOLLOW mode if necessary</b></font>
-	 * @param intention The new Intention to set to the AI
-	 */
-	public void setIntention(CtrlIntention intention)
-	{
-		setIntention(intention, null, null);
-	}
-	
+
 	/**
 	 * Launch the CreatureAI onIntention method corresponding to the new Intention.<br>
 	 * <font color=#FF0000><b><u>Caution</u>: Stop the FOLLOW mode if necessary</b></font>
 	 * @param intention The new Intention to set to the AI
 	 * @param args The first parameters of the Intention (optional target)
 	 */
-	public void setIntention(CtrlIntention intention, params object[] args)
+	public void setIntention(CtrlIntention intention, params object?[] args)
 	{
 		// Stop the follow mode if necessary
 		if ((intention != CtrlIntention.AI_INTENTION_FOLLOW) && (intention != CtrlIntention.AI_INTENTION_ATTACK))
@@ -144,32 +135,34 @@ public abstract class AbstractAI : Ctrl
 			}
 			case CtrlIntention.AI_INTENTION_ATTACK:
 			{
-				onIntentionAttack((Creature) args[0]);
+				onIntentionAttack((Creature)args[0]);
 				break;
 			}
 			case CtrlIntention.AI_INTENTION_CAST:
 			{
-				onIntentionCast((Skill) args[0], (WorldObject) args[1], args.Length > 2 ? (Item) args[2] : null, (args.Length > 3) && (bool) args[3], (args.Length > 4) && (bool) args[4]);
+				onIntentionCast((Skill)args[0], (WorldObject)args[1], args.Length > 2 ? (Item)args[2] : null,
+					(args.Length > 3) && (bool)args[3], (args.Length > 4) && (bool)args[4]);
+
 				break;
 			}
 			case CtrlIntention.AI_INTENTION_MOVE_TO:
 			{
-				onIntentionMoveTo((ILocational) args[0]);
+				onIntentionMoveTo((Location3D)args[0]);
 				break;
 			}
 			case CtrlIntention.AI_INTENTION_FOLLOW:
 			{
-				onIntentionFollow((Creature) args[0]);
+				onIntentionFollow((Creature)args[0]);
 				break;
 			}
 			case CtrlIntention.AI_INTENTION_PICK_UP:
 			{
-				onIntentionPickUp((WorldObject) args[0]);
+				onIntentionPickUp((WorldObject)args[0]);
 				break;
 			}
 			case CtrlIntention.AI_INTENTION_INTERACT:
 			{
-				onIntentionInteract((WorldObject) args[0]);
+				onIntentionInteract((WorldObject)args[0]);
 				break;
 			}
 		}
@@ -284,12 +277,12 @@ public abstract class AbstractAI : Ctrl
 			}
 			case CtrlEvent.EVT_ARRIVED_BLOCKED:
 			{
-				onEvtArrivedBlocked((Location) arg0);
+				onEvtArrivedBlocked((Location)arg0);
 				break;
 			}
 			case CtrlEvent.EVT_FORGET_OBJECT:
 			{
-				WorldObject worldObject = (WorldObject) arg0;
+				WorldObject worldObject = (WorldObject)arg0;
 				_actor.removeSeenCreature(worldObject);
 				onEvtForgetObject(worldObject);
 				break;
@@ -333,7 +326,7 @@ public abstract class AbstractAI : Ctrl
 	
 	protected abstract void onIntentionCast(Skill skill, WorldObject target, Item item, bool forceUse, bool dontMove);
 	
-	protected abstract void onIntentionMoveTo(ILocational destination);
+	protected abstract void onIntentionMoveTo(Location3D destination);
 	
 	protected abstract void onIntentionFollow(Creature target);
 	
@@ -434,7 +427,7 @@ public abstract class AbstractAI : Ctrl
 			}
 			
 			// Calculate movement data for a move to location action and add the actor to movingObjects of GameTimeTaskManager
-			_actor.moveToLocation(pawn.getX(), pawn.getY(), pawn.getZ(), offset);
+			_actor.moveToLocation(pawn.Location.Location3D, offset);
 			
 			// May result to make monsters stop moving.
 			// if (!_actor.isMoving())
@@ -470,12 +463,7 @@ public abstract class AbstractAI : Ctrl
 			clientActionFailed();
 		}
 	}
-	
-	public void moveTo(ILocational loc)
-	{
-		moveTo(loc.getX(), loc.getY(), loc.getZ());
-	}
-	
+
 	/**
 	 * Move the actor to Location (x,y,z) server side AND client side by sending Server->Client packet MoveToLocation <i>(broadcast)</i>.<br>
 	 * <font color=#FF0000><b><u>Caution</u>: Low level function, used by AI subclasses</b></font>
@@ -483,7 +471,7 @@ public abstract class AbstractAI : Ctrl
 	 * @param y
 	 * @param z
 	 */
-	protected virtual void moveTo(int x, int y, int z)
+	public virtual void moveTo(Location3D location)
 	{
 		// Check if actor can move
 		if (!_actor.isMovementDisabled())
@@ -493,7 +481,7 @@ public abstract class AbstractAI : Ctrl
 			_clientMovingToPawnOffset = 0;
 			
 			// Calculate movement data for a move to location action and add the actor to movingObjects of GameTimeTaskManager
-			_actor.moveToLocation(x, y, z, 0);
+			_actor.moveToLocation(location, 0);
 			
 			// Send a Server->Client packet MoveToLocation to the actor and all Player in its _knownPlayers
 			_actor.broadcastMoveToLocation();
@@ -509,7 +497,7 @@ public abstract class AbstractAI : Ctrl
 	 * <font color=#FF0000><b><u>Caution</u>: Low level function, used by AI subclasses</b></font>
 	 * @param loc
 	 */
-	public virtual void clientStopMoving(Location loc)
+	public virtual void clientStopMoving(Location? loc) // TODO: overload without argument
 	{
 		// Stop movement of the Creature
 		if (_actor.isMoving())

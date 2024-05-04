@@ -6,6 +6,7 @@ using L2Dn.GameServer.Model.Items.Instances;
 using L2Dn.GameServer.Model.Skills;
 using L2Dn.GameServer.Network.OutgoingPackets;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Utilities;
 using ThreadPool = L2Dn.GameServer.Utilities.ThreadPool;
 
@@ -26,49 +27,36 @@ public class TamedBeast: FeedableBeast
 	private const int DURATION_INCREASE_INTERVAL = 20000; // 20 secs (gained upon feeding)
 	private const int BUFF_INTERVAL = 5000; // 5 seconds
 	private int _remainingTime = MAX_DURATION;
-	private int _homeX;
-	private int _homeY;
-	private int _homeZ;
+	private Location3D _homeLocation;
 	protected Player _owner;
-	private ScheduledFuture _buffTask = null;
-	private ScheduledFuture _durationCheckTask = null;
+	private ScheduledFuture _buffTask;
+	private ScheduledFuture _durationCheckTask;
 	protected bool _isFreyaBeast;
-	private Set<Skill> _beastSkills = null;
+	private Set<Skill> _beastSkills;
 	
 	public TamedBeast(int npcTemplateId): base(NpcData.getInstance().getTemplate(npcTemplateId))
 	{
 		setInstanceType(InstanceType.TamedBeast);
 		setHome(this);
 	}
-	
-	public TamedBeast(int npcTemplateId, Player owner, int foodSkillId, int x, int y, int z): base(NpcData.getInstance().getTemplate(npcTemplateId))
-	{
-		_isFreyaBeast = false;
-		setInstanceType(InstanceType.TamedBeast);
-		setCurrentHp(getMaxHp());
-		setCurrentMp(getMaxMp());
-		setOwner(owner);
-		setFoodType(foodSkillId);
-		setHome(x, y, z);
-		spawnMe(x, y, z);
-	}
-	
-	public TamedBeast(int npcTemplateId, Player owner, int food, int x, int y, int z, bool isFreyaBeast): base(NpcData.getInstance().getTemplate(npcTemplateId))
+
+	public TamedBeast(int npcTemplateId, Player owner, int foodSkillId, Location3D location,
+		bool isFreyaBeast = false): base(NpcData.getInstance().getTemplate(npcTemplateId))
 	{
 		_isFreyaBeast = isFreyaBeast;
 		setInstanceType(InstanceType.TamedBeast);
 		setCurrentHp(getMaxHp());
 		setCurrentMp(getMaxMp());
-		setFoodType(food);
-		setHome(x, y, z);
-		spawnMe(x, y, z);
+		setFoodType(foodSkillId);
+		setHome(location);
+		spawnMe(location);
 		setOwner(owner);
 		if (isFreyaBeast)
 		{
 			getAI().setIntention(CtrlIntention.AI_INTENTION_FOLLOW, _owner);
 		}
 	}
-	
+
 	public void onReceiveFood()
 	{
 		// Eating food extends the duration by 20secs, to a max of 20minutes
@@ -79,21 +67,19 @@ public class TamedBeast: FeedableBeast
 		}
 	}
 	
-	public Location getHome()
+	public Location3D getHome()
 	{
-		return new Location(_homeX, _homeY, _homeZ);
+		return _homeLocation;
 	}
 	
-	public void setHome(int x, int y, int z)
+	public void setHome(Location3D location)
 	{
-		_homeX = x;
-		_homeY = y;
-		_homeZ = z;
+		_homeLocation = location;
 	}
 	
 	public void setHome(Creature c)
 	{
-		setHome(c.getX(), c.getY(), c.getZ());
+		setHome(c.Location.Location3D);
 	}
 	
 	public int getRemainingTime()
@@ -265,7 +251,7 @@ public class TamedBeast: FeedableBeast
 	
 	public bool isTooFarFromHome()
 	{
-		return !isInsideRadius3D(_homeX, _homeY, _homeZ, MAX_DISTANCE_FROM_HOME);
+		return !this.IsInsideRadius3D(_homeLocation, MAX_DISTANCE_FROM_HOME);
 	}
 	
 	public override bool deleteMe()
@@ -304,7 +290,7 @@ public class TamedBeast: FeedableBeast
 			return;
 		}
 		// if the owner is too far away, stop anything else and immediately run towards the owner.
-		if (!_owner.isInsideRadius3D(this, MAX_DISTANCE_FROM_OWNER))
+		if (!_owner.IsInsideRadius3D(this, MAX_DISTANCE_FROM_OWNER))
 		{
 			getAI().startFollow(_owner);
 			return;
@@ -472,7 +458,7 @@ public class TamedBeast: FeedableBeast
 				return;
 			}
 			// if the owner is too far away, stop anything else and immediately run towards the owner.
-			if (!_tamedBeast.isInsideRadius3D(owner, MAX_DISTANCE_FROM_OWNER))
+			if (!_tamedBeast.IsInsideRadius3D(owner, MAX_DISTANCE_FROM_OWNER))
 			{
 				_tamedBeast.getAI().startFollow(owner);
 				return;

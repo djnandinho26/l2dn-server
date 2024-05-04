@@ -19,6 +19,7 @@ using L2Dn.GameServer.Model.Zones;
 using L2Dn.GameServer.Network.Enums;
 using L2Dn.GameServer.Network.OutgoingPackets;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Model.Enums;
 using L2Dn.Utilities;
 using NLog;
@@ -250,13 +251,13 @@ public class SkillCaster: Runnable
 		if (target != caster)
 		{
 			// Face the target
-			caster.setHeading(Util.calculateHeadingFrom(caster, target));
+			caster.setHeading(caster.HeadingTo(target));
 			caster.broadcastPacket(new ExRotationPacket(caster.getObjectId(), caster.getHeading())); // TODO: Not sent in retail. Probably moveToPawn is enough
 			
 			// Send MoveToPawn packet to trigger Blue Bubbles on target become Red, but don't do it while (double) casting, because that will screw up animation... some fucked up stuff, right?
 			if (caster.isPlayer() && !caster.isCastingNow() && target.isCreature())
 			{
-				caster.sendPacket(new MoveToPawnPacket(caster, target, (int) caster.calculateDistance2D(target)));
+				caster.sendPacket(new MoveToPawnPacket(caster, target, (int)caster.Distance2D(target)));
 				caster.sendPacket(ActionFailedPacket.STATIC_PACKET);
 			}
 		}
@@ -291,11 +292,12 @@ public class SkillCaster: Runnable
 			if (caster.isPlayer() && (_skill.getTargetType() == TargetType.GROUND) && (_skill.getAffectScope() == AffectScope.FAN_PB))
 			{
 				Player player = caster.getActingPlayer();
-				Location worldPosition = player.getCurrentSkillWorldPosition();
+				Location3D? worldPosition = player.getCurrentSkillWorldPosition();
 				if (worldPosition != null)
 				{
-					Location location = new Location(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), worldPosition.getHeading());
-					ThreadPool.schedule(() => player.broadcastPacket(new ExMagicSkillUseGroundPacket(player.getObjectId(), _skill.getDisplayId(), location)), 100);
+					ThreadPool.schedule(
+						() => player.broadcastPacket(new ExMagicSkillUseGroundPacket(player.getObjectId(),
+							_skill.getDisplayId(), worldPosition.Value)), 100);
 				}
 			}
 		}
@@ -536,11 +538,12 @@ public class SkillCaster: Runnable
 		caster.rechargeShots(_skill.useSoulShot(), _skill.useSpiritShot(), false);
 		
 		// Reset current skill world position.
-		if (caster.isPlayer() && (_skill.getTargetType() == TargetType.GROUND) && ((_skill.getAffectScope() == AffectScope.FAN_PB) || (_skill.getAffectScope() == AffectScope.FAN)))
+		if (caster.isPlayer() && (_skill.getTargetType() == TargetType.GROUND) &&
+		    ((_skill.getAffectScope() == AffectScope.FAN_PB) || (_skill.getAffectScope() == AffectScope.FAN)))
 		{
 			caster.getActingPlayer().setCurrentSkillWorldPosition(null);
 		}
-		
+
 		return true;
 	}
 	
@@ -1213,7 +1216,7 @@ public class SkillCaster: Runnable
 				if (creature == target)
 				{
 					double course = double.DegreesToRadians(180);
-					double radian = double.DegreesToRadians(Util.convertHeadingToDegree(creature.getHeading()));
+					double radian = double.DegreesToRadians(HeadingUtil.ConvertHeadingToDegrees(creature.getHeading()));
 					x = target.getX() + (int) (Math.Cos(Math.PI + radian + course) * _skill.getCastRange());
 					y = target.getY() + (int) (Math.Sin(Math.PI + radian + course) * _skill.getCastRange());
 					z = target.getZ();
@@ -1229,7 +1232,7 @@ public class SkillCaster: Runnable
 			case SkillOperateType.DA3:
 			{
 				flyType = FlyType.WARP_BACK;
-				double radian = double.DegreesToRadians(Util.convertHeadingToDegree(creature.getHeading()));
+				double radian = double.DegreesToRadians(HeadingUtil.ConvertHeadingToDegrees(creature.getHeading()));
 				x = creature.getX() + (int) (Math.Cos(Math.PI + radian) * _skill.getCastRange());
 				y = creature.getY() + (int) (Math.Sin(Math.PI + radian) * _skill.getCastRange());
 				z = creature.getZ();
@@ -1239,7 +1242,7 @@ public class SkillCaster: Runnable
 			case SkillOperateType.DA5:
 			{
 				double course = _skill.getOperateType() == SkillOperateType.DA4 ? double.DegreesToRadians(270) : double.DegreesToRadians(90);
-				double radian = double.DegreesToRadians(Util.convertHeadingToDegree(target.getHeading()));
+				double radian = double.DegreesToRadians(HeadingUtil.ConvertHeadingToDegrees(target.getHeading()));
 				double nRadius = creature.getCollisionRadius();
 				if (target.isCreature())
 				{
@@ -1251,9 +1254,12 @@ public class SkillCaster: Runnable
 				break;
 			}
 		}
-		
-		Location destination = creature.isFlying() ? new Location(x, y, z) : GeoEngine.getInstance().getValidLocation(creature.getX(), creature.getY(), creature.getZ(), x, y, z, creature.getInstanceWorld());
-		
+
+		Location3D loc = new(x, y, z);
+		Location3D destination = creature.isFlying()
+			? loc
+			: GeoEngine.getInstance().getValidLocation(creature.Location.Location3D, loc, creature.getInstanceWorld());
+
 		creature.getAI().setIntention(CtrlIntention.AI_INTENTION_IDLE);
 		creature.broadcastPacket(new FlyToLocationPacket(creature, destination, flyType, 0, 0, 333));
 		creature.setXYZ(destination);

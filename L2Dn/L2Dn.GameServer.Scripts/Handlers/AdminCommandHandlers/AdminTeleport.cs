@@ -15,6 +15,7 @@ using L2Dn.GameServer.Model.Html;
 using L2Dn.GameServer.Network.Enums;
 using L2Dn.GameServer.Network.OutgoingPackets;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Model.Enums;
 using Microsoft.EntityFrameworkCore;
 using NLog;
@@ -106,7 +107,7 @@ public class AdminTeleport: IAdminCommandHandler
 				int x = int.Parse(st.nextToken());
 				int y = int.Parse(st.nextToken());
 				int z = int.Parse(st.nextToken());
-				activeChar.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, new Location(x, y, z, 0));
+				activeChar.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, new Location3D(x, y, z));
 			}
 			catch (Exception e)
 			{
@@ -164,8 +165,8 @@ public class AdminTeleport: IAdminCommandHandler
 				st.nextToken();
 				int x = (int) float.Parse(st.nextToken(), CultureInfo.InvariantCulture);
 				int y = (int) float.Parse(st.nextToken(), CultureInfo.InvariantCulture);
-				int z = st.hasMoreTokens() ? ((int) float.Parse(st.nextToken(), CultureInfo.InvariantCulture)) : GeoEngine.getInstance().getHeight(x, y, 10000);
-				activeChar.teleToLocation(x, y, z);
+				int z = st.hasMoreTokens() ? ((int) float.Parse(st.nextToken(), CultureInfo.InvariantCulture)) : GeoEngine.getInstance().getHeight(new Location3D(x, y, 10000));
+				activeChar.teleToLocation(new Location3D(x, y, z));
 			}
 			catch (Exception e)
 			{
@@ -186,7 +187,7 @@ public class AdminTeleport: IAdminCommandHandler
 				Player player = World.getInstance().getPlayer(targetName);
 				if (player != null)
 				{
-					teleportCharacter(player, activeChar.getLocation(), activeChar);
+					teleportCharacter(player, activeChar.Location.Location3D, activeChar);
 				}
 				else
 				{
@@ -240,7 +241,7 @@ public class AdminTeleport: IAdminCommandHandler
 				{
 					z -= intVal;
 				}
-				activeChar.teleToLocation(new Location(x, y, z));
+				activeChar.teleToLocation(new Location(x, y, z, 0));
 				showTeleportWindow(activeChar);
 			}
 			catch (Exception e)
@@ -330,7 +331,7 @@ public class AdminTeleport: IAdminCommandHandler
 			}
 		}
 		
-		player.teleToLocation(MapRegionManager.getInstance().getMapRegionByName(regionName).getSpawnLoc(), true, null);
+		player.teleToLocation(MapRegionManager.getInstance().getMapRegionByName(regionName).getSpawnLoc(), true);
 	}
 	
 	private void teleportTo(Player activeChar, String coords)
@@ -342,7 +343,7 @@ public class AdminTeleport: IAdminCommandHandler
 			int y = int.Parse(st.nextToken());
 			int z = int.Parse(st.nextToken());
 			activeChar.getAI().setIntention(CtrlIntention.AI_INTENTION_IDLE);
-			activeChar.teleToLocation(x, y, z, null);
+			activeChar.teleToLocation(new Location(x, y, z, 0), null);
 			BuilderUtil.sendSysMessage(activeChar, "You have been teleported to " + coords);
 		}
 		catch (Exception nsee)
@@ -410,7 +411,7 @@ public class AdminTeleport: IAdminCommandHandler
 				int y = int.Parse(y1);
 				String z1 = st.nextToken();
 				int z = int.Parse(z1);
-				teleportCharacter(player, new Location(x, y, z), null);
+				teleportCharacter(player, new Location3D(x, y, z), null);
 			}
 			catch (Exception nsee)
 			{
@@ -423,7 +424,7 @@ public class AdminTeleport: IAdminCommandHandler
 	 * @param loc
 	 * @param activeChar
 	 */
-	private void teleportCharacter(Player player, Location loc, Player activeChar)
+	private void teleportCharacter(Player player, Location3D loc, Player activeChar)
 	{
 		if (player != null)
 		{
@@ -437,7 +438,7 @@ public class AdminTeleport: IAdminCommandHandler
 				BuilderUtil.sendSysMessage(activeChar, "You have recalled " + player.getName());
 				player.sendMessage("Admin is teleporting you.");
 				player.getAI().setIntention(CtrlIntention.AI_INTENTION_IDLE);
-				player.teleToLocation(loc, true, activeChar.getInstanceWorld());
+				player.teleToLocation(loc, activeChar.getInstanceWorld(), true);
 			}
 		}
 	}
@@ -458,7 +459,7 @@ public class AdminTeleport: IAdminCommandHandler
 		else
 		{
 			activeChar.getAI().setIntention(CtrlIntention.AI_INTENTION_IDLE);
-			activeChar.teleToLocation(player, true, player.getInstanceWorld());
+			activeChar.teleToLocation(player.Location, player.getInstanceWorld(), true);
 			BuilderUtil.sendSysMessage(activeChar, "You have teleported to character " + player.getName() + ".");
 		}
 	}
@@ -520,9 +521,8 @@ public class AdminTeleport: IAdminCommandHandler
 			try
 			{
 				spawn = new Spawn(template1);
-				spawn.Location.setXYZ(activeChar);
+				spawn.Location = activeChar.Location;
 				spawn.setAmount(1);
-				spawn.Location.setHeading(activeChar.getHeading());
 				spawn.setRespawnDelay(respawnTime);
 				if (activeChar.isInInstance())
 				{
@@ -554,17 +554,16 @@ public class AdminTeleport: IAdminCommandHandler
 				LOGGER.Warn("ERROR: NPC Id" + target.getId() + " has a 'null' spawn.");
 				return;
 			}
-			DBSpawnManager.getInstance().deleteSpawn(spawn, true);
+			DbSpawnManager.getInstance().deleteSpawn(spawn, true);
 			try
 			{
 				Spawn spawnDat = new Spawn(target.getId());
-				spawnDat.Location.setXYZ(activeChar);
+				spawnDat.Location = activeChar.Location;
 				spawnDat.setAmount(1);
-				spawnDat.Location.setHeading(activeChar.getHeading());
 				spawnDat.setRespawnMinDelay(TimeSpan.FromSeconds(43200));
 				spawnDat.setRespawnMaxDelay(TimeSpan.FromSeconds(129600));
 				
-				DBSpawnManager.getInstance().addNewSpawn(spawnDat, null, curHP, curMP, true);
+				DbSpawnManager.getInstance().addNewSpawn(spawnDat, null, curHP, curMP, true);
 			}
 			catch (Exception e)
 			{

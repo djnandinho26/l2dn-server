@@ -33,6 +33,7 @@ using L2Dn.GameServer.Network.Enums;
 using L2Dn.GameServer.Network.OutgoingPackets;
 using L2Dn.GameServer.TaskManagers;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Model.Enums;
 using L2Dn.Packets;
 using L2Dn.Utilities;
@@ -60,7 +61,7 @@ namespace L2Dn.GameServer.Model.Actor;
  * This link is stored in {@link #_template}
  * @version $Revision: 1.53.2.45.2.34 $ $Date: 2005/04/11 10:06:08 $
  */
-public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventContainerProvider
+public abstract class Creature: WorldObject, ISkillsHolder, IEventContainerProvider
 {
 	public static readonly Logger LOGGER = LogManager.GetLogger(nameof(Creature));
 	
@@ -104,7 +105,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 	private bool _allSkillsDisabled;
 	
 	private readonly byte[] _zones = new byte[(int)EnumUtil.GetMaxValue<ZoneId>() + 1];
-	protected readonly Location _lastZoneValidateLocation;
+	protected Location3D _lastZoneValidateLocation;
 	
 	private readonly object _attackLock = new();
 	
@@ -215,7 +216,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 
 		_effectList = new EffectList(this);
 		_isRunning = isPlayer();
-		_lastZoneValidateLocation = new Location(base.getX(), base.getY(), base.getZ());
+		_lastZoneValidateLocation = new Location3D(base.getX(), base.getY(), base.getZ());
 		
 		setInstanceType(InstanceType.Creature);
 		// Set its template to the new Creature
@@ -467,21 +468,21 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 				getActingPlayer().stopTimedHuntingZoneTask();
 				abortCast();
 				stopMove(null);
-				teleToLocation(MapRegionManager.getInstance().getTeleToLocation(this, TeleportWhereType.TOWN));
+				this.teleToLocation(TeleportWhereType.TOWN);
 				setInstance(null);
 			}
 			else if (Config.DISCONNECT_AFTER_DEATH)
 			{
 				SystemMessagePacket sm = new SystemMessagePacket(SystemMessageId
 					.SIXTY_MIN_HAVE_PASSED_AFTER_THE_DEATH_OF_YOUR_CHARACTER_SO_YOU_WERE_DISCONNECTED_FROM_THE_GAME);
-				
+
 				Disconnection.of(getActingPlayer()).deleteMe().defaultSequence(ref sm);
 			}
 		}
 		else
 		{
 			decayMe();
-			ZoneRegion region = ZoneManager.getInstance().getRegion(this);
+			ZoneRegion? region = ZoneManager.getInstance().getRegion(Location.Location2D);
 			if (region != null)
 			{
 				region.removeFromZones(this);
@@ -543,7 +544,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 			return;
 		}
 		
-		spawnMe(getX(), getY(), getZ());
+		spawnMe(Location.Location3D);
 		setTeleporting(false);
 
 		if (_eventContainer.HasSubscribers<OnCreatureTeleported>())
@@ -751,23 +752,20 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 	 * @param headingValue
 	 * @param instanceValue
 	 */
-	public void teleToLocation(int xValue, int yValue, int zValue, int headingValue, Instance instanceValue)
+	public virtual void teleToLocation(Location location, Instance? instance)
 	{
 		// Prevent teleporting for players that disconnected unexpectedly.
 		if (isPlayer() && !getActingPlayer().isOnline())
 		{
 			return;
 		}
-		
-		int x = xValue;
-		int y = yValue;
-		int z = _isFlying ? zValue : GeoEngine.getInstance().getHeight(x, y, zValue);
-		int heading = headingValue;
-		Instance instance = instanceValue;
+
+		if (!_isFlying)
+			location = location with { Z = GeoEngine.getInstance().getHeight(location.Location3D) };
 
 		if (_eventContainer.HasSubscribers<OnCreatureTeleport>())
 		{
-			OnCreatureTeleport onCreatureTeleport = new(this, x, y, z, heading, instance);
+			OnCreatureTeleport onCreatureTeleport = new(this, location, instance);
 			if (_eventContainer.Notify(onCreatureTeleport))
 			{
 				if (onCreatureTeleport.Terminate)
@@ -775,14 +773,11 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 					return;
 				}
 
-				if (onCreatureTeleport.OverrideLocation)
-				{
-					x = onCreatureTeleport.OverridenLocation.getX();
-					y = onCreatureTeleport.OverridenLocation.getY();
-					z = onCreatureTeleport.OverridenLocation.getZ();
-					heading = onCreatureTeleport.OverridenLocation.getHeading();
+				if (onCreatureTeleport.OverridenLocation != null)
+					location = onCreatureTeleport.OverridenLocation.Value;
+
+				if (onCreatureTeleport.OverridenInstance != null)
 					instance = onCreatureTeleport.OverridenInstance;
-				}
 			}
 		}
 
@@ -791,7 +786,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 		{
 			doRevive();
 		}
-		
+
 		// Abort any client actions, casting and remove target.
 		sendPacket(new ActionFailedPacket(SkillCastingType.NORMAL));
 		sendPacket(new ActionFailedPacket(SkillCastingType.NORMAL_SECOND));
@@ -801,32 +796,32 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 		}
 		abortCast();
 		setTarget(null);
-		
+
 		setTeleporting(true);
-		
+
 		getAI().setIntention(CtrlIntention.AI_INTENTION_ACTIVE);
-		
+
 		// Remove the object from its old location.
 		decayMe();
-		
+
 		// Adjust position a bit.
-		z += 5;
-		
+		location = location with { Z = location.Z + 5 };
+
 		// Send teleport packet where needed.
-		broadcastPacket(new TeleportToLocationPacket(this, x, y, z, heading));
-		
+		broadcastPacket(new TeleportToLocationPacket(getObjectId(), location));
+
 		// Change instance world.
 		if (getInstanceWorld() != instance)
 		{
 			setInstance(instance);
 		}
-		
+
 		// Set the x,y,z position of the WorldObject and if necessary modify its _worldRegion.
-		setXYZ(x, y, z);
+		setXYZ(location.Location3D);
 		// Also adjust heading.
-		if (heading != 0)
+		if (location.Heading != 0)
 		{
-			setHeading(heading);
+			setHeading(location.Heading);
 		}
 		
 		// Send teleport finished packet to player.
@@ -837,90 +832,8 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 		{
 			onTeleported();
 		}
-		
+
 		revalidateZone(true);
-	}
-	
-	public void teleToLocation(int x, int y, int z)
-	{
-		teleToLocation(x, y, z, 0, getInstanceWorld());
-	}
-	
-	public void teleToLocation(int x, int y, int z, Instance instance)
-	{
-		teleToLocation(x, y, z, 0, instance);
-	}
-	
-	public void teleToLocation(int x, int y, int z, int heading)
-	{
-		teleToLocation(x, y, z, heading, getInstanceWorld());
-	}
-	
-	public void teleToLocation(int x, int y, int z, int heading, bool randomOffset)
-	{
-		teleToLocation(x, y, z, heading, randomOffset ? Config.MAX_OFFSET_ON_TELEPORT : 0, getInstanceWorld());
-	}
-	
-	public void teleToLocation(int x, int y, int z, int heading, bool randomOffset, Instance instance)
-	{
-		teleToLocation(x, y, z, heading, randomOffset ? Config.MAX_OFFSET_ON_TELEPORT : 0, instance);
-	}
-	
-	public void teleToLocation(int x, int y, int z, int heading, int randomOffset)
-	{
-		teleToLocation(x, y, z, heading, randomOffset, getInstanceWorld());
-	}
-	
-	public void teleToLocation(int xValue, int yValue, int z, int heading, int randomOffset, Instance instance)
-	{
-		int x = xValue;
-		int y = yValue;
-		if (Config.OFFSET_ON_TELEPORT_ENABLED && randomOffset > 0)
-		{
-			x += Rnd.get(-randomOffset, randomOffset);
-			y += Rnd.get(-randomOffset, randomOffset);
-		}
-		teleToLocation(x, y, z, heading, instance);
-	}
-	
-	public void teleToLocation(ILocational loc)
-	{
-		teleToLocation(loc.getX(), loc.getY(), loc.getZ(), loc.getHeading());
-	}
-	
-	public void teleToLocation(ILocational loc, Instance instance)
-	{
-		teleToLocation(loc.getX(), loc.getY(), loc.getZ(), loc.getHeading(), instance);
-	}
-	
-	public void teleToLocation(ILocational loc, int randomOffset)
-	{
-		teleToLocation(loc.getX(), loc.getY(), loc.getZ(), loc.getHeading(), randomOffset);
-	}
-	
-	public void teleToLocation(ILocational loc, int randomOffset, Instance instance)
-	{
-		teleToLocation(loc.getX(), loc.getY(), loc.getZ(), loc.getHeading(), randomOffset, instance);
-	}
-	
-	public virtual void teleToLocation(ILocational loc, bool randomOffset)
-	{
-		teleToLocation(loc.getX(), loc.getY(), loc.getZ(), loc.getHeading(), randomOffset ? Config.MAX_OFFSET_ON_TELEPORT : 0);
-	}
-	
-	public void teleToLocation(ILocational loc, bool randomOffset, Instance instance)
-	{
-		teleToLocation(loc.getX(), loc.getY(), loc.getZ(), loc.getHeading(), randomOffset, instance);
-	}
-	
-	public void teleToLocation(TeleportWhereType teleportWhere)
-	{
-		teleToLocation(teleportWhere, getInstanceWorld());
-	}
-	
-	public void teleToLocation(TeleportWhereType teleportWhere, Instance instance)
-	{
-		teleToLocation(MapRegionManager.getInstance().getTeleToLocation(this, teleportWhere), true, instance);
 	}
 
 	/**
@@ -1114,7 +1027,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 			// Mobius: Do not move when attack is launched.
 			if (isMoving())
 			{
-				stopMove(getLocation());
+				stopMove(Location);
 			}
 
 			WeaponType attackType = getAttackType();
@@ -1131,7 +1044,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 
 			// Make sure that char is facing selected target
 			// also works: setHeading(Util.convertDegreeToClientHeading(Util.calculateAngleFrom(this, target)));
-			setHeading(Util.calculateHeadingFrom(this, target));
+			setHeading(new Location2D(getX(), getY()).HeadingTo(new Location2D(target.getX(), target.getY())));
 
 			// Always try to charge soulshots.
 			if (!isChargedShot(ShotType.SOULSHOTS) && !isChargedShot(ShotType.BLESSED_SOULSHOTS))
@@ -1284,7 +1197,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 		int attackCountMax = (int) _stat.getValue(Stat.ATTACK_COUNT_MAX, 1);
 		if (attackCountMax > 1 && _stat.getValue(Stat.PHYSICAL_POLEARM_TARGET_SINGLE, 0) <= 0)
 		{
-			double headingAngle = Util.convertHeadingToDegree(getHeading());
+			double headingAngle = HeadingUtil.ConvertHeadingToDegrees(getHeading());
 			int maxRadius = _stat.getPhysicalAttackRadius();
 			int physicalAttackAngle = _stat.getPhysicalAttackAngle();
 			foreach (Creature obj in World.getInstance().getVisibleObjectsInRange<Creature>(this, maxRadius))
@@ -1308,7 +1221,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 				}
 				
 				// Check if target is within attack angle.
-				if (Math.Abs(calculateDirectionTo(obj) - headingAngle) > physicalAttackAngle)
+				if (Math.Abs(this.AngleDegreesTo(obj) - headingAngle) > physicalAttackAngle)
 				{
 					continue;
 				}
@@ -1811,7 +1724,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 			getAI().notifyEvent(CtrlEvent.EVT_DEAD);
 		}
 		
-		ZoneManager.getInstance().getRegion(this).onDeath(this);
+		ZoneManager.getInstance().getRegion(Location.Location2D)?.onDeath(this);
 		
 		getAttackByList().clear();
 		
@@ -1924,7 +1837,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 			
 			// Start broadcast status
 			broadcastPacket(new RevivePacket(this));
-			ZoneManager.getInstance().getRegion(this).onRevive(this);
+			ZoneManager.getInstance().getRegion(Location.Location2D)?.onRevive(this);
 		}
 		else
 		{
@@ -3201,7 +3114,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 			// In case of cursor movement, avoid moving through obstacles.
 			if (_cursorKeyMovement)
 			{
-				double angle = Util.convertHeadingToDegree(getHeading());
+				double angle = HeadingUtil.ConvertHeadingToDegrees(getHeading());
 				double radian = double.DegreesToRadians(angle);
 				double course = double.DegreesToRadians(180);
 				double frontDistance = 10 * (1.0 * _stat.getMoveSpeed() / 100);
@@ -3209,10 +3122,10 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 				int y1 = (int) (Math.Sin(Math.PI + radian + course) * frontDistance);
 				int x = xPrev + x1;
 				int y = yPrev + y1;
-				if (!GeoEngine.getInstance().canMoveToTarget(xPrev, yPrev, zPrev, x, y, zPrev, getInstanceWorld()))
+				if (!GeoEngine.getInstance().canMoveToTarget(new Location3D(xPrev, yPrev, zPrev), new Location3D(x, y, zPrev), getInstanceWorld()))
 				{
 					_move.onGeodataPathIndex = -1;
-					stopMove(getActingPlayer().getLastServerPosition());
+					stopMove(new Location(getActingPlayer().getLastServerPosition(), 0));
 					return false;
 				}
 			}
@@ -3222,7 +3135,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 				double distance = MathUtil.hypot(dx, dy);
 				if (distance > 3000)
 				{
-					double angle = Util.convertHeadingToDegree(getHeading());
+					double angle = HeadingUtil.ConvertHeadingToDegrees(getHeading());
 					double radian = double.DegreesToRadians(angle);
 					double course = double.DegreesToRadians(180);
 					double frontDistance = 10 * (1.0 * _stat.getMoveSpeed() / 100);
@@ -3230,7 +3143,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 					int y1 = (int) (Math.Sin(Math.PI + radian + course) * frontDistance);
 					int x = xPrev + x1;
 					int y = yPrev + y1;
-					if (!GeoEngine.getInstance().canMoveToTarget(xPrev, yPrev, zPrev, x, y, zPrev, getInstanceWorld()))
+					if (!GeoEngine.getInstance().canMoveToTarget(new Location3D(xPrev, yPrev, zPrev), new Location3D(x, y, zPrev), getInstanceWorld()))
 					{
 						_move.onGeodataPathIndex = -1;
 						if (hasAI())
@@ -3249,7 +3162,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 					// Support for player attack with direct movement. Tested at retail on May 11th 2023.
 					if (hasAI() && getAI().getIntention() == CtrlIntention.AI_INTENTION_ATTACK)
 					{
-						double angle = Util.convertHeadingToDegree(getHeading());
+						double angle = HeadingUtil.ConvertHeadingToDegrees(getHeading());
 						double radian = double.DegreesToRadians(angle);
 						double course = double.DegreesToRadians(180);
 						double frontDistance = 10 * (1.0 * _stat.getMoveSpeed() / 100);
@@ -3257,7 +3170,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 						int y1 = (int) (Math.Sin(Math.PI + radian + course) * frontDistance);
 						int x = xPrev + x1;
 						int y = yPrev + y1;
-						if (!GeoEngine.getInstance().canMoveToTarget(xPrev, yPrev, zPrev, x, y, zPrev, getInstanceWorld()))
+						if (!GeoEngine.getInstance().canMoveToTarget(new Location3D(xPrev, yPrev, zPrev), new Location3D(x, y, zPrev), getInstanceWorld()))
 						{
 							_suspendedMovement = true;
 							_move.onGeodataPathIndex = -1;
@@ -3274,7 +3187,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 							bool hasFences = !region.getFences().isEmpty();
 							if (hasDoors || hasFences)
 							{
-								double angle = Util.convertHeadingToDegree(getHeading());
+								double angle = HeadingUtil.ConvertHeadingToDegrees(getHeading());
 								double radian = double.DegreesToRadians(angle);
 								double course = double.DegreesToRadians(180);
 								double frontDistance = 10 * (1.0 * _stat.getMoveSpeed() / 100);
@@ -3282,8 +3195,8 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 								int y1 = (int) (Math.Sin(Math.PI + radian + course) * frontDistance);
 								int x = xPrev + x1;
 								int y = yPrev + y1;
-								if ((hasDoors && DoorData.getInstance().checkIfDoorsBetween(xPrev, yPrev, zPrev, x, y, zPrev, getInstanceWorld(), false)) //
-									|| (hasFences && FenceData.getInstance().checkIfFenceBetween(xPrev, yPrev, zPrev, x, y, zPrev, getInstanceWorld())))
+								if ((hasDoors && DoorData.getInstance().checkIfDoorsBetween(new Location3D(xPrev, yPrev, zPrev), new Location3D(x, y, zPrev), getInstanceWorld(), false)) //
+									|| (hasFences && FenceData.getInstance().checkIfFenceBetween(new Location3D(xPrev, yPrev, zPrev), new Location3D(x, y, zPrev), getInstanceWorld())))
 								{
 									_move.onGeodataPathIndex = -1;
 									if (hasAI())
@@ -3367,13 +3280,14 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 	public virtual void revalidateZone(bool force)
 	{
 		// This function is called too often from movement code.
-		if (!force && calculateDistance3D(_lastZoneValidateLocation) < (isNpc() && !isInCombat() ? Config.MAX_DRIFT_RANGE : 100))
+		if (!force && this.Distance3D(_lastZoneValidateLocation) < (isNpc() && !isInCombat() ? Config.MAX_DRIFT_RANGE : 100))
 		{
 			return;
 		}
-		_lastZoneValidateLocation.setXYZ(this);
-		
-		ZoneRegion region = ZoneManager.getInstance().getRegion(this);
+
+		_lastZoneValidateLocation = Location.Location3D;
+
+		ZoneRegion? region = ZoneManager.getInstance().getRegion(Location.Location2D);
 		if (region != null)
 		{
 			region.revalidateZones(this);
@@ -3397,19 +3311,21 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 	 * <font color=#FF0000><b><u>Caution</u>: This method DOESN'T send Server=>Client packet StopMove/StopRotation</b></font>
 	 * @param loc
 	 */
-	public virtual void stopMove(Location loc)
+	public virtual void stopMove(Location? location) // TODO: overload without argument
 	{
 		// Delete movement data of the Creature
 		_move = null;
 		_cursorKeyMovement = false;
 		
 		// All data are contained in a Location object
-		if (loc != null)
+		if (location != null)
 		{
-			setXYZ(loc.getX(), loc.getY(), loc.getZ());
-			setHeading(loc.getHeading());
+			Location loc = location.Value;
+			setXYZ(loc.X, loc.Y, loc.Z);
+			setHeading(loc.Heading);
 			revalidateZone(true);
 		}
+
 		broadcastPacket(new StopMovePacket(this));
 	}
 	
@@ -3507,7 +3423,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 	 * @param zValue The Y position of the destination
 	 * @param offsetValue The size of the interaction area of the Creature targeted
 	 */
-	public virtual void moveToLocation(int xValue, int yValue, int zValue, int offsetValue)
+	public virtual void moveToLocation(Location3D location, int offsetValue)
 	{
 		// Get the Move Speed of the Creature
 		double speed = _stat.getMoveSpeed();
@@ -3516,44 +3432,31 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 			sendPacket(ActionFailedPacket.STATIC_PACKET);
 			return;
 		}
-		
-		int x = xValue;
-		int y = yValue;
-		int z = zValue;
+
+		Location3D loc = location;
 		int offset = offsetValue;
-		
+
 		// Get current position of the Creature
-		int curX = getX();
-		int curY = getY();
-		int curZ = getZ();
-		
+		Location3D curLoc = Location.Location3D;
+
 		// Calculate distance (dx,dy) between current position and destination
 		// TODO: improve Z axis move/follow support when dx,dy are small compared to dz
-		double dx = x - curX;
-		double dy = y - curY;
-		double dz = z - curZ;
-		double distance = MathUtil.hypot(dx, dy);
-		
-		bool verticalMovementOnly = _isFlying && distance == 0 && dz != 0;
+		Location3D dLoc = loc - curLoc;
+		double distance = dLoc.Length2D;
+		bool verticalMovementOnly = _isFlying && distance == 0 && dLoc.Z != 0;
 		if (verticalMovementOnly)
-		{
-			distance = Math.Abs(dz);
-		}
-		
+			distance = Math.Abs(dLoc.Z);
+
 		// Make water move short and use no geodata checks for swimming chars distance in a click can easily be over 3000.
 		bool isInWater = isInsideZone(ZoneId.WATER) && !isInsideZone(ZoneId.CASTLE);
 		if (isInWater && distance > 700)
 		{
 			double divider = 700 / distance;
-			x = curX + (int) (divider * dx);
-			y = curY + (int) (divider * dy);
-			z = curZ + (int) (divider * dz);
-			dx = x - curX;
-			dy = y - curY;
-			dz = z - curZ;
-			distance = MathUtil.hypot(dx, dy);
+			loc = curLoc + dLoc.Scale(divider);
+			dLoc = loc - curLoc;
+			distance = dLoc.Length2D;
 		}
-		
+
 		// @formatter:off
 		// Define movement angles needed
 		// ^
@@ -3565,21 +3468,19 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 		// X ---------=>
 		// (curx,cury)
 		// @formatter:on
-		
+
 		double cos;
 		double sin;
-		
+
 		// Check if a movement offset is defined or no distance to go through
 		if (offset > 0 || distance < 1)
 		{
 			// approximation for moving closer when z coordinates are different
 			// TODO: handle Z axis movement better
-			offset = (int)(offset - Math.Abs(dz));
+			offset -= Math.Abs(dLoc.Z);
 			if (offset < 5)
-			{
 				offset = 5;
-			}
-			
+
 			// If no distance to go through, the movement is canceled
 			if (distance < 1 || distance - offset <= 0)
 			{
@@ -3587,21 +3488,22 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 				getAI().notifyEvent(CtrlEvent.EVT_ARRIVED);
 				return;
 			}
-			
+
 			// Calculate movement angles needed
-			sin = dy / distance;
-			cos = dx / distance;
+			sin = dLoc.Y / distance;
+			cos = dLoc.X / distance;
 			distance -= offset - 5; // due to rounding error, we have to move a bit closer to be in range
-			
+
 			// Calculate the new destination with offset included
-			x = curX + (int) (distance * cos);
-			y = curY + (int) (distance * sin);
+			int newX = curLoc.X + (int) (distance * cos);
+			int newY = curLoc.Y + (int) (distance * sin);
+			loc = loc with { X = newX, Y = newY };
 		}
 		else
 		{
 			// Calculate movement angles needed
-			sin = dy / distance;
-			cos = dx / distance;
+			sin = dLoc.Y / distance;
+			cos = dLoc.X / distance;
 		}
 		
 		// Create and Init a MoveData object
@@ -3620,14 +3522,12 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 			}
 			
 			// Movement checks.
-			if (Config.PATHFINDING > 0 && !(this is FriendlyNpc))
+			if (Config.PATHFINDING > 0 && this is not FriendlyNpc)
 			{
-				int originalX = x;
-				int originalY = y;
-				int originalZ = z;
+				Location3D originalLoc = loc;
 				double originalDistance = distance;
-				int gtx = (originalX - World.WORLD_X_MIN) >> 4;
-				int gty = (originalY - World.WORLD_Y_MIN) >> 4;
+				int gtx = (originalLoc.X - World.WORLD_X_MIN) >> 4;
+				int gty = (originalLoc.Y - World.WORLD_Y_MIN) >> 4;
 				if (isOnGeodataPath())
 				{
 					try
@@ -3645,47 +3545,37 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 				}
 				
 				// Support for player attack with direct movement. Tested at retail on May 11th 2023.
-				bool directMove = false;
-				if (isPlayer() && hasAI() && getActingPlayer().getAI().getIntention() == CtrlIntention.AI_INTENTION_ATTACK)
-				{
-					directMove = true;
-				}
+				bool directMove = isPlayer() && hasAI() &&
+					getActingPlayer().getAI().getIntention() == CtrlIntention.AI_INTENTION_ATTACK;
 				
 				if (directMove //
-					|| (!isInVehicle // Not in vehicle.
-						&& !(isPlayer() && distance > 3000) // Should be able to click far away and move.
-						&& !(isMonster() && Math.Abs(dz) > 100) // Monsters can move on ledges.
-						&& !(curZ - z > 300 && distance < 300))) // Prohibit correcting destination if character wants to fall.
+				    || (!isInVehicle // Not in vehicle.
+					    && !(isPlayer() && distance > 3000) // Should be able to click far away and move.
+					    && !(isMonster() && Math.Abs(dLoc.Z) > 100) // Monsters can move on ledges.
+					    && !(curLoc.Z - loc.Z > 300 && distance < 300))) // Prohibit correcting destination if character wants to fall.
 				{
 					// location different if destination wasn't reached (or just z coord is different)
-					Location destiny = GeoEngine.getInstance().getValidLocation(curX, curY, curZ, x, y, z, getInstanceWorld());
-					x = destiny.getX();
-					y = destiny.getY();
-					if (!isPlayer())
-					{
-						z = destiny.getZ();
-					}
-
-					dx = x - curX;
-					dy = y - curY;
-					dz = z - curZ;
-					distance = verticalMovementOnly ? Math.Pow(dz, 2) : MathUtil.hypot(dx, dy);
+					Location3D destiny = GeoEngine.getInstance().getValidLocation(curLoc, loc, getInstanceWorld());
+					loc = isPlayer() ? destiny with { Z = loc.Z } : destiny;
+					dLoc = loc - curLoc;
+					distance = verticalMovementOnly ? Math.Pow(dLoc.Z, 2) : dLoc.Length2D;
 				}
 				
 				// Pathfinding checks.
 				if (!directMove && originalDistance - distance > 30 && !isControlBlocked() && !isInVehicle)
 				{
 					// Path calculation -- overrides previous movement check
-					move.geoPath = PathFinding.getInstance().findPath(curX, curY, curZ, originalX, originalY, originalZ, getInstanceWorld(), isPlayer());
+					move.geoPath = PathFinding.getInstance().findPath(curLoc, originalLoc, getInstanceWorld(), isPlayer());
+
 					bool found = move.geoPath != null && move.geoPath.Count > 1;
 					
 					// If path not found and this is an Attackable, attempt to find closest path to destination.
 					if (!found && isAttackable())
 					{
-						int xMin = Math.Min(curX, originalX);
-						int xMax = Math.Max(curX, originalX);
-						int yMin = Math.Min(curY, originalY);
-						int yMax = Math.Max(curY, originalY);
+						int xMin = Math.Min(curLoc.X, originalLoc.X);
+						int xMax = Math.Max(curLoc.X, originalLoc.X);
+						int yMin = Math.Min(curLoc.Y, originalLoc.Y);
+						int yMax = Math.Max(curLoc.Y, originalLoc.Y);
 						int maxDiff = Math.Min(Math.Max(xMax - xMin, yMax - yMin), 500);
 						xMin -= maxDiff;
 						xMax += maxDiff;
@@ -3694,18 +3584,16 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 						int destinationX = 0;
 						int destinationY = 0;
 						double shortDistance = double.MaxValue;
-						double tempDistance;
-						List<AbstractNodeLoc> tempPath;
 						for (int sX = xMin; sX < xMax; sX += 500)
 						{
 							for (int sY = yMin; sY < yMax; sY += 500)
 							{
-								tempDistance = MathUtil.hypot(sX - originalX, sY - originalY);
+								double tempDistance = MathUtil.hypot(sX - originalLoc.X, sY - originalLoc.Y);
 								if (tempDistance < shortDistance)
 								{
-									tempPath = PathFinding.getInstance().findPath(curX, curY, curZ, sX, sY, originalZ, getInstanceWorld(), false);
-									found = tempPath != null && tempPath.Count > 1;
-									if (found)
+									List<AbstractNodeLoc> tempPath = PathFinding.getInstance().findPath(curLoc, new Location3D(sX, sY, originalLoc.Z), getInstanceWorld(), false);
+
+									if (tempPath != null && tempPath.Count > 1)
 									{
 										shortDistance = tempDistance;
 										move.geoPath = tempPath;
@@ -3718,8 +3606,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 						found = move.geoPath != null && move.geoPath.Count > 1;
 						if (found)
 						{
-							originalX = destinationX;
-							originalY = destinationY;
+							originalLoc = originalLoc with { X = destinationX, Y = destinationY };
 						}
 					}
 					
@@ -3728,17 +3615,14 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 						move.onGeodataPathIndex = 0; // On first segment.
 						move.geoPathGtx = gtx;
 						move.geoPathGty = gty;
-						move.geoPathAccurateTx = originalX;
-						move.geoPathAccurateTy = originalY;
-						x = move.geoPath.get(move.onGeodataPathIndex).getX();
-						y = move.geoPath.get(move.onGeodataPathIndex).getY();
-						z = move.geoPath.get(move.onGeodataPathIndex).getZ();
-						dx = x - curX;
-						dy = y - curY;
-						dz = z - curZ;
-						distance = verticalMovementOnly ? Math.Pow(dz, 2) : MathUtil.hypot(dx, dy);
-						sin = dy / distance;
-						cos = dx / distance;
+						move.geoPathAccurateTx = originalLoc.X;
+						move.geoPathAccurateTy = originalLoc.Y;
+						AbstractNodeLoc node = move.geoPath[move.onGeodataPathIndex];
+						loc = node.Location;
+						dLoc = loc - curLoc;
+						distance = verticalMovementOnly ? Math.Pow(dLoc.Z, 2) : dLoc.Length2D;
+						sin = dLoc.Y / distance;
+						cos = dLoc.X / distance;
 					}
 					else // No path found.
 					{
@@ -3750,9 +3634,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 						
 						move.disregardingGeodata = true;
 						
-						x = originalX;
-						y = originalY;
-						z = originalZ;
+						loc = originalLoc;
 						distance = originalDistance;
 					}
 				}
@@ -3782,21 +3664,21 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 		// Apply Z distance for flying or swimming for correct timing calculations
 		if ((_isFlying || isInWater) && !verticalMovementOnly)
 		{
-			distance = MathUtil.hypot(distance, dz);
+			distance = MathUtil.hypot(distance, dLoc.Z);
 		}
 		
 		// Calculate the number of ticks between the current position and the destination.
 		int ticksToMove = (int) (GameTimeTaskManager.TICKS_PER_SECOND * distance / speed);
-		move.xDestination = x;
-		move.yDestination = y;
-		move.zDestination = z; // this is what was requested from client
+		move.xDestination = loc.X;
+		move.yDestination = loc.Y;
+		move.zDestination = loc.Z; // this is what was requested from client
 		
 		// Calculate and set the heading of the Creature
 		move.heading = 0; // initial value for coordinate sync
 		// Does not broke heading on vertical movements
 		if (!verticalMovementOnly)
 		{
-			setHeading(Util.calculateHeadingFrom(cos, sin));
+			setHeading(HeadingUtil.CalculateHeading(cos, sin));
 		}
 		
 		move.moveStartTime = GameTimeTaskManager.getInstance().getGameTicks();
@@ -3854,24 +3736,25 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 		m.geoPathGty = md.geoPathGty;
 		m.geoPathAccurateTx = md.geoPathAccurateTx;
 		m.geoPathAccurateTy = md.geoPathAccurateTy;
+		Location3D geoNodeLocation = md.geoPath.get(m.onGeodataPathIndex).Location;
 		if (md.onGeodataPathIndex == md.geoPath.size() - 2)
 		{
 			m.xDestination = md.geoPathAccurateTx;
 			m.yDestination = md.geoPathAccurateTy;
-			m.zDestination = md.geoPath.get(m.onGeodataPathIndex).getZ();
+			m.zDestination = geoNodeLocation.Z;
 		}
 		else
 		{
-			m.xDestination = md.geoPath.get(m.onGeodataPathIndex).getX();
-			m.yDestination = md.geoPath.get(m.onGeodataPathIndex).getY();
-			m.zDestination = md.geoPath.get(m.onGeodataPathIndex).getZ();
+			m.xDestination = geoNodeLocation.X;
+			m.yDestination = geoNodeLocation.Y;
+			m.zDestination = geoNodeLocation.Z;
 		}
 		
 		// Calculate and set the heading of the Creature.
 		double distance = MathUtil.hypot(m.xDestination - curX, m.yDestination - curY);
 		if (distance != 0)
 		{
-			setHeading(Util.calculateHeadingFrom(curX, curY, m.xDestination, m.yDestination));
+			setHeading(new Location2D(curX, curY).HeadingTo(new Location2D(m.xDestination, m.yDestination)));
 		}
 		
 		// Calculate the number of ticks between the current position and the destination.
@@ -3916,55 +3799,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 		
 		return result;
 	}
-	
-	/**
-	 * Check if this object is inside the given 2D radius around the given point.
-	 * @param loc Location of the target
-	 * @param radius the radius around the target
-	 * @return true if the Creature is inside the radius.
-	 */
-	public bool isInsideRadius2D(ILocational loc, int radius)
-	{
-		return isInsideRadius2D(loc.getX(), loc.getY(), loc.getZ(), radius);
-	}
-	
-	/**
-	 * Check if this object is inside the given 2D radius around the given point.
-	 * @param x X position of the target
-	 * @param y Y position of the target
-	 * @param z Z position of the target
-	 * @param radius the radius around the target
-	 * @return true if the Creature is inside the radius.
-	 */
-	public bool isInsideRadius2D(int x, int y, int z, int radius)
-	{
-		return calculateDistanceSq2D(x, y, z) < radius * radius;
-	}
-	
-	/**
-	 * Check if this object is inside the given 3D radius around the given point.
-	 * @param loc Location of the target
-	 * @param radius the radius around the target
-	 * @return true if the Creature is inside the radius.
-	 */
-	public bool isInsideRadius3D(ILocational loc, int radius)
-	{
-		return isInsideRadius3D(loc.getX(), loc.getY(), loc.getZ(), radius);
-	}
-	
-	/**
-	 * Check if this object is inside the given 3D radius around the given point.
-	 * @param x X position of the target
-	 * @param y Y position of the target
-	 * @param z Z position of the target
-	 * @param radius the radius around the target
-	 * @return true if the Creature is inside the radius.
-	 */
-	public bool isInsideRadius3D(int x, int y, int z, int radius)
-	{
-		return calculateDistanceSq3D(x, y, z) < radius * radius;
-	}
-	
+
 	/**
 	 * <b><u>Overridden in</u>:</b>
 	 * <li>Player</li>
@@ -4827,7 +4662,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 		if (!reflect && !isDOT)
 		{
 			// RearDamage effect bonus.
-			if (((ILocational)this).isBehind(target))
+			if (this.IsBehindOf(target))
 			{
 				damage *= _stat.getMul(Stat.REAR_DAMAGE_RATE, 1);
 			}
@@ -5659,8 +5494,8 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 			return;
 		}
 		
-		ZoneRegion oldZoneRegion = ZoneManager.getInstance().getRegion(this);
-		ZoneRegion newZoneRegion = ZoneManager.getInstance().getRegion(newX, newY);
+		ZoneRegion? oldZoneRegion = ZoneManager.getInstance().getRegion(Location.Location2D);
+		ZoneRegion? newZoneRegion = ZoneManager.getInstance().getRegion(new Location2D(newX, newY));
 		
 		// Mobius: Prevent moving to nonexistent regions.
 		if (newZoneRegion == null)
@@ -5670,7 +5505,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IDeletable, IEventCo
 		
 		if (oldZoneRegion != newZoneRegion)
 		{
-			oldZoneRegion.removeFromZones(this);
+			oldZoneRegion?.removeFromZones(this);
 			newZoneRegion.revalidateZones(this);
 		}
 		

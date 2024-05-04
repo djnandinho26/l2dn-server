@@ -1,6 +1,7 @@
 ﻿using L2Dn.GameServer.InstanceManagers;
 using L2Dn.GameServer.Model.Items.Instances;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 
 namespace L2Dn.GameServer.Model.Zones;
 
@@ -35,9 +36,9 @@ public abstract class ZoneForm
     {
         Item item = new Item(IdManager.getInstance().getNextId(), itemId);
         item.setCount(num);
-        item.spawnMe(x, y, z + 5);
+        item.spawnMe(new Location3D(x, y, z + 5));
         ZoneManager.getInstance().getDebugItems().add(item);
     }
 	
-    public abstract Location getRandomPoint();
+    public abstract Location3D getRandomPoint();
 }

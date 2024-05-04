@@ -6,6 +6,7 @@ using L2Dn.GameServer.Model.Actor.Instances;
 using L2Dn.GameServer.Model.Actor.Templates;
 using L2Dn.GameServer.Model.Shuttles;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Utilities;
 using NLog;
 
@@ -71,7 +72,7 @@ public class ShuttleData: DataReaderBase
 				int stopX = e.GetAttributeValueAsInt32("x");
 				int stopY = e.GetAttributeValueAsInt32("y");
 				int stopZ = e.GetAttributeValueAsInt32("z");
-				stop.addDimension(new Location(stopX, stopY, stopZ));
+				stop.addDimension(new Location3D(stopX, stopY, stopZ));
 			});
 
 			data.addStop(stop);
@@ -79,21 +80,21 @@ public class ShuttleData: DataReaderBase
 
 		element.Elements("routes").Elements("route").ForEach(el =>
 		{
-			List<Location> locs = new();
+			List<Location3D> locs = new();
 			el.Elements("loc").ForEach(e =>
 			{
 				int locX = e.GetAttributeValueAsInt32("x");
 				int locY = e.GetAttributeValueAsInt32("y");
 				int locZ = e.GetAttributeValueAsInt32("z");
-				int locHeading = e.GetAttributeValueAsInt32("heading");
-				locs.add(new Location(locX, locY, locZ, locHeading));
+				//int locHeading = e.GetAttributeValueAsInt32("heading"); // Heading not used
+				locs.Add(new Location3D(locX, locY, locZ));
 			});
-										
-			VehiclePathPoint[] route = new VehiclePathPoint[locs.size()];
+
+			VehiclePathPoint[] route = new VehiclePathPoint[locs.Count];
 			int i = 0;
-			foreach (Location loc in locs)
+			foreach (Location3D loc in locs)
 				route[i++] = new VehiclePathPoint(loc);
-			
+
 			data.addRoute(route);
 		});
 
@@ -106,8 +107,8 @@ public class ShuttleData: DataReaderBase
 		{
 			Shuttle shuttle = new Shuttle(new CreatureTemplate(new StatSet()));
 			shuttle.setData(data);
-			shuttle.setHeading(data.getLocation().getHeading());
-			shuttle.setLocationInvisible(data.getLocation());
+			shuttle.setHeading(data.Location.Heading);
+			shuttle.setLocationInvisible(data.Location.Location3D);
 			shuttle.spawnMe();
 			shuttle.getStat().setMoveSpeed(300);
 			shuttle.getStat().setRotationSpeed(0);

@@ -9,6 +9,7 @@ using L2Dn.GameServer.Model;
 using L2Dn.GameServer.Model.Holders;
 using L2Dn.GameServer.Model.Skills;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Model;
 using NLog;
 
@@ -3092,7 +3093,9 @@ public class Config
 		// Format:
 		// TeleportName1,X1,Y1,Z1;TeleportName2,X2,Y2,Z2...
 
-		var builder = ImmutableDictionary<string, Location>.Empty.ToBuilder();
+		ImmutableDictionary<string, Location>.Builder builder =
+			ImmutableDictionary<string, Location>.Empty.ToBuilder();
+
 		parser.GetList(key, ';', s =>
 		{
 			string[] item = s.Split(',');
@@ -3102,7 +3105,7 @@ public class Config
 			bool ok = int.TryParse(item[1], CultureInfo.InvariantCulture, out x) &&
 			          int.TryParse(item[2], CultureInfo.InvariantCulture, out y) &&
 			          int.TryParse(item[3], CultureInfo.InvariantCulture, out z);
-			return ((Name: item[0], Location: new Location(x, y, z)), ok);
+			return ((Name: item[0], Location: new Location(x, y, z, 0)), ok);
 		}, true).ForEach(tuple =>
 		{
 			try

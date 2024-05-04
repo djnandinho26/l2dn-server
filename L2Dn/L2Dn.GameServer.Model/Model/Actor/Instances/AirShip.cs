@@ -3,6 +3,7 @@ using L2Dn.GameServer.Enums;
 using L2Dn.GameServer.InstanceManagers;
 using L2Dn.GameServer.Model.Actor.Templates;
 using L2Dn.GameServer.Network.OutgoingPackets;
+using L2Dn.Geometry;
 
 namespace L2Dn.GameServer.Model.Actor.Instances;
 
@@ -99,7 +100,7 @@ public class AirShip : Vehicle
 		}
 		
 		player.setVehicle(this);
-		player.setInVehiclePosition(new Location(0, 0, 0));
+		player.setInVehiclePosition(default);
 		player.broadcastPacket(new ExGetOnAirShipPacket(player, this));
 		player.setXYZ(getX(), getY(), getZ());
 		player.revalidateZone(true);
@@ -113,12 +114,12 @@ public class AirShip : Vehicle
 		Location loc = getOustLoc();
 		if (player.isOnline())
 		{
-			player.broadcastPacket(new ExGetOffAirShipPacket(player, this, loc.getX(), loc.getY(), loc.getZ()));
-			player.teleToLocation(loc.getX(), loc.getY(), loc.getZ());
+			player.broadcastPacket(new ExGetOffAirShipPacket(player, this, loc.Location3D));
+			player.teleToLocation(loc);
 		}
 		else
 		{
-			player.setXYZInvisible(loc.getX(), loc.getY(), loc.getZ());
+			player.setXYZInvisible(loc.Location3D);
 		}
 	}
 	
@@ -133,7 +134,7 @@ public class AirShip : Vehicle
 		return true;
 	}
 	
-	public override void stopMove(Location loc)
+	public override void stopMove(Location? loc)
 	{
 		base.stopMove(loc);
 		

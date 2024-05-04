@@ -15,6 +15,7 @@ using L2Dn.GameServer.Model.Skills;
 using L2Dn.GameServer.Network.Enums;
 using L2Dn.GameServer.Network.OutgoingPackets;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Model.Enums;
 using L2Dn.Utilities;
 using ThreadPool = L2Dn.GameServer.Utilities.ThreadPool;
@@ -50,11 +51,11 @@ public class Door : Creature
 		return new DoorAI(this);
 	}
 	
-	public override void moveToLocation(int x, int y, int z, int offset)
+	public override void moveToLocation(Location3D location, int offset)
 	{
 	}
 	
-	public override void stopMove(Location loc)
+	public override void stopMove(Location? loc)
 	{
 	}
 	

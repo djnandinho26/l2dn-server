@@ -5,6 +5,7 @@ using System.Xml.Linq;
 using L2Dn.GameServer.Model.Holders;
 using L2Dn.GameServer.Model.Interfaces;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Utilities;
 using NLog;
 
@@ -15,7 +16,7 @@ namespace L2Dn.GameServer.Model;
  * They are stored as object but can be retrieved in any type wanted. As long as cast is available.<br>
  * @author mkizub
  */
-public class StatSet : IParserAdvUtils
+public class StatSet
 {
 	private static readonly Logger LOGGER = LogManager.GetLogger(nameof(StatSet));
 	
@@ -734,7 +735,7 @@ public class StatSet : IParserAdvUtils
 		
 		try
 		{
-			return Enum.Parse<T>((string)val);
+			return Enum.Parse<T>((string)val, true);
 		}
 		catch (Exception e)
 		{
@@ -795,14 +796,12 @@ public class StatSet : IParserAdvUtils
 		return (SkillHolder) obj;
 	}
 	
-	public Location getLocation(string key)
+	public Location? getLocation(string key)
 	{
 		object obj = _set.get(key);
-		if (!(obj is Location))
-		{
-			return null;
-		}
-		return (Location) obj;
+		if (obj is Location location)
+			return location;
+		return null;
 	}
 	
 	public List<MinionHolder> getMinionList(string key)

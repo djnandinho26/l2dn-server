@@ -3,6 +3,7 @@ using L2Dn.GameServer.Geo;
 using L2Dn.GameServer.Model;
 using L2Dn.GameServer.Model.Actor;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Utilities;
 
 namespace L2Dn.GameServer.AI;
@@ -87,7 +88,7 @@ public class FriendlyNpcAI : AttackableAI
 		{
 			foreach (Attackable nearby in World.getInstance().getVisibleObjects<Attackable>(npc))
 			{
-				if (npc.isInsideRadius2D(nearby, collision) && (nearby != originalAttackTarget))
+				if (npc.IsInsideRadius2D(nearby, collision) && (nearby != originalAttackTarget))
 				{
 					int newX = combinedCollision + Rnd.get(40);
 					if (Rnd.nextBoolean())
@@ -108,14 +109,16 @@ public class FriendlyNpcAI : AttackableAI
 						newY = originalAttackTarget.getY() - newY;
 					}
 					
-					if (!npc.isInsideRadius2D(newX, newY, 0, collision))
+					if (!npc.IsInsideRadius2D(new Location2D(newX, newY), collision))
 					{
 						int newZ = npc.getZ() + 30;
-						if (GeoEngine.getInstance().canMoveToTarget(npc.getX(), npc.getY(), npc.getZ(), newX, newY, newZ, npc.getInstanceWorld()))
+						Location3D newLocation = new Location3D(newX, newY, newZ);
+						if (GeoEngine.getInstance().canMoveToTarget(npc.Location.Location3D, newLocation, npc.getInstanceWorld()))
 						{
-							moveTo(newX, newY, newZ);
+							moveTo(newLocation);
 						}
 					}
+
 					return;
 				}
 			}
@@ -124,7 +127,7 @@ public class FriendlyNpcAI : AttackableAI
 		// Calculate Archer movement.
 		if ((!npc.isMovementDisabled()) && (npc.getAiType() == AIType.ARCHER) && (Rnd.get(100) < 15))
 		{
-			double distance2 = npc.calculateDistanceSq2D(originalAttackTarget);
+			double distance2 = npc.DistanceSquare2D(originalAttackTarget);
 			if (Math.Sqrt(distance2) <= (60 + combinedCollision))
 			{
 				int posX = npc.getX();
@@ -147,16 +150,18 @@ public class FriendlyNpcAI : AttackableAI
 				{
 					posY -= 300;
 				}
-				
-				if (GeoEngine.getInstance().canMoveToTarget(npc.getX(), npc.getY(), npc.getZ(), posX, posY, posZ, npc.getInstanceWorld()))
+
+				Location3D posLoc = new(posX, posY, posZ);
+				if (GeoEngine.getInstance().canMoveToTarget(npc.Location.Location3D, posLoc, npc.getInstanceWorld()))
 				{
-					setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, new Location(posX, posY, posZ, 0));
+					setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, posLoc);
 				}
+
 				return;
 			}
 		}
 		
-		double dist = npc.calculateDistance2D(originalAttackTarget);
+		double dist = npc.Distance2D(originalAttackTarget);
 		int dist2 = (int) dist - collision;
 		int range = npc.getPhysicalAttackRange() + combinedCollision;
 		if (originalAttackTarget.isMoving())

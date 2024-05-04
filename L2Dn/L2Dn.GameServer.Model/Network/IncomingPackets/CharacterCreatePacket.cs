@@ -16,6 +16,7 @@ using L2Dn.GameServer.Network.OutgoingPackets;
 using L2Dn.GameServer.NetworkAuthServer;
 using L2Dn.GameServer.NetworkAuthServer.OutgoingPackets;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Model;
 using L2Dn.Model.Enums;
 using L2Dn.Network;
@@ -187,17 +188,17 @@ public struct CharacterCreatePacket: IIncomingPacket<GameSession>
 		PlayerTemplate template = newChar.getTemplate();
 		if (Config.CUSTOM_STARTING_LOC)
 		{
-			Location createLoc = new Location(Config.CUSTOM_STARTING_LOC_X, Config.CUSTOM_STARTING_LOC_Y, Config.CUSTOM_STARTING_LOC_Z);
-			newChar.setXYZInvisible(createLoc.getX(), createLoc.getY(), createLoc.getZ());
+			Location3D createLoc = new(Config.CUSTOM_STARTING_LOC_X, Config.CUSTOM_STARTING_LOC_Y, Config.CUSTOM_STARTING_LOC_Z);
+			newChar.setXYZInvisible(createLoc);
 		}
 		else if (Config.FACTION_SYSTEM_ENABLED)
 		{
-			newChar.setXYZInvisible(Config.FACTION_STARTING_LOCATION.getX(), Config.FACTION_STARTING_LOCATION.getY(), Config.FACTION_STARTING_LOCATION.getZ());
+			newChar.setXYZInvisible(Config.FACTION_STARTING_LOCATION.Location3D);
 		}
 		else
 		{
-			Location createLoc = template.getCreationPoint();
-			newChar.setXYZInvisible(createLoc.getX(), createLoc.getY(), createLoc.getZ());
+			Location3D createLoc = template.getCreationPoint();
+			newChar.setXYZInvisible(createLoc);
 		}
 		
 		newChar.setTitle("");

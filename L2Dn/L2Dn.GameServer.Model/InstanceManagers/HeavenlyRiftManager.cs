@@ -4,6 +4,7 @@ using L2Dn.GameServer.Model.Zones;
 using L2Dn.GameServer.Network.Enums;
 using L2Dn.GameServer.Network.OutgoingPackets;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using ThreadPool = L2Dn.GameServer.Utilities.ThreadPool;
 
 namespace L2Dn.GameServer.InstanceManagers;
@@ -88,8 +89,7 @@ public class HeavenlyRiftManager
 		try
 		{
 			Spawn spawn = new Spawn(npcId);
-			Location location = new Location(x, y, z);
-			spawn.Location.setLocation(location);
+			spawn.Location = new Location(x, y, z, 0);
 			Npc npc = spawn.doSpawn();
 			npc.scheduleDespawn(despawnTime);
 		}
@@ -113,7 +113,7 @@ public class HeavenlyRiftManager
 			{
 				if (creature.isPlayer())
 				{
-					creature.teleToLocation(114264, 13352, -5104);
+					creature.teleToLocation(new Location3D(114264, 13352, -5104));
 				}
 				else if (creature.isNpc() && (creature.getId() != 30401))
 				{

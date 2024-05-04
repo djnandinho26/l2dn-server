@@ -13,6 +13,7 @@ using L2Dn.GameServer.Model.Zones;
 using L2Dn.GameServer.Network.Enums;
 using L2Dn.GameServer.Network.OutgoingPackets.Teleports;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Network;
 using L2Dn.Packets;
 
@@ -54,7 +55,7 @@ public struct ExTeleportToRaidPositionPacket: IIncomingPacket<GameSession>
 			return ValueTask.CompletedTask;
 		}
 		
-		if (template.isType("RaidBoss") && (DBSpawnManager.getInstance().getStatus(_raidId) != RaidBossStatus.ALIVE))
+		if (template.isType("RaidBoss") && (DbSpawnManager.getInstance().getStatus(_raidId) != RaidBossStatus.ALIVE))
 		{
 			player.sendPacket(SystemMessageId.YOU_CANNOT_TELEPORT_RIGHT_NOW);
 			return ValueTask.CompletedTask;
@@ -81,10 +82,10 @@ public struct ExTeleportToRaidPositionPacket: IIncomingPacket<GameSession>
 			return ValueTask.CompletedTask;
 		}
 		
-		Location location = teleport.getLocation();
+		Location3D location = teleport.getLocation();
 		if (!Config.TELEPORT_WHILE_SIEGE_IN_PROGRESS)
 		{
-			Castle castle = CastleManager.getInstance().getCastle(location.getX(), location.getY(), location.getZ());
+			Castle castle = CastleManager.getInstance().getCastle(location);
 			if ((castle != null) && castle.getSiege().isInProgress())
 			{
 				player.sendPacket(SystemMessageId.YOU_CANNOT_TELEPORT_TO_A_VILLAGE_THAT_IS_IN_A_SIEGE);
@@ -117,7 +118,7 @@ public struct ExTeleportToRaidPositionPacket: IIncomingPacket<GameSession>
 		player.abortCast();
 		player.stopMove(null);
 		
-		player.setTeleportLocation(location);
+		player.setTeleportLocation(new Location(location, 0));
 		player.doCast(CommonSkill.TELEPORT.getSkill());
 		player.sendPacket(new ExRaidTeleportInfoPacket(player));
 

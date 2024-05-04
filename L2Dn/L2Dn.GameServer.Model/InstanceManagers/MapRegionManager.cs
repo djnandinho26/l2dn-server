@@ -12,6 +12,7 @@ using L2Dn.GameServer.Model.Residences;
 using L2Dn.GameServer.Model.Sieges;
 using L2Dn.GameServer.Model.Zones.Types;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Model.DataPack;
 using L2Dn.Model.Enums;
 using NLog;
@@ -167,7 +168,7 @@ public class MapRegionManager: DataReaderBase
 					ClanHall? clanhall = ClanHallData.getInstance().getClanHallByClan(player.getClan());
 					if (clanhall != null && !player.isFlyingMounted())
 					{
-						return clanhall.getOwnerLocation();
+						return new Location(clanhall.getOwnerLocation(), 0);
 					}
 				}
 				
@@ -190,9 +191,10 @@ public class MapRegionManager: DataReaderBase
 					{
 						if (player.getReputation() < 0)
 						{
-							return castle.getResidenceZone().getChaoticSpawnLoc();
+							return new Location(castle.getResidenceZone().getChaoticSpawnLoc(), player.getHeading());
 						}
-						return castle.getResidenceZone().getSpawnLoc();
+
+						return new Location(castle.getResidenceZone().getSpawnLoc(), player.getHeading());
 					}
 				}
 				
@@ -216,9 +218,9 @@ public class MapRegionManager: DataReaderBase
 					{
 						if (player.getReputation() < 0)
 						{
-							return fort.getResidenceZone().getChaoticSpawnLoc();
+							return new Location(fort.getResidenceZone().getChaoticSpawnLoc(), player.getHeading());
 						}
-						return fort.getResidenceZone().getSpawnLoc();
+						return new Location(fort.getResidenceZone().getSpawnLoc(), player.getHeading());
 					}
 				}
 				
@@ -236,7 +238,7 @@ public class MapRegionManager: DataReaderBase
 							if (flags != null && !flags.isEmpty())
 							{
 								// Spawn to flag - Need more work to get player to the nearest flag
-								return flags.First().getLocation();
+								return flags.First().Location;
 							}
 						}
 					}
@@ -249,7 +251,7 @@ public class MapRegionManager: DataReaderBase
 							if (flags != null && !flags.isEmpty())
 							{
 								// Spawn to flag - Need more work to get player to the nearest flag
-								return flags.First().getLocation();
+								return flags.First().Location;
 							}
 						}
 					}
@@ -260,17 +262,17 @@ public class MapRegionManager: DataReaderBase
 			TimedHuntingZoneHolder timedHuntingZone = player.getTimedHuntingZone();
 			if (timedHuntingZone != null)
 			{
-				Location exitLocation = timedHuntingZone.getExitLocation();
+				Location3D? exitLocation = timedHuntingZone.getExitLocation();
 				if (exitLocation != null)
 				{
-					return exitLocation;
+					return new Location(exitLocation.Value, 0);
 				}
 			}
 			
 			// Karma player land out of city
 			if (player.getReputation() < 0)
 			{
-				return getNearestKarmaRespawn(player);
+				return new Location(getNearestKarmaRespawn(player), 0);
 			}
 			
 			// Checking if needed to be respawned in "far" town from the castle;
@@ -278,17 +280,17 @@ public class MapRegionManager: DataReaderBase
 			castle = CastleManager.getInstance().getCastle(player);
 			if (castle != null && castle.getSiege().isInProgress() && (castle.getSiege().checkIsDefender(player.getClan()) || castle.getSiege().checkIsAttacker(player.getClan())))
 			{
-				return castle.getResidenceZone().getOtherSpawnLoc();
+				return new Location(castle.getResidenceZone().getOtherSpawnLoc(), player.getHeading());
 			}
 			
 			// Checking if in an instance
 			Instance inst = player.getInstanceWorld();
 			if (inst != null)
 			{
-				Location loc = inst.getExitLocation(player);
+				Location3D? loc = inst.getExitLocation(player);
 				if (loc != null)
 				{
-					return loc;
+					return new Location(loc.Value, 0);
 				}
 			}
 		}
@@ -306,14 +308,14 @@ public class MapRegionManager: DataReaderBase
 		}
 		
 		// Get the nearest town
-		return getNearestTownRespawn(creature);
+		return new Location(getNearestTownRespawn(creature), 0);
 	}
 	
-	public Location getNearestKarmaRespawn(Player player)
+	public Location3D getNearestKarmaRespawn(Player player)
 	{
 		try
 		{
-			RespawnZone zone = ZoneManager.getInstance().getZone<RespawnZone>(player);
+			RespawnZone? zone = ZoneManager.getInstance().getZone<RespawnZone>(player.Location.Location3D);
 			if (zone != null)
 			{
 				return getRestartRegion(player, zone.getRespawnPoint(player)).getChaoticSpawnLoc();
@@ -336,11 +338,11 @@ public class MapRegionManager: DataReaderBase
 		}
 	}
 	
-	public Location getNearestTownRespawn(Creature creature)
+	public Location3D getNearestTownRespawn(Creature creature)
 	{
 		try
 		{
-			RespawnZone zone = ZoneManager.getInstance().getZone<RespawnZone>(creature);
+			RespawnZone? zone = ZoneManager.getInstance().getZone<RespawnZone>(creature.Location.Location3D);
 			if (zone != null)
 			{
 				return getRestartRegion(creature, zone.getRespawnPoint((Player) creature)).getSpawnLoc();
@@ -391,9 +393,9 @@ public class MapRegionManager: DataReaderBase
 		return _regions.GetValueOrDefault(regionName);
 	}
 	
-	public int getBBs(ILocational loc)
+	public int getBBs(Location2D location)
 	{
-		return getMapRegion(loc.getX(), loc.getY())?.getBbs() ??
+		return getMapRegion(location.X, location.Y)?.getBbs() ??
 		       _regions.GetValueOrDefault(DefaultRespawn)?.getBbs() ?? 0;
 	}
 	

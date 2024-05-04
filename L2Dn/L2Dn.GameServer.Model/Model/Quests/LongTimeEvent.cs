@@ -10,6 +10,7 @@ using L2Dn.GameServer.Model.Events.Impl;
 using L2Dn.GameServer.Model.Holders;
 using L2Dn.GameServer.Scripts;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Utilities;
 using Microsoft.EntityFrameworkCore;
 using ThreadPool = L2Dn.GameServer.Utilities.ThreadPool;
@@ -41,13 +42,13 @@ public class LongTimeEvent: Quest
 	
 	// Items to destroy when event ends
 	protected readonly List<int> _destroyItemsOnEnd = new();
-	
+
 	protected class NpcSpawn
 	{
-		public readonly  int npcId;
-		public readonly  Location loc;
-		public readonly  TimeSpan respawnTime;
-		
+		public readonly int npcId;
+		public readonly Location loc;
+		public readonly TimeSpan respawnTime;
+
 		public NpcSpawn(int spawnNpcId, Location spawnLoc, TimeSpan spawnRespawnTime)
 		{
 			npcId = spawnNpcId;
@@ -55,7 +56,7 @@ public class LongTimeEvent: Quest
 			respawnTime = spawnRespawnTime;
 		}
 	}
-	
+
 	public LongTimeEvent(): base(-1)
 	{
 		loadConfig();
@@ -88,8 +89,7 @@ public class LongTimeEvent: Quest
 		TimeSpan millisToEventEnd = _eventPeriod.getEndDate() - DateTime.Now;
 		foreach (NpcSpawn npcSpawn in _spawnList)
 		{
-			Npc npc = addSpawn(npcSpawn.npcId, npcSpawn.loc.getX(), npcSpawn.loc.getY(), npcSpawn.loc.getZ(),
-				npcSpawn.loc.getHeading(), false, millisToEventEnd, false);
+			Npc npc = addSpawn(npcSpawn.npcId, npcSpawn.loc, false, millisToEventEnd, false);
 			TimeSpan respawnDelay = npcSpawn.respawnTime;
 			if (respawnDelay > TimeSpan.Zero)
 			{

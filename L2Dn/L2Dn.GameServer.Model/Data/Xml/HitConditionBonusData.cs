@@ -3,6 +3,7 @@ using L2Dn.Extensions;
 using L2Dn.GameServer.Enums;
 using L2Dn.GameServer.Model.Actor;
 using L2Dn.GameServer.TaskManagers;
+using L2Dn.Geometry;
 using L2Dn.Utilities;
 using NLog;
 
@@ -77,14 +78,14 @@ public class HitConditionBonusData: DataReaderBase
 		}
 		
 		// Get side bonus
-		switch (PositionUtil.getPosition(attacker, target))
+		switch (attacker.PositionTo(target))
 		{
-			case Position.SIDE:
+			case Position.Side:
 			{
 				mod += sideBonus;
 				break;
 			}
-			case Position.BACK:
+			case Position.Back:
 			{
 				mod += backBonus;
 				break;

@@ -10,6 +10,7 @@ using L2Dn.GameServer.Model.Skills;
 using L2Dn.GameServer.Model.Zones;
 using L2Dn.GameServer.Network.OutgoingPackets;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using NLog;
 using Pet = L2Dn.GameServer.Model.Actor.Instances.Pet;
 using ThreadPool = L2Dn.GameServer.Utilities.ThreadPool;
@@ -137,7 +138,7 @@ public class HomeBoard: IParseBoardHandler
 			{
 				player.sendMessage("Not enough currency!");
 			}
-			else if (Config.COMMUNITY_AVAILABLE_TELEPORTS.TryGetValue(teleBuypass, out Location? value))
+			else if (Config.COMMUNITY_AVAILABLE_TELEPORTS.TryGetValue(teleBuypass, out Location value))
 			{
 				player.disableAllSkills();
 				player.sendPacket(new ShowBoardPacket(false, string.Empty));

@@ -10,6 +10,7 @@ using L2Dn.GameServer.Model.Zones;
 using L2Dn.GameServer.Network.Enums;
 using L2Dn.GameServer.Network.OutgoingPackets;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Packets;
 
 namespace L2Dn.GameServer.Model;
@@ -17,7 +18,7 @@ namespace L2Dn.GameServer.Model;
 /**
  * Base class for all interactive objects.
  */
-public abstract class WorldObject: IIdentifiable, INamable, ISpawnable, IUniqueId, IDecayable, ILocational, IEquatable<WorldObject>
+public abstract class WorldObject: IIdentifiable, INamable, IUniqueId, IHasLocation, IEquatable<WorldObject>
 {
 	/** Name */
 	private string _name = string.Empty;
@@ -29,7 +30,7 @@ public abstract class WorldObject: IIdentifiable, INamable, ISpawnable, IUniqueI
 	private WorldRegion? _worldRegion;
 
 	/** Location */
-	private Location _location = new(0, 0, -10000);
+	private Location _location = new(0, 0, -10000, 0);
 
 	/** Instance */
 	private Instance? _instance;
@@ -153,26 +154,26 @@ public abstract class WorldObject: IIdentifiable, INamable, ISpawnable, IUniqueI
 		return true;
 	}
 
-	public void spawnMe(int x, int y, int z)
+	public void spawnMe(Location3D location)
 	{
 		lock (this)
 		{
-			int spawnX = x switch
+			int spawnX = location.X switch
 			{
 				> World.WORLD_X_MAX => World.WORLD_X_MAX - 5000,
 				< World.WORLD_X_MIN => World.WORLD_X_MIN + 5000,
-				_ => x,
+				_ => location.X,
 			};
 
-			int spawnY = y switch
+			int spawnY = location.Y switch
 			{
 				> World.WORLD_Y_MAX => World.WORLD_Y_MAX - 5000,
 				< World.WORLD_Y_MIN => World.WORLD_Y_MIN + 5000,
-				_ => y,
+				_ => location.Y,
 			};
 
 			// Set the x,y,z position of the WorldObject. If flagged with _isSpawned, setXYZ will automatically update world region, so avoid that.
-			setXYZ(spawnX, spawnY, z);
+			setXYZ(spawnX, spawnY, location.Z);
 		}
 
 		// Spawn and update its _worldregion
@@ -491,29 +492,29 @@ public abstract class WorldObject: IIdentifiable, INamable, ISpawnable, IUniqueI
 	{
 	}
 
-	public void setXYZInvisible(int x, int y, int z)
+	public void setXYZInvisible(Location3D location)
 	{
-		int correctX = x switch
+		int correctX = location.X switch
 		{
 			> World.WORLD_X_MAX => World.WORLD_X_MAX - 5000,
 			< World.WORLD_X_MIN => World.WORLD_X_MIN + 5000,
-			_ => x,
+			_ => location.X,
 		};
 
-		int correctY = y switch
+		int correctY = location.Y switch
 		{
 			> World.WORLD_Y_MAX => World.WORLD_Y_MAX - 5000,
 			< World.WORLD_Y_MIN => World.WORLD_Y_MIN + 5000,
-			_ => y,
+			_ => location.Y,
 		};
 
-		setXYZ(correctX, correctY, z);
+		setXYZ(correctX, correctY, location.Z);
 		setSpawned(false);
 	}
 
-	public void setLocationInvisible(ILocational loc)
+	public void setLocationInvisible(Location3D location)
 	{
-		setXYZInvisible(loc.getX(), loc.getY(), loc.getZ());
+		setXYZInvisible(location);
 	}
 
 	public WorldRegion? getWorldRegion()
@@ -537,7 +538,7 @@ public abstract class WorldObject: IIdentifiable, INamable, ISpawnable, IUniqueI
 	 */
 	public virtual int getX()
 	{
-		return _location.getX();
+		return _location.X;
 	}
 
 	/**
@@ -546,7 +547,7 @@ public abstract class WorldObject: IIdentifiable, INamable, ISpawnable, IUniqueI
 	 */
 	public virtual int getY()
 	{
-		return _location.getY();
+		return _location.Y;
 	}
 
 	/**
@@ -555,7 +556,7 @@ public abstract class WorldObject: IIdentifiable, INamable, ISpawnable, IUniqueI
 	 */
 	public virtual int getZ()
 	{
-		return _location.getZ();
+		return _location.Z;
 	}
 
 	/**
@@ -564,7 +565,7 @@ public abstract class WorldObject: IIdentifiable, INamable, ISpawnable, IUniqueI
 	 */
 	public virtual int getHeading()
 	{
-		return _location.getHeading();
+		return _location.Heading;
 	}
 
 	/**
@@ -599,10 +600,7 @@ public abstract class WorldObject: IIdentifiable, INamable, ISpawnable, IUniqueI
 	 * Gets the location object.
 	 * @return the location object
 	 */
-	public virtual Location getLocation()
-	{
-		return _location;
-	}
+	public virtual Location Location => _location;
 
 	/**
 	 * Sets the x, y, z coordinate.
@@ -612,7 +610,7 @@ public abstract class WorldObject: IIdentifiable, INamable, ISpawnable, IUniqueI
 	 */
 	public virtual void setXYZ(int newX, int newY, int newZ)
 	{
-		_location.setXYZ(newX, newY, newZ);
+		_location = new Location(newX, newY, newZ, _location.Heading);
 
 		if (_isSpawned)
 		{
@@ -631,9 +629,9 @@ public abstract class WorldObject: IIdentifiable, INamable, ISpawnable, IUniqueI
 	 * Sets the x, y, z coordinate.
 	 * @param loc the location object
 	 */
-	public virtual void setXYZ(ILocational loc)
+	public virtual void setXYZ(Location3D location)
 	{
-		setXYZ(loc.getX(), loc.getY(), loc.getZ());
+		setXYZ(location.X, location.Y, location.Z);
 	}
 
 	/**
@@ -642,7 +640,7 @@ public abstract class WorldObject: IIdentifiable, INamable, ISpawnable, IUniqueI
 	 */
 	public virtual void setHeading(int newHeading)
 	{
-		_location.setHeading(newHeading);
+		_location = _location with { Heading = newHeading };
 	}
 
 	/**
@@ -687,108 +685,7 @@ public abstract class WorldObject: IIdentifiable, INamable, ISpawnable, IUniqueI
 	 */
 	public virtual void setLocation(Location loc)
 	{
-		_location.setXYZ(loc.getX(), loc.getY(), loc.getZ());
-		_location.setHeading(loc.getHeading());
-	}
-
-	/**
-	 * Calculates 2D distance between this WorldObject and given x, y, z.
-	 * @param x the X coordinate
-	 * @param y the Y coordinate
-	 * @param z the Z coordinate
-	 * @return distance between object and given x, y, z.
-	 */
-	public double calculateDistance2D(int x, int y, int z)
-	{
-		return Math.Sqrt(Math.Pow(x - getX(), 2) + Math.Pow(y - getY(), 2));
-	}
-
-	/**
-	 * Calculates the 2D distance between this WorldObject and given location.
-	 * @param loc the location object
-	 * @return distance between object and given location.
-	 */
-	public double calculateDistance2D(ILocational loc)
-	{
-		return calculateDistance2D(loc.getX(), loc.getY(), loc.getZ());
-	}
-
-	/**
-	 * Calculates the 3D distance between this WorldObject and given x, y, z.
-	 * @param x the X coordinate
-	 * @param y the Y coordinate
-	 * @param z the Z coordinate
-	 * @return distance between object and given x, y, z.
-	 */
-	public double calculateDistance3D(int x, int y, int z)
-	{
-		return Math.Sqrt(Math.Pow(x - getX(), 2) + Math.Pow(y - getY(), 2) + Math.Pow(z - getZ(), 2));
-	}
-
-	/**
-	 * Calculates 3D distance between this WorldObject and given location.
-	 * @param loc the location object
-	 * @return distance between object and given location.
-	 */
-	public double calculateDistance3D(ILocational loc)
-	{
-		return calculateDistance3D(loc.getX(), loc.getY(), loc.getZ());
-	}
-
-	/**
-	 * Calculates the non squared 2D distance between this WorldObject and given x, y, z.
-	 * @param x the X coordinate
-	 * @param y the Y coordinate
-	 * @param z the Z coordinate
-	 * @return distance between object and given x, y, z.
-	 */
-	public double calculateDistanceSq2D(int x, int y, int z)
-	{
-		return Math.Pow(x - getX(), 2) + Math.Pow(y - getY(), 2);
-	}
-
-	/**
-	 * Calculates the non squared 2D distance between this WorldObject and given location.
-	 * @param loc the location object
-	 * @return distance between object and given location.
-	 */
-	public double calculateDistanceSq2D(ILocational loc)
-	{
-		return calculateDistanceSq2D(loc.getX(), loc.getY(), loc.getZ());
-	}
-
-	/**
-	 * Calculates the non squared 3D distance between this WorldObject and given x, y, z.
-	 * @param x the X coordinate
-	 * @param y the Y coordinate
-	 * @param z the Z coordinate
-	 * @return distance between object and given x, y, z.
-	 */
-	public double calculateDistanceSq3D(int x, int y, int z)
-	{
-		return Math.Pow(x - getX(), 2) + Math.Pow(y - getY(), 2) + Math.Pow(z - getZ(), 2);
-	}
-
-	/**
-	 * Calculates the non squared 3D distance between this WorldObject and given location.
-	 * @param loc the location object
-	 * @return distance between object and given location.
-	 */
-	public double calculateDistanceSq3D(ILocational loc)
-	{
-		return calculateDistanceSq3D(loc.getX(), loc.getY(), loc.getZ());
-	}
-
-	/**
-	 * Calculates the angle in degrees from this object to the given object.<br>
-	 * The return value can be described as how much this object has to turn<br>
-	 * to have the given object directly in front of it.
-	 * @param target the object to which to calculate the angle
-	 * @return the angle this object has to turn to have the given object in front of it
-	 */
-	public double calculateDirectionTo(ILocational target)
-	{
-		return Util.calculateAngleFrom(this, target);
+		_location = loc;
 	}
 
 	/**

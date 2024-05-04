@@ -8,6 +8,7 @@ using L2Dn.GameServer.Model.Sieges;
 using L2Dn.GameServer.Model.Skills;
 using L2Dn.GameServer.Network.OutgoingPackets.CastleWar;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using NLog;
 using Clan = L2Dn.GameServer.Model.Clans.Clan;
 
@@ -118,7 +119,7 @@ public class SiegeManager
 					int z = int.Parse(st.nextToken());
 					int npcId = int.Parse(st.nextToken());
 
-					controlTowers.add(new TowerSpawn(npcId, new Location(x, y, z)));
+					controlTowers.add(new TowerSpawn(npcId, new Location3D(x, y, z)));
 				}
 				catch (Exception e)
 				{
@@ -150,7 +151,7 @@ public class SiegeManager
 						zoneList.add(int.Parse(st.nextToken()));
 					}
 
-					flameTowers.add(new TowerSpawn(npcId, new Location(x, y, z), zoneList));
+					flameTowers.add(new TowerSpawn(npcId, new Location3D(x, y, z), zoneList));
 				}
 				catch (Exception e)
 				{
@@ -204,21 +205,16 @@ public class SiegeManager
 		return _flagMaxCount;
 	}
 
-	public Siege getSiege(ILocational loc)
-	{
-		return getSiege(loc.getX(), loc.getY(), loc.getZ());
-	}
-
 	public Siege getSiege(WorldObject activeObject)
 	{
-		return getSiege(activeObject.getX(), activeObject.getY(), activeObject.getZ());
+		return getSiege(activeObject.Location.Location3D);
 	}
 
-	public Siege getSiege(int x, int y, int z)
+	public Siege getSiege(Location3D location)
 	{
 		foreach (Castle castle in CastleManager.getInstance().getCastles())
 		{
-			if (castle.getSiege().checkIfInZone(x, y, z))
+			if (castle.getSiege().checkIfInZone(location))
 			{
 				return castle.getSiege();
 			}

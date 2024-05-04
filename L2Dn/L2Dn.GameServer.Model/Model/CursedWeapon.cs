@@ -10,6 +10,7 @@ using L2Dn.GameServer.Model.Skills;
 using L2Dn.GameServer.Network.Enums;
 using L2Dn.GameServer.Network.OutgoingPackets;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Utilities;
 using Microsoft.EntityFrameworkCore;
 using NLog;
@@ -189,8 +190,8 @@ public class CursedWeapon : INamable
 			_item.setDropTime(null); // Prevent item from being removed by ItemsAutoDestroy
 			
 			// RedSky and Earthquake
-			ExRedSkyPacket rs = new ExRedSkyPacket(10);
-			EarthquakePacket eq = new EarthquakePacket(player.getX(), player.getY(), player.getZ(), 14, 3);
+			ExRedSkyPacket rs = new(10);
+			EarthquakePacket eq = new(new Location3D(player.getX(), player.getY(), player.getZ()), 14, 3);
 			Broadcast.toAllOnlinePlayers(rs);
 			Broadcast.toAllOnlinePlayers(eq);
 		}
@@ -614,12 +615,12 @@ public class CursedWeapon : INamable
 		if (_isActivated && (_player != null))
 		{
 			// Go to player holding the weapon
-			player.teleToLocation(_player.getLocation(), true);
+			player.teleToLocation(_player.Location, true);
 		}
 		else if (_isDropped && (_item != null))
 		{
 			// Go to item on the ground
-			player.teleToLocation(_item.getLocation(), true);
+			player.teleToLocation(_item.Location, true);
 		}
 		else
 		{
@@ -627,21 +628,21 @@ public class CursedWeapon : INamable
 		}
 	}
 	
-	public Location getWorldPosition()
+	public Location3D? getWorldPosition()
 	{
 		if (_isActivated && (_player != null))
 		{
-			return _player.getLocation();
+			return _player.Location.Location3D;
 		}
-		
+
 		if (_isDropped && (_item != null))
 		{
-			return _item.getLocation();
+			return _item.Location.Location3D;
 		}
-		
+
 		return null;
 	}
-	
+
 	public long getDuration()
 	{
 		return _duration;

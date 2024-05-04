@@ -10,6 +10,7 @@ using L2Dn.GameServer.Model.Interfaces;
 using L2Dn.GameServer.Model.Items.Instances;
 using L2Dn.GameServer.Model.Sieges;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using Microsoft.EntityFrameworkCore;
 using NLog;
 
@@ -39,13 +40,11 @@ public class SiegeGuardManager
 			foreach (CastleSiegeGuard record in ctx.CastleSiegeGuards.Where(r => r.IsHired))
 			{
 				int npcId = record.NpcId;
-				int x = record.X;
-				int y = record.Y;
-				int z = record.Z;
-				Castle castle = CastleManager.getInstance().getCastle(x, y, z);
+				Location3D location = new(record.X, record.Y, record.Z);
+				Castle castle = CastleManager.getInstance().getCastle(location);
 				if (castle == null)
 				{
-					LOGGER.Error($"Siege guard ticket cannot be placed! Castle is null at X: {x}, Y: {y}, Z: {z}");
+					LOGGER.Error($"Siege guard ticket cannot be placed! Castle is null at {location}");
 					continue;
 				}
 
@@ -54,7 +53,7 @@ public class SiegeGuardManager
 				{
 					Item dropticket = new Item(holder.getItemId());
 					dropticket.setItemLocation(ItemLocation.VOID);
-					dropticket.dropMe(null, x, y, z);
+					dropticket.dropMe(null, location);
 					World.getInstance().addObject(dropticket);
 					_droppedTickets.add(dropticket);
 				}
@@ -113,7 +112,7 @@ public class SiegeGuardManager
 	{
 		foreach (Item ticket in _droppedTickets)
 		{
-			if (ticket.calculateDistance3D(player) < 25)
+			if (ticket.Distance3D(player) < 25)
 			{
 				return true;
 			}
@@ -184,10 +183,10 @@ public class SiegeGuardManager
 				LOGGER.Warn("Error adding siege guard for castle " + castle.getName() + ": " + e);
 			}
 			
-			spawnMercenary(player, holder);
+			spawnMercenary(player.Location, holder);
 			Item dropticket = new Item(itemId);
 			dropticket.setItemLocation(ItemLocation.VOID);
-			dropticket.dropMe(null, player.getX(), player.getY(), player.getZ());
+			dropticket.dropMe(null, player.Location.Location3D);
 			World.getInstance().addObject(dropticket);
 			_droppedTickets.add(dropticket);
 		}
@@ -198,7 +197,7 @@ public class SiegeGuardManager
 	 * @param pos the object containing the spawn location coordinates
 	 * @param holder SiegeGuardHolder holder
 	 */
-	private void spawnMercenary(ILocational pos, SiegeGuardHolder holder)
+	private void spawnMercenary(Location location, SiegeGuardHolder holder)
 	{
 		NpcTemplate template = NpcData.getInstance().getTemplate(holder.getNpcId());
 		if (template != null)
@@ -206,8 +205,8 @@ public class SiegeGuardManager
 			Defender npc = new Defender(template);
 			npc.setCurrentHpMp(npc.getMaxHp(), npc.getMaxMp());
 			npc.setDecayed(false);
-			npc.setHeading(pos.getHeading());
-			npc.spawnMe(pos.getX(), pos.getY(), (pos.getZ() + 20));
+			npc.setHeading(location.Heading);
+			npc.spawnMe(location.Location3D with { Z = location.Z + 20 });
 			npc.scheduleDespawn(TimeSpan.FromSeconds(3));
 			npc.setImmobilized(holder.isStationary());
 		}
@@ -247,7 +246,7 @@ public class SiegeGuardManager
 			return;
 		}
 		
-		removeSiegeGuard(holder.getNpcId(), item);
+		removeSiegeGuard(holder.getNpcId(), item.Location.Location3D);
 		_droppedTickets.remove(item);
 	}
 	
@@ -268,8 +267,7 @@ public class SiegeGuardManager
 			{
 				Spawn spawn = new Spawn(record.NpcId);
 				spawn.setAmount(1);
-				spawn.Location.setXYZ(record.X, record.Y, record.Z);
-				spawn.Location.setHeading(record.Heading);
+				spawn.Location = new Location(record.X, record.Y, record.Z, record.Heading);
 				spawn.setRespawnDelay(record.RespawnDelay);
 				spawn.setLocationId(0);
 
@@ -287,20 +285,18 @@ public class SiegeGuardManager
 	 * @param npcId the ID of NPC
 	 * @param pos
 	 */
-	public void removeSiegeGuard(int npcId, ILocational pos)
+	public void removeSiegeGuard(int npcId, Location3D location)
 	{
 		try
 		{
-			int x = pos.getX();
-			int y = pos.getY();
-			int z = pos.getZ();
-			
 			using GameServerDbContext ctx = DbFactory.Instance.CreateDbContext();
-			ctx.CastleSiegeGuards.Where(r => r.NpcId == npcId && r.X == x && r.Y == y && r.Z == z).ExecuteDelete();
+			ctx.CastleSiegeGuards
+				.Where(r => r.NpcId == npcId && r.X == location.X && r.Y == location.Y && r.Z == location.Z)
+				.ExecuteDelete();
 		}
 		catch (Exception e)
 		{
-			LOGGER.Warn("Error deleting hired siege guard at " + pos + " : " + e);
+			LOGGER.Warn("Error deleting hired siege guard at " + location + " : " + e);
 		}
 	}
 	

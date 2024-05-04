@@ -206,7 +206,7 @@ public class Player: Playable
 	
 	/** Boat and AirShip */
 	private Vehicle _vehicle;
-	private Location _inVehiclePosition;
+	private Location3D _inVehiclePosition;
 	
 	private MountType _mountType = MountType.NONE;
 	private int _mountNpcId;
@@ -232,13 +232,13 @@ public class Player: Playable
 	private bool _waitTypeSitting;
 	
 	/** Location before entering Observer Mode */
-	private Location _lastLoc;
+	private Location3D? _lastLoc;
 	private bool _observerMode;
 	
-	private Location _teleportLocation;
+	private Location? _teleportLocation;
 	
 	/** Stored from last ValidatePosition **/
-	private readonly Location _lastServerPosition = new Location(0, 0, 0);
+	private Location3D _lastServerPosition;
 	
 	private readonly AtomicBoolean _blinkActive = new AtomicBoolean();
 	
@@ -380,7 +380,7 @@ public class Player: Playable
 	private readonly int _maxAssassinationPoints = 100000;
 	
 	// WorldPosition used by TARGET_SIGNET_GROUND
-	private Location _currentSkillWorldPosition;
+	private Location3D? _currentSkillWorldPosition;
 	
 	private AccessLevel _accessLevel;
 	
@@ -1251,14 +1251,14 @@ public class Player: Playable
 		}
 		
 		Npc target = _lastFolkNpc;
-		if ((target != null) && isInsideRadius2D(target, Npc.INTERACTION_DISTANCE))
+		if ((target != null) && this.IsInsideRadius2D(target, Npc.INTERACTION_DISTANCE))
 		{
 			quest.notifyEvent(ev, target, this);
 		}
 		else if (_questNpcObject > 0)
 		{
 			WorldObject obj = World.getInstance().findObject(getLastQuestNpcObject());
-			if ((obj != null) && obj.isNpc() && isInsideRadius2D(obj, Npc.INTERACTION_DISTANCE))
+			if ((obj != null) && obj.isNpc() && this.IsInsideRadius2D(obj, Npc.INTERACTION_DISTANCE))
 			{
 				Npc npc = (Npc) obj;
 				quest.notifyEvent(ev, npc, this);
@@ -1557,13 +1557,14 @@ public class Player: Playable
 		}
 		
 		// This function is called too often from movement code.
-		if (!force && (calculateDistance3D(_lastZoneValidateLocation) < 100))
+		if (!force && (this.Distance3D(_lastZoneValidateLocation) < 100))
 		{
 			return;
 		}
-		_lastZoneValidateLocation.setXYZ(this);
-		
-		ZoneManager.getInstance().getRegion(this).revalidateZones(this);
+
+		_lastZoneValidateLocation = Location.Location3D;
+
+		ZoneManager.getInstance().getRegion(Location.Location2D)?.revalidateZones(this);
 		
 		if (Config.ALLOW_WATER)
 		{
@@ -3543,7 +3544,7 @@ public class Player: Playable
 			return false;
 		}
 		
-		droppedItem.dropMe(this, (getX() + Rnd.get(50)) - 25, (getY() + Rnd.get(50)) - 25, getZ() + 20);
+		droppedItem.dropMe(this, new Location3D((getX() + Rnd.get(50)) - 25, (getY() + Rnd.get(50)) - 25, getZ() + 20));
 		if ((Config.AUTODESTROY_ITEM_AFTER > 0) && Config.DESTROY_DROPPED_PLAYER_ITEM && !Config.LIST_PROTECTED_ITEMS.Contains(droppedItem.getId()) && ((droppedItem.isEquipable() && Config.DESTROY_EQUIPABLE_PLAYER_ITEM) || !droppedItem.isEquipable()))
 		{
 			ItemsAutoDestroyTaskManager.getInstance().addItem(droppedItem);
@@ -3604,7 +3605,7 @@ public class Player: Playable
 	 * @param protectItem
 	 * @return Item corresponding to the new item or the updated item in inventory
 	 */
-	public Item dropItem(string process, int objectId, long count, int x, int y, int z, WorldObject reference, bool sendMessage, bool protectItem)
+	public Item dropItem(string process, int objectId, long count, Location3D location, WorldObject reference, bool sendMessage, bool protectItem)
 	{
 		Item invitem = _inventory.getItemByObjectId(objectId);
 		Item item = _inventory.dropItem(process, objectId, count, this, reference);
@@ -3617,7 +3618,7 @@ public class Player: Playable
 			return null;
 		}
 		
-		item.dropMe(this, x, y, z);
+		item.dropMe(this, location);
 		if ((Config.AUTODESTROY_ITEM_AFTER > 0) && Config.DESTROY_DROPPED_PLAYER_ITEM && !Config.LIST_PROTECTED_ITEMS.Contains(item.getId()) && ((item.isEquipable() && Config.DESTROY_EQUIPABLE_PLAYER_ITEM) || !item.isEquipable()))
 		{
 			ItemsAutoDestroyTaskManager.getInstance().addItem(item);
@@ -3763,12 +3764,12 @@ public class Player: Playable
 		_client = client;
 	}
 	
-	public Location getCurrentSkillWorldPosition()
+	public Location3D? getCurrentSkillWorldPosition()
 	{
 		return _currentSkillWorldPosition;
 	}
 	
-	public void setCurrentSkillWorldPosition(Location worldPosition)
+	public void setCurrentSkillWorldPosition(Location3D? worldPosition)
 	{
 		_currentSkillWorldPosition = worldPosition;
 	}
@@ -4048,7 +4049,7 @@ public class Player: Playable
 		
 		World.getInstance().forEachVisibleObject<Player>(this, player =>
 		{
-			if (!isVisibleFor(player) || (calculateDistance3D(player) >= radiusInKnownlist))
+			if (!isVisibleFor(player) || (this.Distance3D(player) >= radiusInKnownlist))
 			{
 				return;
 			}
@@ -6035,7 +6036,7 @@ public class Player: Playable
 	
 	public bool dismount()
 	{
-		if (ZoneManager.getInstance().getZone<WaterZone>(getX(), getY(), getZ() - 300) == null)
+		if (ZoneManager.getInstance().getZone<WaterZone>(new Location3D(getX(), getY(), getZ() - 300)) == null)
 		{
 			if (!isInWater() && (getZ() > 10000))
 			{
@@ -6043,7 +6044,7 @@ public class Player: Playable
 				sendPacket(ActionFailedPacket.STATIC_PACKET);
 				return false;
 			}
-			if ((GeoEngine.getInstance().getHeight(getX(), getY(), getZ()) + 300) < getZ())
+			if ((GeoEngine.getInstance().getHeight(Location.Location3D) + 300) < getZ())
 			{
 				sendPacket(SystemMessageId.YOU_CANNOT_DISMOUNT_FROM_THIS_ELEVATION);
 				sendPacket(ActionFailedPacket.STATIC_PACKET);
@@ -6612,11 +6613,9 @@ public class Player: Playable
 				CursedWeaponsManager.getInstance().checkPlayer(player);
 
 				// Set the x,y,z position of the Player and make it invisible
-				int x = character.X;
-				int y = character.Y;
-				int z = character.Z;
-				player.setXYZInvisible(x, y, z);
-				player.setLastServerPosition(x, y, z);
+				Location3D location = new(character.X, character.Y, character.Z);
+				player.setXYZInvisible(location);
+				player.setLastServerPosition(location);
 
 				// Set Teleport Bookmark Slot
 				player.setBookMarkSlot(character.BookmarkSlot);
@@ -7088,9 +7087,9 @@ public class Player: Playable
             character.HairColor = _appearance.getHairColor();
 			character.Sex = _appearance.getSex();
             character.Heading = getHeading();
-            character.X = _lastLoc != null ? _lastLoc.getX() : getX();
-            character.Y = _lastLoc != null ? _lastLoc.getY() : getY();
-            character.Z = _lastLoc != null ? _lastLoc.getZ() : getZ();
+            character.X = _lastLoc != null ? _lastLoc.Value.X : getX();
+            character.Y = _lastLoc != null ? _lastLoc.Value.Y : getY();
+            character.Z = _lastLoc != null ? _lastLoc.Value.Z : getZ();
             character.Exp = exp;
             character.ExpBeforeDeath = _expBeforeDeath;
             character.Sp = sp;
@@ -8370,7 +8369,7 @@ public class Player: Playable
 			{
 				if (clan != attackerClan)
 				{
-					Siege siege = SiegeManager.getInstance().getSiege(getX(), getY(), getZ());
+					Siege siege = SiegeManager.getInstance().getSiege(Location.Location3D);
 					if (siege != null)
 					{
 						// Check if a siege is in progress and if attacker and the Player aren't in the Defender clan.
@@ -8616,7 +8615,7 @@ public class Player: Playable
 		// ************************************* Check Target *******************************************
 		// Create and set a WorldObject containing the target of the skill
 		WorldObject target = usedSkill.getTarget(this, forceUse, dontMove, true);
-		Location worldPosition = _currentSkillWorldPosition;
+		Location3D? worldPosition = _currentSkillWorldPosition;
 		if ((usedSkill.getTargetType() == TargetType.GROUND) && (worldPosition == null))
 		{
 			if (usedSkill.getAffectScope() == AffectScope.FAN_PB)
@@ -9193,14 +9192,14 @@ public class Player: Playable
 		getEffectList().stopEffects(AbnormalType.HIDE);
 		
 		setObserving(true);
-		sendPacket(new ObservationModePacket(loc));
-		teleToLocation(loc, false);
+		sendPacket(new ObservationModePacket(loc.Location3D));
+		this.teleToLocation(loc, false);
 		broadcastUserInfo();
 	}
 	
 	public void setLastLocation()
 	{
-		_lastLoc = new Location(getX(), getY(), getZ());
+		_lastLoc = new Location3D(getX(), getY(), getZ());
 	}
 	
 	public void unsetLastLocation()
@@ -9250,7 +9249,7 @@ public class Player: Playable
 		setInvul(true);
 		setInvisible(true);
 		setInstance(OlympiadGameManager.getInstance().getOlympiadTask(id).getStadium().getInstance());
-		teleToLocation(loc, false);
+		this.teleToLocation(loc, false);
 		sendPacket(new ExOlympiadModePacket(3));
 		broadcastUserInfo();
 	}
@@ -9259,9 +9258,9 @@ public class Player: Playable
 	{
 		setTarget(null);
 		setInstance(null);
-		teleToLocation(_lastLoc, false);
+		this.teleToLocation(_lastLoc.Value);
 		unsetLastLocation();
-		sendPacket(new ObservationReturnPacket(getLocation()));
+		sendPacket(new ObservationReturnPacket(Location.Location3D));
 		setBlockActions(false);
 		if (!isGM())
 		{
@@ -9289,7 +9288,7 @@ public class Player: Playable
 		setTarget(null);
 		sendPacket(new ExOlympiadModePacket(0));
 		setInstance(null);
-		teleToLocation(_lastLoc, true);
+		this.teleToLocation(_lastLoc.Value, true);
 		if (!isGM())
 		{
 			setInvisible(false);
@@ -9323,7 +9322,7 @@ public class Player: Playable
 		return _olympiadGameId;
 	}
 	
-	public Location getLastLocation()
+	public Location3D? getLastLocation()
 	{
 		return _lastLoc;
 	}
@@ -10215,7 +10214,7 @@ public class Player: Playable
 			// if the rent of a wyvern expires while over a flying zone, tp to down before unmounting
 			if (checkLandingState() && (_mountType == MountType.WYVERN))
 			{
-				teleToLocation(TeleportWhereType.TOWN);
+				this.teleToLocation(TeleportWhereType.TOWN);
 			}
 			
 			if (dismount()) // this should always be true now, since we teleported already
@@ -10329,7 +10328,7 @@ public class Player: Playable
 		
 		try
 		{
-			foreach (ZoneType zone in ZoneManager.getInstance().getZones(this))
+			foreach (ZoneType zone in ZoneManager.getInstance().getZones(Location.Location3D))
 			{
 				zone.onPlayerLoginInside(this);
 			}
@@ -10402,13 +10401,13 @@ public class Player: Playable
 			Pet pet = getPet();
 			if (pet != null)
 			{
-				pet.teleToLocation(this, true);
+				pet.teleToLocation(Location, true);
 			}
 			foreach (Summon summon in getServitors().values())
 			{
 				if (!summon.isInsideZone(ZoneId.SIEGE))
 				{
-					summon.teleToLocation(this, true);
+					summon.teleToLocation(Location, true);
 				}
 			}
 		}
@@ -10599,21 +10598,20 @@ public class Player: Playable
 			}
 		}
 	}
-	
-	public override void teleToLocation(ILocational loc, bool allowRandomOffset)
+
+	public override void teleToLocation(Location location, Instance? instance)
 	{
 		if ((_vehicle != null) && !_vehicle.isTeleporting())
 		{
 			setVehicle(null);
 		}
-		
-		if (isFlyingMounted() && (loc.getZ() < -1005))
-		{
-			base.teleToLocation(loc.getX(), loc.getY(), -1005, loc.getHeading());
-		}
-		base.teleToLocation(loc, allowRandomOffset);
+
+		if (isFlyingMounted() && location.Z < -1005)
+			base.teleToLocation(location with { Z = -1005 }, instance);
+
+		base.teleToLocation(location, instance);
 	}
-	
+
 	public override void onTeleported()
 	{
 		// Stop auto peel.
@@ -10632,7 +10630,7 @@ public class Player: Playable
 		}
 		else // Update last player position upon teleport.
 		{
-			setLastServerPosition(getX(), getY(), getZ());
+			setLastServerPosition(Location.Location3D);
 		}
 		
 		// Force a revalidation.
@@ -10656,7 +10654,7 @@ public class Player: Playable
 		if (_pet != null)
 		{
 			_pet.setFollowStatus(false);
-			_pet.teleToLocation(getLocation(), false);
+			_pet.teleToLocation(Location, false);
 			((SummonAI) _pet.getAI()).setStartFollowController(true);
 			_pet.setFollowStatus(true);
 			_pet.setInstance(getInstanceWorld());
@@ -10667,7 +10665,7 @@ public class Player: Playable
 		getServitors().values().forEach(s =>
 		{
 			s.setFollowStatus(false);
-			s.teleToLocation(getLocation(), false);
+			s.teleToLocation(Location, false);
 			((SummonAI) s.getAI()).setStartFollowController(true);
 			s.setFollowStatus(true);
 			s.setInstance(getInstanceWorld());
@@ -10729,22 +10727,22 @@ public class Player: Playable
 		}
 	}
 	
-	public void setTeleportLocation(Location location)
+	public void setTeleportLocation(Location? location)
 	{
 		_teleportLocation = location;
 	}
 	
-	public Location getTeleportLocation()
+	public Location? getTeleportLocation()
 	{
 		return _teleportLocation;
 	}
 	
-	public void setLastServerPosition(int x, int y, int z)
+	public void setLastServerPosition(Location3D location)
 	{
-		_lastServerPosition.setXYZ(x, y, z);
+		_lastServerPosition = location;
 	}
 	
-	public Location getLastServerPosition()
+	public Location3D getLastServerPosition()
 	{
 		return _lastServerPosition;
 	}
@@ -10951,12 +10949,12 @@ public class Player: Playable
 	/**
 	 * @return
 	 */
-	public Location getInVehiclePosition()
+	public Location3D getInVehiclePosition()
 	{
 		return _inVehiclePosition;
 	}
 	
-	public void setInVehiclePosition(Location pt)
+	public void setInVehiclePosition(Location3D pt)
 	{
 		_inVehiclePosition = pt;
 	}
@@ -10989,7 +10987,7 @@ public class Player: Playable
 		
 		try
 		{
-			foreach (ZoneType zone in ZoneManager.getInstance().getZones(this))
+			foreach (ZoneType zone in ZoneManager.getInstance().getZones(Location.Location3D))
 			{
 				zone.onPlayerLogoutInside(this);
 			}
@@ -11078,7 +11076,7 @@ public class Player: Playable
 		// Exit timed hunting zone.
 		if (isInTimedHuntingZone())
 		{
-			teleToLocation(TeleportWhereType.TOWN);
+			this.teleToLocation(TeleportWhereType.TOWN);
 			storeCharBase();
 		}
 		
@@ -11163,7 +11161,7 @@ public class Player: Playable
 		getEffectList().stopAllToggles();
 		
 		// Remove from world regions zones.
-		ZoneRegion region = ZoneManager.getInstance().getRegion(this);
+		ZoneRegion? region = ZoneManager.getInstance().getRegion(Location.Location2D);
 		if (region != null)
 		{
 			region.removeFromZones(this);
@@ -11272,7 +11270,7 @@ public class Player: Playable
 			// before entering in observer mode
 			if (_observerMode)
 			{
-				setLocationInvisible(_lastLoc);
+				setLocationInvisible(_lastLoc.Value);
 			}
 			
 			if (_vehicle != null)
@@ -12503,7 +12501,7 @@ public class Player: Playable
 			}
 			
 			destroyItem("Consume", _inventory.getItemByItemId(13016).getObjectId(), 1, null, false);
-			setTeleportLocation(new Location(bookmark.Location.X, bookmark.Location.Y, bookmark.Location.Z));
+			setTeleportLocation(new Location(bookmark.Location, 0));
 			doCast(CommonSkill.MY_TELEPORT.getSkill());
 		}
 		sendPacket(new ExGetBookMarkInfoPacket(this));
@@ -12676,13 +12674,13 @@ public class Player: Playable
 	{
 		if (isInBoat())
 		{
-			setXYZ(getBoat().getLocation());
+			setXYZ(getBoat().Location.Location3D);
 			player.sendPacket(new CharacterInfoPacket(this, isInvisible() && player.canOverrideCond(PlayerCondOverride.SEE_ALL_PLAYERS)));
 			player.sendPacket(new GetOnVehiclePacket(getObjectId(), getBoat().getObjectId(), _inVehiclePosition));
 		}
 		else if (isInAirShip())
 		{
-			setXYZ(getAirShip().getLocation());
+			setXYZ(getAirShip().Location.Location3D);
 			player.sendPacket(new CharacterInfoPacket(this, isInvisible() && player.canOverrideCond(PlayerCondOverride.SEE_ALL_PLAYERS)));
 			player.sendPacket(new ExGetOnAirShipPacket(this, getAirShip()));
 		}
@@ -15175,7 +15173,7 @@ public class Player: Playable
 					_timedHuntingZoneTask = null;
 					abortCast();
 					stopMove(null);
-					teleToLocation(MapRegionManager.getInstance().getTeleToLocation(this, TeleportWhereType.TOWN));
+					this.teleToLocation(TeleportWhereType.TOWN);
 					sendPacket(SystemMessageId.THE_HUNTING_ZONE_S_USE_TIME_HAS_EXPIRED_SO_YOU_WERE_MOVED_OUTSIDE);
 					setInstance(null);
 				}

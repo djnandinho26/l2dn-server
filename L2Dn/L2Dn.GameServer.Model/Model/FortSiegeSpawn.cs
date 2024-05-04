@@ -1,4 +1,5 @@
 ﻿using L2Dn.GameServer.Model.Interfaces;
+using L2Dn.Geometry;
 
 namespace L2Dn.GameServer.Model;
 

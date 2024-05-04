@@ -5,6 +5,7 @@ using L2Dn.GameServer.Model.Interfaces;
 using L2Dn.GameServer.Model.Items.Instances;
 using L2Dn.GameServer.Model.Skills;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using ThreadPool = L2Dn.GameServer.Utilities.ThreadPool;
 
 namespace L2Dn.GameServer.AI;
@@ -35,7 +36,7 @@ public class DoorAI : CreatureAI
 	{
 	}
 	
-	protected override void onIntentionMoveTo(ILocational destination)
+	protected override void onIntentionMoveTo(Location3D destination)
 	{
 	}
 	
@@ -57,7 +58,7 @@ public class DoorAI : CreatureAI
 	
 	protected override void onEvtAttacked(Creature attacker)
 	{
-		ThreadPool.execute(new onEventAttackedDoorTask(this, (Door) _actor, attacker));
+		ThreadPool.execute(new onEventAttackedDoorTask(this, (Door)_actor, attacker));
 	}
 	
 	protected override void onEvtAggression(Creature target, int aggro)
@@ -117,7 +118,7 @@ public class DoorAI : CreatureAI
 		{
 			World.getInstance().forEachVisibleObject<Defender>(_door, guard =>
 			{
-				if (_self._actor.isInsideRadius3D(guard, guard.getTemplate().getClanHelpRange()))
+				if (_self._actor.IsInsideRadius3D(guard, guard.getTemplate().getClanHelpRange()))
 				{
 					guard.getAI().notifyEvent(CtrlEvent.EVT_AGGRESSION, _attacker, 15);
 				}

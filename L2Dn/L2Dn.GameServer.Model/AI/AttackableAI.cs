@@ -15,6 +15,7 @@ using L2Dn.GameServer.Model.Skills;
 using L2Dn.GameServer.Model.Zones;
 using L2Dn.GameServer.TaskManagers;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Utilities;
 using NLog;
 
@@ -174,7 +175,7 @@ public class AttackableAI: CreatureAI
 				{
 					intention = CtrlIntention.AI_INTENTION_ACTIVE;
 				}
-				else if ((npc.getSpawn() != null) && !npc.isInsideRadius3D(npc.getSpawn().Location, Config.MAX_DRIFT_RANGE + Config.MAX_DRIFT_RANGE))
+				else if ((npc.getSpawn() != null) && !npc.IsInsideRadius3D(npc.getSpawn(), Config.MAX_DRIFT_RANGE + Config.MAX_DRIFT_RANGE))
 				{
 					intention = CtrlIntention.AI_INTENTION_ACTIVE;
 				}
@@ -295,7 +296,7 @@ public class AttackableAI: CreatureAI
 							|| (Config.FAKE_PLAYER_AGGRO_PLAYERS && t.isPlayer()))
 						{
 							long hating = npc.getHating(t);
-							double distance = npc.calculateDistance2D(t);
+							double distance = npc.Distance2D(t);
 							if ((hating == 0) && (closestDistance > distance))
 							{
 								nearestTarget = t;
@@ -314,9 +315,9 @@ public class AttackableAI: CreatureAI
 					Item droppedItem = npc.getFakePlayerDrops().get(itemIndex);
 					if ((droppedItem != null) && droppedItem.isSpawned())
 					{
-						if (npc.calculateDistance2D(droppedItem) > 50)
+						if (npc.Distance2D(droppedItem) > 50)
 						{
-							moveTo(droppedItem);
+							moveTo(new Location3D(droppedItem.getX(), droppedItem.getY(), droppedItem.getZ()));
 						}
 						else
 						{
@@ -440,7 +441,7 @@ public class AttackableAI: CreatureAI
 		}
 		
 		// Order this attackable to return to its spawn because there's no target to attack
-		if (!npc.isWalker() && (npc.getSpawn() != null) && (npc.calculateDistance2D(npc.getSpawn().Location) > Config.MAX_DRIFT_RANGE) && ((getTarget() == null) || getTarget().isInvisible() || (getTarget().isPlayer() && !Config.ATTACKABLES_CAMP_PLAYER_CORPSES && getTarget().getActingPlayer().isAlikeDead())))
+		if (!npc.isWalker() && (npc.getSpawn() != null) && (npc.Distance2D(npc.getSpawn().Location.Location2D) > Config.MAX_DRIFT_RANGE) && ((getTarget() == null) || getTarget().isInvisible() || (getTarget().isPlayer() && !Config.ATTACKABLES_CAMP_PLAYER_CORPSES && getTarget().getActingPlayer().isAlikeDead())))
 		{
 			npc.setWalking();
 			npc.returnHome();
@@ -477,7 +478,7 @@ public class AttackableAI: CreatureAI
 				npc.setWalking();
 			}
 			
-			if (npc.calculateDistanceSq2D(leader) > (offset * offset))
+			if (npc.DistanceSquare2D(leader) > (offset * offset))
 			{
 				int x1 = Rnd.get(minRadius * 2, offset * 2); // x
 				int y1 = Rnd.get(x1, offset * 2); // distance
@@ -500,7 +501,7 @@ public class AttackableAI: CreatureAI
 				}
 				
 				// Move the actor to Location (x,y,z) server side AND client side by sending Server->Client packet MoveToLocation (broadcast)
-				moveTo(x1, y1, leader.getZ());
+				moveTo(new Location3D(x1, y1, leader.getZ()));
 			}
 			else if (Rnd.get(RANDOM_WALK_RATE) == 0)
 			{
@@ -529,10 +530,10 @@ public class AttackableAI: CreatureAI
 				}
 			}
 			
-			int x1 = npc.getSpawn().Location.getX();
-			int y1 = npc.getSpawn().Location.getY();
-			int z1 = npc.getSpawn().Location.getZ();
-			if (npc.isInsideRadius2D(x1, y1, 0, Config.MAX_DRIFT_RANGE))
+			int x1 = npc.getSpawn().Location.X;
+			int y1 = npc.getSpawn().Location.Y;
+			int z1 = npc.getSpawn().Location.Z;
+			if (npc.IsInsideRadius2D(npc.getSpawn(), Config.MAX_DRIFT_RANGE))
 			{
 				int deltaX = Rnd.get(Config.MAX_DRIFT_RANGE * 2); // x
 				int deltaY = Rnd.get(deltaX, Config.MAX_DRIFT_RANGE * 2); // distance
@@ -543,10 +544,14 @@ public class AttackableAI: CreatureAI
 			}
 			
 			// Move the actor to Location (x,y,z) server side AND client side by sending Server->Client packet MoveToLocation (broadcast)
-			Location moveLoc = _actor.isFlying() ? new Location(x1, y1, z1) : GeoEngine.getInstance().getValidLocation(npc.getX(), npc.getY(), npc.getZ(), x1, y1, z1, npc.getInstanceWorld());
-			if (Util.calculateDistance(npc.getSpawn().Location, moveLoc, false, false) <= Config.MAX_DRIFT_RANGE)
+			Location3D loc = new(x1, y1, z1);
+			Location3D moveLoc = _actor.isFlying()
+				? loc
+				: GeoEngine.getInstance().getValidLocation(npc.Location.Location3D, loc, npc.getInstanceWorld());
+
+			if (npc.getSpawn().Distance2D(moveLoc) <= Config.MAX_DRIFT_RANGE)
 			{
-				moveTo(moveLoc.getX(), moveLoc.getY(), moveLoc.getZ());
+				moveTo(moveLoc);
 			}
 		}
 	}
@@ -572,7 +577,7 @@ public class AttackableAI: CreatureAI
 		if (Config.AGGRO_DISTANCE_CHECK_ENABLED && npc.isMonster() && !npc.isWalker() && !(npc is GrandBoss))
 		{
 			Spawn spawn = npc.getSpawn();
-			if ((spawn != null) && (npc.calculateDistance2D(spawn.Location) > (spawn.getChaseRange() > 0 ? Math.Max(Config.MAX_DRIFT_RANGE, spawn.getChaseRange()) : npc.isRaid() ? Config.AGGRO_DISTANCE_CHECK_RAID_RANGE : Config.AGGRO_DISTANCE_CHECK_RANGE)))
+			if ((spawn != null) && (npc.Distance2D(spawn.Location.Location2D) > (spawn.getChaseRange() > 0 ? Math.Max(Config.MAX_DRIFT_RANGE, spawn.getChaseRange()) : npc.isRaid() ? Config.AGGRO_DISTANCE_CHECK_RAID_RANGE : Config.AGGRO_DISTANCE_CHECK_RANGE)))
 			{
 				if ((Config.AGGRO_DISTANCE_CHECK_RAIDS || !npc.isRaid()) && (Config.AGGRO_DISTANCE_CHECK_INSTANCES || !npc.isInInstance()))
 				{
@@ -586,7 +591,7 @@ public class AttackableAI: CreatureAI
 					npc.getAttackByList().clear();
 					if (npc.hasAI())
 					{
-						npc.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, spawn.Location);
+						npc.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, spawn.Location.Location3D);
 					}
 					else
 					{
@@ -608,7 +613,7 @@ public class AttackableAI: CreatureAI
 							minion.getAttackByList().clear();
 							if (minion.hasAI())
 							{
-								minion.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, spawn.Location);
+								minion.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, spawn.Location.Location3D);
 							}
 							else
 							{
@@ -662,7 +667,7 @@ public class AttackableAI: CreatureAI
 		// Actor should be able to see target.
 		if (!GeoEngine.getInstance().canSeeTarget(_actor, target))
 		{
-			moveTo(target);
+			moveTo(new Location3D(target.getX(), target.getY(), target.getZ()));
 			return;
 		}
 
@@ -765,7 +770,7 @@ public class AttackableAI: CreatureAI
 		{
 			foreach (Attackable nearby in World.getInstance().getVisibleObjects<Attackable>(npc))
 			{
-				if (npc.isInsideRadius2D(nearby, collision) && (nearby != target))
+				if (npc.IsInsideRadius2D(nearby, collision) && (nearby != target))
 				{
 					int newX = combinedCollision + Rnd.get(40);
 					if (Rnd.nextBoolean())
@@ -786,12 +791,15 @@ public class AttackableAI: CreatureAI
 						newY = target.getY() - newY;
 					}
 					
-					if (!npc.isInsideRadius2D(newX, newY, 0, collision))
+					if (!npc.IsInsideRadius2D(new Location2D(newX, newY), collision))
 					{
 						int newZ = npc.getZ() + 30;
 						
-						// Mobius: Verify destination. Prevents wall collision issues and fixes monsters not avoiding obstacles.
-						moveTo(GeoEngine.getInstance().getValidLocation(npc.getX(), npc.getY(), npc.getZ(), newX, newY, newZ, npc.getInstanceWorld()));
+						// Verify destination. Prevents wall collision issues and fixes monsters not avoiding obstacles.
+						Location3D loc = GeoEngine.getInstance().getValidLocation(npc.Location.Location3D,
+							new Location3D(newX, newY, newZ), npc.getInstanceWorld());
+
+						moveTo(loc);
 					}
 					return;
 				}
@@ -801,7 +809,7 @@ public class AttackableAI: CreatureAI
 		// Calculate Archer movement.
 		if ((!npc.isMovementDisabled()) && (npc.getAiType() == AIType.ARCHER) && (Rnd.get(100) < 15))
 		{
-			double distance2 = npc.calculateDistanceSq2D(target);
+			double distance2 = npc.DistanceSquare2D(target);
 			if (Math.Sqrt(distance2) <= (60 + combinedCollision))
 			{
 				int posX = npc.getX();
@@ -824,11 +832,13 @@ public class AttackableAI: CreatureAI
 				{
 					posY -= 300;
 				}
-				
-				if (GeoEngine.getInstance().canMoveToTarget(npc.getX(), npc.getY(), npc.getZ(), posX, posY, posZ, npc.getInstanceWorld()))
+
+				Location3D newLocation = new(posX, posY, posZ);
+				if (GeoEngine.getInstance().canMoveToTarget(npc.Location.Location3D, newLocation, npc.getInstanceWorld()))
 				{
-					setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, new Location(posX, posY, posZ, 0));
+					setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, newLocation);
 				}
+
 				return;
 			}
 		}
@@ -942,7 +952,7 @@ public class AttackableAI: CreatureAI
 			}
 			
 			// Try cast short range skill.
-			if (!npc.getShortRangeSkills().isEmpty() && (npc.calculateDistance2D(target) <= 150))
+			if (!npc.getShortRangeSkills().isEmpty() && (npc.Distance2D(target) <= 150))
 			{
 				Skill shortRangeSkill = npc.getShortRangeSkills().get(Rnd.get(npc.getShortRangeSkills().size()));
 				if (SkillCaster.checkUseConditions(npc, shortRangeSkill) && checkSkillTarget(shortRangeSkill, target))
@@ -984,7 +994,7 @@ public class AttackableAI: CreatureAI
 		{
 			range = 850 + combinedCollision; // Base bow range for NPCs.
 		}
-		if (npc.calculateDistance2D(target) > range)
+		if (npc.Distance2D(target) > range)
 		{
 			if (checkTarget(target))
 			{
@@ -1083,7 +1093,7 @@ public class AttackableAI: CreatureAI
 			
 			if (npc.isMovementDisabled())
 			{
-				if (!npc.isInsideRadius2D(target, npc.getPhysicalAttackRange() + npc.getTemplate().getCollisionRadius() + ((Creature) target).getTemplate().getCollisionRadius()))
+				if (!npc.IsInsideRadius2D(target, npc.getPhysicalAttackRange() + npc.getTemplate().getCollisionRadius() + ((Creature) target).getTemplate().getCollisionRadius()))
 				{
 					return false;
 				}

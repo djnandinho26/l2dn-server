@@ -46,7 +46,7 @@ public class AdminMissingHtmls: IAdminCommandHandler
 						&& !results.Contains(obj.getId()))
 					{
 						Npc npc = (Npc) obj;
-						if ((npc.getLocation().getX() > topLeftX) && (npc.getLocation().getX() < bottomRightX) && (npc.getLocation().getY() > topLeftY) && (npc.getLocation().getY() < bottomRightY) && npc.isTalkable() && !npc.Events.HasSubscribers<OnNpcFirstTalk>())
+						if ((npc.Location.X > topLeftX) && (npc.Location.X < bottomRightX) && (npc.Location.Y > topLeftY) && (npc.Location.Y < bottomRightY) && npc.isTalkable() && !npc.Events.HasSubscribers<OnNpcFirstTalk>())
 						{
 							if ((npc.getHtmlPath(npc.getId(), 0, null).equals("html/npcdefault.htm"))//
 								|| ((obj is Fisherman) && (HtmCache.getInstance().getHtm(null, "html/fisherman/" + npc.getId() + ".htm") == null)) //
@@ -123,7 +123,7 @@ public class AdminMissingHtmls: IAdminCommandHandler
 								|| (((obj is Merchant) && !(obj is Fisherman)) && (HtmCache.getInstance().getHtm(null, "html/merchant/" + npc.getId() + ".htm") == null)) //
 								|| ((obj is Guard) && (HtmCache.getInstance().getHtm(null, "html/guard/" + npc.getId() + ".htm") == null)))
 							{
-								activeChar.teleToLocation(npc);
+								activeChar.teleToLocation(npc.Location);
 								BuilderUtil.sendSysMessage(activeChar, "NPC " + npc.getId() + " does not have a default html.");
 								break;
 							}

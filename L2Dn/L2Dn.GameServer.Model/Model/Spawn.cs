@@ -10,6 +10,7 @@ using L2Dn.GameServer.Model.Spawns;
 using L2Dn.GameServer.Model.Zones.Types;
 using L2Dn.GameServer.TaskManagers;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Utilities;
 using NLog;
 
@@ -22,11 +23,11 @@ namespace L2Dn.GameServer.Model;
  * The heading of the Npc can be a random heading if not defined (value= -1) or an exact heading (ex : merchant...).
  * @author Nightmare
  */
-public class Spawn : IIdentifiable, INamable
+public class Spawn : IIdentifiable, INamable, IHasLocation
 {
 	protected static readonly Logger LOGGER = LogManager.GetLogger(nameof(Spawn));
 
-	private readonly Location _location;
+	private Location _location;
 
 	/** String identifier of this spawn */
 	private string _name;
@@ -41,17 +42,17 @@ public class Spawn : IIdentifiable, INamable
 	/** The identifier of the location area where Npc can be spawned */
 	private int _locationId;
 	/** The spawn instance id */
-	private int _instanceId = 0;
+	private int _instanceId;
 	/** Minimum respawn delay */
 	private TimeSpan _respawnMinDelay;
 	/** Maximum respawn delay */
 	private TimeSpan _respawnMaxDelay;
 	/** Respawn Pattern **/
-	private SchedulingPattern _respawnPattern;
+	private SchedulingPattern? _respawnPattern;
 	/** If True an Npc is respawned each time that another is killed */
 	private bool _doRespawn = true;
 	private readonly List<Npc> _spawnedNpcs = new();
-    private bool _randomWalk = false; // Is no random walk
+    private bool _randomWalk; // Is no random walk
 	private NpcSpawnTemplate _spawnTemplate;
 	
 	/**
@@ -78,11 +79,8 @@ public class Spawn : IIdentifiable, INamable
 	 */
 	public Spawn(NpcTemplate template)
 	{
-		if (template == null)
-			throw new ArgumentException("NpcTemplate not defined for NPC");
-
-		_template = template;
-		_location = new Location(0, 0, -10000);
+		_template = template ?? throw new ArgumentException("NpcTemplate not defined for NPC");
+		_location = new Location(0, 0, -10000, 0);
 	}
 
 	/**
@@ -98,10 +96,14 @@ public class Spawn : IIdentifiable, INamable
 		if (_template is null)
 			throw new ArgumentException("NpcTemplate not found for NPC ID: " + npcId);
 
-		_location = new Location(0, 0, -10000);
+		_location = new Location(0, 0, -10000, 0);
 	}
 
-	public Location Location => _location;
+	public Location Location
+	{
+		get => _location;
+		set => _location = value;
+	}
 
 	/**
 	 * @return the maximum number of Npc that this Spawn can manage.
@@ -164,7 +166,7 @@ public class Spawn : IIdentifiable, INamable
 	/**
 	 * @return respawn pattern
 	 */
-	public SchedulingPattern getRespawnPattern()
+	public SchedulingPattern? getRespawnPattern()
 	{
 		return _respawnPattern;
 	}
@@ -277,7 +279,7 @@ public class Spawn : IIdentifiable, INamable
 		_doRespawn = true;
 	}
 	
-	public Npc doSpawn()
+	public Npc? doSpawn()
 	{
 		return _doRespawn ? doSpawn(false) : null;
 	}
@@ -306,7 +308,7 @@ public class Spawn : IIdentifiable, INamable
 	 * @param isSummonSpawn
 	 * @return
 	 */
-	public Npc doSpawn(bool isSummonSpawn)
+	public Npc? doSpawn(bool isSummonSpawn)
 	{
 		try
 		{
@@ -343,20 +345,24 @@ public class Spawn : IIdentifiable, INamable
 		// Reset some variables
 		npc.onRespawn();
 
-		int newlocx = 0;
-		int newlocy = 0;
-		int newlocz = -10000;
-		
+		Location3D newLocation = new(0, 0, -10000);
+
 		// If Locx and Locy are not defined, the Npc must be spawned in an area defined by location or spawn territory.
 		if (_spawnTemplate != null)
 		{
-			Location loc = _spawnTemplate.getSpawnLocation();
-			newlocx = loc.getX();
-			newlocy = loc.getY();
-			newlocz = loc.getZ();
-			_location.setLocation(loc);
+			Location? loc = _spawnTemplate.getSpawnLocation();
+			if (loc != null)
+			{
+				_location = loc.Value;
+				newLocation = _location.Location3D;
+			}
+			else
+			{
+				LOGGER.Warn("NPC " + npc + " doesn't have spawn location!");
+				return null;
+			}
 		}
-		else if ((_location.getX() == 0) && (_location.getY() == 0))
+		else if ((_location.X == 0) && (_location.Y == 0))
 		{
 			LOGGER.Warn("NPC " + npc + " doesn't have spawn location!");
 			return null;
@@ -364,37 +370,37 @@ public class Spawn : IIdentifiable, INamable
 		else
 		{
 			// The Npc is spawned at the exact position (Lox, Locy, Locz)
-			newlocx = _location.getX();
-			newlocy = _location.getY();
-			newlocz = _location.getZ();
+			newLocation = _location.Location3D;
 		}
 		
 		// Check if npc is in water.
-		WaterZone water = ZoneManager.getInstance().getZone<WaterZone>(newlocx, newlocy, newlocz);
+		WaterZone? water = ZoneManager.getInstance().getZone<WaterZone>(newLocation);
 		
 		// If random spawn system is enabled.
-		if (Config.ENABLE_RANDOM_MONSTER_SPAWNS && (_location.getHeading() != -1) && npc.isMonster() && !npc.isQuestMonster() && !WalkingManager.getInstance().isTargeted(npc) && (getInstanceId() == 0) && !getTemplate().isUndying() && !npc.isRaid() && !npc.isRaidMinion() && !npc.isFlying() && (water == null) && !Config.MOBS_LIST_NOT_RANDOM.Contains(npc.getId()))
+		if (Config.ENABLE_RANDOM_MONSTER_SPAWNS && (_location.Heading != -1) && npc.isMonster() &&
+		    !npc.isQuestMonster() && !WalkingManager.getInstance().isTargeted(npc) && (getInstanceId() == 0) &&
+		    !getTemplate().isUndying() && !npc.isRaid() && !npc.isRaidMinion() && !npc.isFlying() && (water == null) &&
+		    !Config.MOBS_LIST_NOT_RANDOM.Contains(npc.getId()))
 		{
-			int randX = newlocx + Rnd.get(Config.MOB_MIN_SPAWN_RANGE, Config.MOB_MAX_SPAWN_RANGE);
-			int randY = newlocy + Rnd.get(Config.MOB_MIN_SPAWN_RANGE, Config.MOB_MAX_SPAWN_RANGE);
-			if (GeoEngine.getInstance().canMoveToTarget(newlocx, newlocy, newlocz, randX, randY, newlocz, npc.getInstanceWorld()) //
-				&& GeoEngine.getInstance().canSeeTarget(newlocx, newlocy, newlocz, randX, randY, newlocz, npc.getInstanceWorld()))
+			int randX = newLocation.X + Rnd.get(Config.MOB_MIN_SPAWN_RANGE, Config.MOB_MAX_SPAWN_RANGE);
+			int randY = newLocation.Y + Rnd.get(Config.MOB_MIN_SPAWN_RANGE, Config.MOB_MAX_SPAWN_RANGE);
+			Location3D randLocation = new(randX, randY, newLocation.Z);
+			if (GeoEngine.getInstance().canMoveToTarget(newLocation, randLocation, npc.getInstanceWorld())
+			    && GeoEngine.getInstance().canSeeTarget(newLocation, randLocation, npc.getInstanceWorld()))
 			{
-				newlocx = randX;
-				newlocy = randY;
-				_location.setXYZ(newlocx, newlocy, newlocz);
-				_location.setHeading(-1);
+				newLocation = randLocation;
+				_location = new Location(newLocation, -1);
 			}
 		}
-		
+
 		// Correct Z of monsters.
 		if (npc.isMonster() && !npc.isFlying() && (water == null))
 		{
 			// Do not correct Z distances greater than 300.
-			int geoZ = GeoEngine.getInstance().getHeight(newlocx, newlocy, newlocz);
-			if (Util.calculateDistance(newlocx, newlocy, newlocz, newlocx, newlocy, geoZ, true, true) < 300)
+			int geoZ = GeoEngine.getInstance().getHeight(newLocation);
+			if (Math.Abs(newLocation.Z - geoZ) < 300)
 			{
-				newlocz = geoZ;
+				newLocation = newLocation with { Z = geoZ };
 			}
 		}
 		
@@ -402,13 +408,13 @@ public class Spawn : IIdentifiable, INamable
 		npc.setRandomWalking(_randomWalk);
 		
 		// Set the heading of the Npc (random heading if not defined)
-		if (_location.getHeading() == -1)
+		if (_location.Heading == -1)
 		{
 			npc.setHeading(Rnd.get(61794));
 		}
 		else
 		{
-			npc.setHeading(_location.getHeading());
+			npc.setHeading(_location.Heading);
 		}
 		
 		// Set custom Npc server side name and title
@@ -425,7 +431,7 @@ public class Spawn : IIdentifiable, INamable
 		npc.setSpawn(this);
 		
 		// Spawn NPC
-		npc.spawnMe(newlocx, newlocy, newlocz);
+		npc.spawnMe(newLocation);
 		
 		// Make sure info is broadcasted in instances
 		if (npc.getInstanceId() > 0)
@@ -584,7 +590,6 @@ public class Spawn : IIdentifiable, INamable
 	
 	public override string ToString()
 	{
-		return "Spawn ID: " + _template.getId() + " X: " + _location.getX() + " Y: " + _location.getY() + " Z: " +
-			_location.getZ() + " Heading: " + _location.getHeading();
+		return "Spawn ID: " + _template.getId() + " at " + _location;
 	}
 }

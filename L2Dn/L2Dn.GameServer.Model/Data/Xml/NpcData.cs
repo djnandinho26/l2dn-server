@@ -9,6 +9,7 @@ using L2Dn.GameServer.Model.Holders;
 using L2Dn.GameServer.Model.ItemContainers;
 using L2Dn.GameServer.Model.Skills;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Utilities;
 using NLog;
 
@@ -660,9 +661,9 @@ public class NpcData: DataReaderBase
 	 * @param id the template Id to get.
 	 * @return the template for the given id.
 	 */
-	public NpcTemplate getTemplate(int id)
+	public NpcTemplate? getTemplate(int id)
 	{
-		return _npcs.get(id);
+		return _npcs.GetValueOrDefault(id);
 	}
 	
 	/**
@@ -670,7 +671,7 @@ public class NpcData: DataReaderBase
 	 * @param name of the template to get.
 	 * @return the template for the given name.
 	 */
-	public NpcTemplate getTemplateByName(String name)
+	public NpcTemplate? getTemplateByName(String name)
 	{
 		foreach (NpcTemplate npcTemplate in _npcs.values())
 		{

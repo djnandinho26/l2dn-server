@@ -5,6 +5,7 @@ using L2Dn.GameServer.Model.Actor.Instances;
 using L2Dn.GameServer.Model.Actor.Templates;
 using L2Dn.GameServer.Model.Holders;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Utilities;
 using ThreadPool = L2Dn.GameServer.Utilities.ThreadPool;
 
@@ -195,7 +196,7 @@ public class MinionList
 					newY = (_master.getY() - newY) + minRadius;
 				}
 				
-				minion.teleToLocation(new Location(newX, newY, _master.getZ()));
+				minion.teleToLocation(new Location(newX, newY, _master.getZ(), 0));
 			}
 		}
 	}
@@ -312,7 +313,7 @@ public class MinionList
 			newY = (master.getY() - newY) + minRadius;
 		}
 		
-		minion.spawnMe(newX, newY, master.getZ());
+		minion.spawnMe(new Location3D(newX, newY, master.getZ()));
 		
 		// Make sure info is broadcasted in instances
 		if (minion.getInstanceId() > 0)

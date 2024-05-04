@@ -21,6 +21,7 @@ using L2Dn.GameServer.Network.Enums;
 using L2Dn.GameServer.Network.OutgoingPackets;
 using L2Dn.GameServer.TaskManagers;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Model.Enums;
 using L2Dn.Utilities;
 using ThreadPool = L2Dn.GameServer.Utilities.ThreadPool;
@@ -403,7 +404,7 @@ public class Attackable: Npc
 					{
 						foreach (Player p in command.getMembers())
 						{
-							if (p.calculateDistance3D(this) < Config.ALT_PARTY_RANGE)
+							if (p.Distance3D(this) < Config.ALT_PARTY_RANGE)
 							{
 								members.Add(p);
 							}
@@ -413,7 +414,7 @@ public class Attackable: Npc
 					{
 						foreach (Player p in player.getParty().getMembers())
 						{
-							if (p.calculateDistance3D(this) < Config.ALT_PARTY_RANGE)
+							if (p.Distance3D(this) < Config.ALT_PARTY_RANGE)
 							{
 								members.Add(p);
 							}
@@ -1698,7 +1699,7 @@ public class Attackable: Npc
 		
 		if (hasAI() && (getSpawn() != null))
 		{
-			getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, getSpawn().Location);
+			getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, getSpawn().Location.Location3D);
 		}
 	}
 	

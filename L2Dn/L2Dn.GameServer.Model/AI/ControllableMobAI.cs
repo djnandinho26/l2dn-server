@@ -3,6 +3,7 @@ using L2Dn.GameServer.Model.Actor;
 using L2Dn.GameServer.Model.Actor.Instances;
 using L2Dn.GameServer.Model.Skills;
 using L2Dn.GameServer.Utilities;
+using L2Dn.Geometry;
 using L2Dn.Utilities;
 
 namespace L2Dn.GameServer.AI;
@@ -37,7 +38,8 @@ public class ControllableMobAI : AttackableAI
 			int signY = Rnd.nextBoolean() ? -1 : 1;
 			int randX = Rnd.get(MobGroupTable.FOLLOW_RANGE);
 			int randY = Rnd.get(MobGroupTable.FOLLOW_RANGE);
-			moveTo(getForcedTarget().getX() + (signX * randX), getForcedTarget().getY() + (signY * randY), getForcedTarget().getZ());
+			moveTo(new Location3D(getForcedTarget().getX() + (signX * randX),
+				getForcedTarget().getY() + (signY * randY), getForcedTarget().getZ()));
 		}
 	}
 
@@ -159,7 +161,7 @@ public class ControllableMobAI : AttackableAI
 		ControllableMobAI ctrlAi = (ControllableMobAI) theTarget.getAI();
 		ctrlAi.forceAttack(_actor);
 		
-		double dist2 = _actor.calculateDistanceSq2D(target);
+		double dist2 = _actor.DistanceSquare2D(target);
 		int range = _actor.getPhysicalAttackRange() + _actor.getTemplate().getCollisionRadius() + target.getTemplate().getCollisionRadius();
 		int maxRange = range;
 		if (!_actor.isMuted() && (dist2 > ((range + 20) * (range + 20))))
@@ -197,7 +199,7 @@ public class ControllableMobAI : AttackableAI
 		}
 		
 		setTarget(getForcedTarget());
-		double dist2 = _actor.calculateDistanceSq2D(getForcedTarget());
+		double dist2 = _actor.DistanceSquare2D(getForcedTarget());
 		int range = _actor.getPhysicalAttackRange() + _actor.getTemplate().getCollisionRadius() + getForcedTarget().getTemplate().getCollisionRadius();
 		int maxRange = range;
 		if (!_actor.isMuted() && (dist2 > ((range + 20) * (range + 20))))
@@ -253,7 +255,7 @@ public class ControllableMobAI : AttackableAI
 						return;
 					}
 					
-					if (_actor.isInsideRadius3D(npc, npc.getTemplate().getClanHelpRange()))
+					if (_actor.IsInsideRadius3D(npc, npc.getTemplate().getClanHelpRange()))
 					{
 						npc.getAI().notifyEvent(CtrlEvent.EVT_AGGRESSION, finalTarget, 1);
 					}
@@ -261,7 +263,7 @@ public class ControllableMobAI : AttackableAI
 			}
 			
 			setTarget(target);
-			double dist2 = _actor.calculateDistanceSq2D(target);
+			double dist2 = _actor.DistanceSquare2D(target);
 			int range = _actor.getPhysicalAttackRange() + _actor.getTemplate().getCollisionRadius() + target.getTemplate().getCollisionRadius();
 			int maxRange = range;
 			if (!_actor.isMuted() && (dist2 > ((range + 20) * (range + 20))))
@@ -355,7 +357,7 @@ public class ControllableMobAI : AttackableAI
 		}
 		
 		Attackable me = (Attackable) _actor;
-		if (target.isAlikeDead() || !me.isInsideRadius2D(target, me.getAggroRange()) || (Math.Abs(_actor.getZ() - target.getZ()) > 100))
+		if (target.isAlikeDead() || !me.IsInsideRadius2D(target, me.getAggroRange()) || (Math.Abs(_actor.getZ() - target.getZ()) > 100))
 		{
 			return false;
 		}
@@ -438,12 +440,7 @@ public class ControllableMobAI : AttackableAI
 		setAlternateAI(AI_IDLE);
 		clientStopMoving(null);
 	}
-	
-	public void move(int x, int y, int z)
-	{
-		moveTo(x, y, z);
-	}
-	
+
 	public void follow(Creature target)
 	{
 		setAlternateAI(AI_FOLLOW);
