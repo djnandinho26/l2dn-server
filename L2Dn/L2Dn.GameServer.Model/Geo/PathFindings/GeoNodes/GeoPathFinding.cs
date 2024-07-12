@@ -18,7 +18,7 @@ public class GeoPathFinding: PathFinding
 	
 	public override bool pathNodesExist(short regionoffset)
 	{
-		return PATH_NODE_INDEX.containsKey(regionoffset);
+		return PATH_NODE_INDEX.ContainsKey(regionoffset);
 	}
 	
 	public override List<AbstractNodeLoc>? findPath(Location3D location, Location3D targetLocation, Instance? instance, bool playable)
@@ -108,7 +108,7 @@ public class GeoPathFinding: PathFinding
 			}
 			
 			i++;
-			visited.add(node);
+			visited.Add(node);
 			node.attachNeighbors(readNeighbors(node));
 			GeoNode[] neighbors = node.getNeighbors();
 			if (neighbors == null)
@@ -124,12 +124,12 @@ public class GeoPathFinding: PathFinding
 					dx = targetX - n.getLoc().getNodeX();
 					dy = targetY - n.getLoc().getNodeY();
 					n.setCost(dx * dx + dy * dy);
-					for (int index = 0; index < toVisit.size(); index++)
+					for (int index = 0; index < toVisit.Count; index++)
 					{
 						// Supposed to find it quite early.
-						if (toVisit.get(index).getCost() > n.getCost())
+						if (toVisit[index].getCost() > n.getCost())
 						{
-							toVisit.add(index, n);
+							toVisit.Insert(index, n);
 							added = true;
 							break;
 						}
@@ -201,7 +201,7 @@ public class GeoPathFinding: PathFinding
 			newNode = readNode(newNodeX, newNodeY, neighbor);
 			if (newNode != null)
 			{
-				neighbors.add(newNode);
+				neighbors.Add(newNode);
 			}
 		}
 		neighbor = pn[idx++]; // NE
@@ -213,7 +213,7 @@ public class GeoPathFinding: PathFinding
 			newNode = readNode(newNodeX, newNodeY, neighbor);
 			if (newNode != null)
 			{
-				neighbors.add(newNode);
+				neighbors.Add(newNode);
 			}
 		}
 		neighbor = pn[idx++]; // E
@@ -225,7 +225,7 @@ public class GeoPathFinding: PathFinding
 			newNode = readNode(newNodeX, newNodeY, neighbor);
 			if (newNode != null)
 			{
-				neighbors.add(newNode);
+				neighbors.Add(newNode);
 			}
 		}
 		neighbor = pn[idx++]; // SE
@@ -237,7 +237,7 @@ public class GeoPathFinding: PathFinding
 			newNode = readNode(newNodeX, newNodeY, neighbor);
 			if (newNode != null)
 			{
-				neighbors.add(newNode);
+				neighbors.Add(newNode);
 			}
 		}
 		neighbor = pn[idx++]; // S
@@ -249,7 +249,7 @@ public class GeoPathFinding: PathFinding
 			newNode = readNode(newNodeX, newNodeY, neighbor);
 			if (newNode != null)
 			{
-				neighbors.add(newNode);
+				neighbors.Add(newNode);
 			}
 		}
 		neighbor = pn[idx++]; // SW
@@ -261,7 +261,7 @@ public class GeoPathFinding: PathFinding
 			newNode = readNode(newNodeX, newNodeY, neighbor);
 			if (newNode != null)
 			{
-				neighbors.add(newNode);
+				neighbors.Add(newNode);
 			}
 		}
 		neighbor = pn[idx++]; // W
@@ -273,7 +273,7 @@ public class GeoPathFinding: PathFinding
 			newNode = readNode(newNodeX, newNodeY, neighbor);
 			if (newNode != null)
 			{
-				neighbors.add(newNode);
+				neighbors.Add(newNode);
 			}
 		}
 		neighbor = pn[idx++]; // NW
@@ -285,7 +285,7 @@ public class GeoPathFinding: PathFinding
 			newNode = readNode(newNodeX, newNodeY, neighbor);
 			if (newNode != null)
 			{
-				neighbors.add(newNode);
+				neighbors.Add(newNode);
 			}
 		}
 		return neighbors.ToArray();

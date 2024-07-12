@@ -50,23 +50,23 @@ public class RevengeHistoryManager
 			foreach (CharacterRevenge record in ctx.CharacterRevenges)
 			{
 				int charId = record.CharacterId;
-				List<RevengeHistoryHolder> history = REVENGE_HISTORY.containsKey(charId) ? REVENGE_HISTORY.get(charId) : new();
+				List<RevengeHistoryHolder> history = REVENGE_HISTORY.GetValueOrDefault(charId, []);
 				
 				StatSet killer = new StatSet();
 				killer.set("name", record.KillerName);
 				killer.set("clan", record.KillerClan);
 				killer.set("level", record.KillerLevel);
-				killer.set("race", (int)((CharacterClass)record.KillerClass).GetRace());
+				killer.set("race", (int)record.KillerClass.GetRace());
 				killer.set("class", record.KillerClass);
 				
 				StatSet victim = new StatSet();
 				victim.set("name", record.VictimName);
 				victim.set("clan", record.VictimClan);
 				victim.set("level", record.VictimLevel);
-				victim.set("race", (int)((CharacterClass)record.VictimClass).GetRace());
+				victim.set("race", (int)record.VictimClass.GetRace());
 				victim.set("class", record.VictimClass);
 
-				history.add(new RevengeHistoryHolder(killer, victim, (RevengeType)record.Type,
+				history.Add(new RevengeHistoryHolder(killer, victim, (RevengeType)record.Type,
 					record.Shared, record.ShowLocationRemaining,
 					record.TeleportRemaining, record.SharedTeleportRemaining,
 					record.KillTime, record.ShareTime));
@@ -91,10 +91,10 @@ public class RevengeHistoryManager
 				List<RevengeHistoryHolder> removals = new();
 				foreach (RevengeHistoryHolder holder in history)
 				{
-					if (((holder.getKillTime() != DateTime.MinValue) && ((holder.getKillTime() + REVENGE_DURATION) < currentTime)) || //
-						((holder.getShareTime() != DateTime.MinValue) && ((holder.getShareTime() + REVENGE_DURATION) < currentTime)))
+					if ((holder.getKillTime() != DateTime.MinValue && holder.getKillTime() + REVENGE_DURATION < currentTime) || //
+						(holder.getShareTime() != DateTime.MinValue && holder.getShareTime() + REVENGE_DURATION < currentTime))
 					{
-						removals.add(holder);
+						removals.Add(holder);
 					}
 				}
 				foreach (RevengeHistoryHolder holder in removals)
@@ -109,10 +109,10 @@ public class RevengeHistoryManager
 			using GameServerDbContext ctx = DbFactory.Instance.CreateDbContext();
 			ctx.CharacterRevenges.ExecuteDelete(); // TODO: delete everything and insert the data again is not a good idea
 			
-			foreach (var entry in REVENGE_HISTORY)
+			foreach (KeyValuePair<int, List<RevengeHistoryHolder>> entry in REVENGE_HISTORY)
 			{
 				List<RevengeHistoryHolder> history = entry.Value;
-				if ((history == null) || history.isEmpty())
+				if (history is null || history.Count == 0)
 				{
 					continue;
 				}
@@ -157,13 +157,13 @@ public class RevengeHistoryManager
 			int victimObjectId = victim.getObjectId();
 			DateTime currentTime = DateTime.UtcNow;
 			List<RevengeHistoryHolder> removals = new();
-			List<RevengeHistoryHolder> history = REVENGE_HISTORY.containsKey(victimObjectId) ? REVENGE_HISTORY.get(victimObjectId) : new();
+			List<RevengeHistoryHolder> history = REVENGE_HISTORY.GetValueOrDefault(victimObjectId, []);
 			foreach (RevengeHistoryHolder holder in history)
 			{
-				if (((holder.getKillTime() != DateTime.MinValue) && ((holder.getKillTime() + REVENGE_DURATION) < currentTime)) || //
-					((holder.getShareTime() != DateTime.MinValue) && ((holder.getShareTime() + REVENGE_DURATION) < currentTime)))
+				if ((holder.getKillTime() != DateTime.MinValue && holder.getKillTime() + REVENGE_DURATION < currentTime) ||
+					(holder.getShareTime() != DateTime.MinValue && holder.getShareTime() + REVENGE_DURATION < currentTime))
 				{
-					removals.add(holder);
+					removals.Add(holder);
 				}
 				else if (holder.getKillerName().equals(killer.getName()))
 				{
@@ -176,7 +176,7 @@ public class RevengeHistoryManager
 			
 			if (!found)
 			{
-				history.add(new RevengeHistoryHolder(killer, victim, RevengeType.REVENGE));
+				history.Add(new RevengeHistoryHolder(killer, victim, RevengeType.REVENGE));
 				REVENGE_HISTORY.put(victimObjectId, history);
 				victim.sendPacket(new ExPvpBookShareRevengeNewRevengeInfoPacket(victim.getName(), killer.getName(), RevengeType.REVENGE));
 				victim.sendPacket(new ExPvpBookShareRevengeListPacket(victim));
@@ -188,7 +188,7 @@ public class RevengeHistoryManager
 		}
 	}
 	
-	public void locateKiller(Player player, String killerName)
+	public void locateKiller(Player player, string killerName)
 	{
 		List<RevengeHistoryHolder> history = REVENGE_HISTORY.get(player.getObjectId());
 		if (history == null)
@@ -212,7 +212,7 @@ public class RevengeHistoryManager
 		}
 		
 		Player killer = World.getInstance().getPlayer(killerName);
-		if ((killer == null) || !killer.isOnline())
+		if (killer == null || !killer.isOnline())
 		{
 			player.sendPacket(SystemMessageId.THE_ENEMY_IS_OFFLINE_AND_CANNOT_BE_FOUND_RIGHT_NOW);
 			return;
@@ -239,7 +239,7 @@ public class RevengeHistoryManager
 	
 	private bool checkTeleportConditions(Player player, Player killer)
 	{
-		if ((killer == null) || !killer.isOnline())
+		if (killer == null || !killer.isOnline())
 		{
 			player.sendPacket(SystemMessageId.THE_ENEMY_IS_OFFLINE_AND_CANNOT_BE_FOUND_RIGHT_NOW);
 			return false;
@@ -274,7 +274,7 @@ public class RevengeHistoryManager
 		return true;
 	}
 	
-	public void teleportToKiller(Player player, String killerName)
+	public void teleportToKiller(Player player, string killerName)
 	{
 		List<RevengeHistoryHolder> history = REVENGE_HISTORY.get(player.getObjectId());
 		if (history == null)
@@ -324,7 +324,7 @@ public class RevengeHistoryManager
 		}
 	}
 	
-	public void teleportToSharedKiller(Player player, String victimName, String killerName)
+	public void teleportToSharedKiller(Player player, string victimName, string killerName)
 	{
 		if (player.getName().equals(killerName))
 		{
@@ -363,7 +363,7 @@ public class RevengeHistoryManager
 			return;
 		}
 		
-		if ((revenge.getSharedTeleportRemaining() > 0) && player.destroyItemByItemId("Revenge Teleport", Inventory.LCOIN_ID, 100, player, true))
+		if (revenge.getSharedTeleportRemaining() > 0 && player.destroyItemByItemId("Revenge Teleport", Inventory.LCOIN_ID, 100, player, true))
 		{
 			revenge.setSharedTeleportRemaining(revenge.getSharedTeleportRemaining() - 1);
 			HIDE_SKILL.getSkill().applyEffects(player, player);
@@ -419,7 +419,7 @@ public class RevengeHistoryManager
 					{
 						if (member.isOnline())
 						{
-							targets.add(member.getPlayer());
+							targets.Add(member.getPlayer());
 						}
 						else
 						{
@@ -435,7 +435,7 @@ public class RevengeHistoryManager
 					Player plr = World.getInstance().getPlayer(playerObjectId);
 					if (plr != null)
 					{
-						targets.add(plr);
+						targets.Add(plr);
 					}
 					else
 					{
@@ -464,17 +464,17 @@ public class RevengeHistoryManager
 	
 	private void saveToRevengeHistory(Player player, Player killer, RevengeHistoryHolder revenge, DateTime currentTime, int objectId)
 	{
-		List<RevengeHistoryHolder> targetHistory = REVENGE_HISTORY.containsKey(objectId) ? REVENGE_HISTORY.get(objectId) : new();
+		List<RevengeHistoryHolder> targetHistory = REVENGE_HISTORY.GetValueOrDefault(objectId, []);
 		foreach (RevengeHistoryHolder holder in targetHistory)
 		{
-			if (holder.getVictimName().equals(player.getName()) && holder.getKillerName().equals(killer.getName()) && (holder != revenge))
+			if (holder.getVictimName().equals(player.getName()) && holder.getKillerName().equals(killer.getName()) && holder != revenge)
 			{
 				targetHistory.Remove(holder);
 				break;
 			}
 		}
 		
-		targetHistory.add(new RevengeHistoryHolder(killer, player, RevengeType.HELP_REQUEST, 1, revenge.getKillTime(), currentTime));
+		targetHistory.Add(new RevengeHistoryHolder(killer, player, RevengeType.HELP_REQUEST, 1, revenge.getKillTime(), currentTime));
 		REVENGE_HISTORY.put(objectId, targetHistory);
 	}
 	

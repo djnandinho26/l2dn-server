@@ -89,7 +89,7 @@ public class ExtractableItems: IItemHandler
 								break;
 							}
 						}
-						if (alreadyExtracted && (exitems.size() >= etcitem.getExtractableCountMax()))
+						if (alreadyExtracted && (exitems.Count >= etcitem.getExtractableCountMax()))
 						{
 							continue;
 						}
@@ -134,7 +134,7 @@ public class ExtractableItems: IItemHandler
 							if (expi.getMaxEnchant() > 0)
 							{
 								newItem.setEnchantLevel(Rnd.get(expi.getMinEnchant(), expi.getMaxEnchant()));
-								enchantedItems.add(newItem);
+								enchantedItems.Add(newItem);
 							}
 							addItem(extractedItems, newItem, createItemAmount);
 						}
@@ -146,7 +146,7 @@ public class ExtractableItems: IItemHandler
 								if (expi.getMaxEnchant() > 0)
 								{
 									newItem.setEnchantLevel(Rnd.get(expi.getMinEnchant(), expi.getMaxEnchant()));
-									enchantedItems.add(newItem);
+									enchantedItems.Add(newItem);
 								}
 								addItem(extractedItems, newItem, 1);
 								createItemAmount--;
@@ -215,7 +215,7 @@ public class ExtractableItems: IItemHandler
 						if (expi.getMaxEnchant() > 0)
 						{
 							newItem.setEnchantLevel(Rnd.get(expi.getMinEnchant(), expi.getMaxEnchant()));
-							enchantedItems.add(newItem);
+							enchantedItems.Add(newItem);
 						}
 						addItem(extractedItems, newItem, createItemAmount);
 					}
@@ -227,7 +227,7 @@ public class ExtractableItems: IItemHandler
 							if (expi.getMaxEnchant() > 0)
 							{
 								newItem.setEnchantLevel(Rnd.get(expi.getMinEnchant(), expi.getMaxEnchant()));
-								enchantedItems.add(newItem);
+								enchantedItems.Add(newItem);
 							}
 							addItem(extractedItems, newItem, 1);
 							createItemAmount--;
@@ -241,7 +241,7 @@ public class ExtractableItems: IItemHandler
 		{
 			player.sendPacket(SystemMessageId.FAILED_TO_CHANGE_THE_ITEM);
 		}
-		if (!enchantedItems.isEmpty())
+		if (enchantedItems.Count != 0)
 		{
 			List<ItemInfo> items = enchantedItems.Select(x => new ItemInfo(x, ItemChangeType.MODIFIED)).ToList();
 			InventoryUpdatePacket playerIU = new InventoryUpdatePacket(items);
@@ -262,7 +262,7 @@ public class ExtractableItems: IItemHandler
 				List<ItemHolder> rewards = new();
 				foreach (var entry in extractedItems)
 				{
-					rewards.add(new ItemHolder(entry.Key.getId(), entry.Value));
+					rewards.Add(new ItemHolder(entry.Key.getId(), entry.Value));
 				}
 				
 				player.sendPacket(new ExResultItemAutoPeelPacket(true, request.getTotalPeelCount(), request.getRemainingPeelCount() - 1, rewards));
@@ -278,7 +278,7 @@ public class ExtractableItems: IItemHandler
 	
 	private void addItem(Map<Item, long> extractedItems, Item newItem, long count)
 	{
-		if (extractedItems.containsKey(newItem))
+		if (extractedItems.ContainsKey(newItem))
 		{
 			extractedItems.put(newItem, extractedItems.get(newItem) + count);
 		}

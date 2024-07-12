@@ -51,7 +51,7 @@ public class OlympiadManager
 					result = new();
 				}
 
-				result.add(classList.Value);
+				result.Add(classList.Value);
 			}
 		}
 
@@ -66,7 +66,7 @@ public class OlympiadManager
 	public void clearRegistered()
 	{
 		_nonClassBasedRegisters.clear();
-		_classBasedRegisters.clear();
+		_classBasedRegisters.Clear();
 		AntiFeedManager.getInstance().clear(AntiFeedManager.OLYMPIAD_ID);
 	}
 
@@ -336,7 +336,7 @@ public class OlympiadManager
 			return;
 		}
 
-		_classBasedRegisters.getOrDefault(getClassGroup(player), new()).remove(objId);
+		_classBasedRegisters.GetValueOrDefault(getClassGroup(player))?.remove(objId);
 	}
 
 	public int getCountOpponents()

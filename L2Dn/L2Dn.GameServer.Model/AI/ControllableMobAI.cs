@@ -1,4 +1,5 @@
-﻿using L2Dn.GameServer.Model;
+﻿using L2Dn.Extensions;
+using L2Dn.GameServer.Model;
 using L2Dn.GameServer.Model.Actor;
 using L2Dn.GameServer.Model.Actor.Instances;
 using L2Dn.GameServer.Model.Skills;
@@ -395,11 +396,11 @@ public class ControllableMobAI : AttackableAI
 		{
 			if (Util.checkIfInShortRange(((Attackable) _actor).getAggroRange(), _actor, target, true) && checkAutoAttackCondition(target))
 			{
-				potentialTarget.add(target);
+				potentialTarget.Add(target);
 			}
 		});
 		
-		return !potentialTarget.isEmpty() ? potentialTarget.get(Rnd.get(potentialTarget.size())) : null;
+		return potentialTarget.GetRandomElementOrDefault();
 	}
 	
 	private ControllableMob findNextGroupTarget()

@@ -36,7 +36,7 @@ public class EnchantItemHPBonusData: DataReaderBase
 		
 		element.Elements("bonus").ForEach(bonusElement =>
 		{
-			bonuses.add((int)bonusElement);
+			bonuses.Add((int)bonusElement);
 		});
 
 		CrystalType grade = element.Attribute("grade").GetEnum<CrystalType>();
@@ -45,7 +45,7 @@ public class EnchantItemHPBonusData: DataReaderBase
 	
 	public void load()
 	{
-		_armorHPBonuses.clear();
+		_armorHPBonuses.Clear();
 		
 		XDocument document = LoadXmlDocument(DataFileLocation.Data, "stats/enchantHPBonus.xml");
 		document.Elements("list").Elements("enchantHP").ForEach(parseEnchant);
@@ -61,12 +61,12 @@ public class EnchantItemHPBonusData: DataReaderBase
 	public int getHPBonus(Item item)
 	{
 		List<int> values = _armorHPBonuses.get(item.getTemplate().getCrystalTypePlus());
-		if ((values == null) || values.isEmpty() || (item.getOlyEnchantLevel() <= 0))
+		if (values is null || values.Count == 0 || (item.getOlyEnchantLevel() <= 0))
 		{
 			return 0;
 		}
 		
-		int bonus = values.get(Math.Min(item.getOlyEnchantLevel(), values.size()) - 1);
+		int bonus = values[Math.Min(item.getOlyEnchantLevel(), values.Count) - 1];
 		if (item.getTemplate().getBodyPart() == ItemTemplate.SLOT_FULL_ARMOR)
 		{
 			return (int) (bonus * FULL_ARMOR_MODIFIER);

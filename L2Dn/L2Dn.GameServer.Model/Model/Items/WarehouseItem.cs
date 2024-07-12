@@ -55,7 +55,7 @@ public class WarehouseItem
 	
 	public WarehouseItem(Item item)
 	{
-		Objects.requireNonNull(item);
+		ArgumentNullException.ThrowIfNull(item);
 		_item = item.getTemplate();
 		_object = item.getObjectId();
 		_count = item.getCount();
@@ -204,7 +204,7 @@ public class WarehouseItem
 	/**
 	 * @return the name of the item
 	 */
-	public String getItemName()
+	public string getItemName()
 	{
 		return _item.getName();
 	}
@@ -220,7 +220,7 @@ public class WarehouseItem
 	/**
 	 * @return the name of the item
 	 */
-	public String getName()
+	public string getName()
 	{
 		return _item.getName();
 	}
@@ -283,7 +283,7 @@ public class WarehouseItem
 	/**
 	 * @return the name of the item
 	 */
-	public override String ToString()
+	public override string ToString()
 	{
 		return _item.ToString();
 	}

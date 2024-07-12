@@ -50,7 +50,7 @@ public readonly struct AcquireSkillInfoPacket: IOutgoingPacket
                     continue;
                 }
                 
-                _reqs.add(new Req(99, item.get(0).getId(), item.get(0).getCount(), 50));
+                _reqs.Add(new Req(99, item[0].getId(), item[0].getCount(), 50));
             }
         }
     }
@@ -73,7 +73,7 @@ public readonly struct AcquireSkillInfoPacket: IOutgoingPacket
         _reqs = new();
         foreach (List<ItemHolder> item in skillLearn.getRequiredItems())
         {
-            _reqs.add(new Req(99, item.get(0).getId(), item.get(0).getCount(), 50));
+            _reqs.Add(new Req(99, item[0].getId(), item[0].getCount(), 50));
         }
     }
 	
@@ -85,7 +85,7 @@ public readonly struct AcquireSkillInfoPacket: IOutgoingPacket
         writer.WriteInt32(_level);
         writer.WriteInt64(_spCost);
         writer.WriteInt32((int)_type);
-        writer.WriteInt32(_reqs.size());
+        writer.WriteInt32(_reqs.Count);
         foreach (Req temp in _reqs)
         {
             writer.WriteInt32(temp.Type);

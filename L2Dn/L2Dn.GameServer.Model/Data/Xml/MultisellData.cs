@@ -86,7 +86,7 @@ public class MultisellData: DataReaderBase
 						continue;
 					}
 
-					ingredients.add(ingredient);
+					ingredients.Add(ingredient);
 					lastIngredientId = ingredientEntry.ItemId;
 					lastIngredientCount = ingredientEntry.Count;
 				}
@@ -144,7 +144,7 @@ public class MultisellData: DataReaderBase
 						continue;
 					}
 
-					products.add(product);
+					products.Add(product);
 
 					if (item != null)
 					{
@@ -160,25 +160,25 @@ public class MultisellData: DataReaderBase
 				if (totalChance > 100)
 				{
 					_logger.Warn("Products' total chance of " + totalChance + "% exceeds 100% for list: " + listId +
-					             " at entry " + entries.size() + 1 + ".");
+					             " at entry " + entries.Count + 1 + ".");
 				}
 
 				// Check if buy price is lower than sell price.
 				// Only applies when there is only one ingredient and it is adena.
-				if (Config.CORRECT_PRICES && ingredients.size() == 1 && lastIngredientId == 57 &&
+				if (Config.CORRECT_PRICES && ingredients.Count == 1 && lastIngredientId == 57 &&
 				    lastIngredientCount < totalPrice)
 				{
 					_logger.Warn("Buy price " + lastIngredientCount + " is less than sell price " + totalPrice +
 					             " at entry " + entryCounter + " of multisell " + listId + ".");
 					// Adjust price.
-					ItemChanceHolder ingredient = new ItemChanceHolder(57, 0, totalPrice, 0,
-						ingredients.get(0).isMaintainIngredient());
+					ItemChanceHolder ingredient = new(57, 0, totalPrice, 0,
+						ingredients[0].isMaintainIngredient());
 					ingredients.Clear();
-					ingredients.add(ingredient);
+					ingredients.Add(ingredient);
 				}
 
 				MultisellEntryHolder entry = new MultisellEntryHolder(ingredients, products);
-				entries.add(entry);
+				entries.Add(entry);
 			}
 
 			return new MultisellListHolder(listId, multiSellList.IsChanceMultiSell, multiSellList.ApplyTaxes,

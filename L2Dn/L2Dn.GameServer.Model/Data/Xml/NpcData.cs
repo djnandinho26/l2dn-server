@@ -25,7 +25,7 @@ public class NpcData: DataReaderBase
 	protected static readonly Logger LOGGER = LogManager.GetLogger(nameof(NpcData));
 	
 	private readonly Map<int, NpcTemplate> _npcs = new();
-	private readonly Map<String, int> _clans = new();
+	private readonly Map<string, int> _clans = new();
 	private static readonly Set<int> _masterMonsterIDs = new();
 	private static int? _genericClanId;
 	
@@ -63,8 +63,8 @@ public class NpcData: DataReaderBase
 		StatSet set = new StatSet();
 		int npcId = element.GetAttributeValueAsInt32("id");
 		int level = element.Attribute("level").GetInt32(85);
-		String type = element.Attribute("type").GetString("Folk");
-		Map<String, Object> parameters = null;
+		string type = element.Attribute("type").GetString("Folk");
+		Map<string, object> parameters = null;
 		Map<int, Skill> skills = new();
 		Set<int> clans = null;
 		Set<int> ignoreClanNpcIds = null;
@@ -128,7 +128,7 @@ public class NpcData: DataReaderBase
 			set.set("baseCON", el.GetAttributeValueAsInt32OrNull("con"));
 			set.set("baseMEN", el.GetAttributeValueAsInt32OrNull("men"));
 
-			el.Elements("vitals").forEach(e =>
+			el.Elements("vitals").ForEach(e =>
 			{
 				set.set("baseHpMax", e.GetAttributeValueAsDouble("hp"));
 				set.set("baseHpReg", e.GetAttributeValueAsDoubleOrNull("hpRegen"));
@@ -136,7 +136,7 @@ public class NpcData: DataReaderBase
 				set.set("baseMpReg", e.GetAttributeValueAsDoubleOrNull("mpRegen"));
 			});
 
-			el.Elements("attack").forEach(e =>
+			el.Elements("attack").ForEach(e =>
 			{
 				set.set("basePAtk", e.GetAttributeValueAsDouble("physical"));
 				set.set("baseMAtk", e.GetAttributeValueAsDouble("magical"));
@@ -151,7 +151,7 @@ public class NpcData: DataReaderBase
 				set.set("width", e.GetAttributeValueAsInt32OrNull("width")); // TODO: Implement me
 			});
 
-			el.Elements("defence").forEach(e =>
+			el.Elements("defence").ForEach(e =>
 			{
 				set.set("basePDef", e.GetAttributeValueAsDouble("physical"));
 				set.set("baseMDef", e.GetAttributeValueAsDouble("magical"));
@@ -160,13 +160,13 @@ public class NpcData: DataReaderBase
 				set.set("baseShldRate", e.GetAttributeValueAsInt32OrNull("shieldRate"));
 			});
 
-			el.Elements("abnormalresist").forEach(e =>
+			el.Elements("abnormalresist").ForEach(e =>
 			{
 				set.set("physicalAbnormalResist", e.GetAttributeValueAsDouble("physical"));
 				set.set("magicAbnormalResist", e.GetAttributeValueAsDouble("magic"));
 			});
 
-			el.Elements("attribute").Elements("attack").forEach(e =>
+			el.Elements("attribute").Elements("attack").ForEach(e =>
 			{
 				string attackAttributeType = e.GetAttributeValueAsString("type");
 				int value = e.GetAttributeValueAsInt32("value");
@@ -207,7 +207,7 @@ public class NpcData: DataReaderBase
 				}
 			});
 
-			el.Elements("attribute").Elements("defence").forEach(e =>
+			el.Elements("attribute").Elements("defence").ForEach(e =>
 			{
 				set.set("baseFireRes", e.GetAttributeValueAsInt32("fire"));
 				set.set("baseWaterRes", e.GetAttributeValueAsInt32("water"));
@@ -218,7 +218,7 @@ public class NpcData: DataReaderBase
 				set.set("baseElementRes", e.GetAttributeValueAsInt32OrNull("default"));
 			});
 
-			el.Elements("speed").Elements("walk").forEach(e =>
+			el.Elements("speed").Elements("walk").ForEach(e =>
 			{
 				double groundWalk = e.GetAttributeValueAsDouble("ground");
 				set.set("baseWalkSpd", groundWalk <= 0d ? 0.1 : groundWalk);
@@ -226,7 +226,7 @@ public class NpcData: DataReaderBase
 				set.set("baseFlyWalkSpd", e.GetAttributeValueAsDoubleOrNull("fly"));
 			});
 
-			el.Elements("speed").Elements("run").forEach(e =>
+			el.Elements("speed").Elements("run").ForEach(e =>
 			{
 				double runSpeed = e.GetAttributeValueAsDouble("ground");
 				set.set("baseRunSpd", runSpeed <= 0d ? 0.1 : runSpeed);
@@ -234,7 +234,7 @@ public class NpcData: DataReaderBase
 				set.set("baseFlyRunSpd", e.GetAttributeValueAsDoubleOrNull("fly"));
 			});
 
-			el.Elements("hittime").forEach(e =>
+			el.Elements("hittime").ForEach(e =>
 			{
 				set.set("hitTime", e.Value); // TODO: Implement me default 600 (value in ms)
 			});
@@ -368,7 +368,7 @@ public class NpcData: DataReaderBase
 					}
 				});
 
-				dropGroups.add(group);
+				dropGroups.Add(group);
 			});
 
 			el.Elements("item").ForEach(e =>
@@ -393,7 +393,7 @@ public class NpcData: DataReaderBase
 					long min = e.GetAttributeValueAsInt64("min");
 					long max = e.GetAttributeValueAsInt64("max");
 					double chance1 = e.GetAttributeValueAsDouble("chance");
-					dropLists.add(new DropHolder(dropType, itemId, min, max, chance1));
+					dropLists.Add(new DropHolder(dropType, itemId, min, max, chance1));
 				}
 			});
 		});
@@ -448,66 +448,66 @@ public class NpcData: DataReaderBase
 						skill.getCastRange() <= 150 ? AISkillScope.SHORT_RANGE : AISkillScope.LONG_RANGE;
 					if (skill.isSuicideAttack())
 					{
-						aiSkillScopes.add(AISkillScope.SUICIDE);
+						aiSkillScopes.Add(AISkillScope.SUICIDE);
 					}
 					else
 					{
-						aiSkillScopes.add(AISkillScope.GENERAL);
+						aiSkillScopes.Add(AISkillScope.GENERAL);
 
 						if (skill.isContinuous())
 						{
 							if (!skill.isDebuff())
 							{
-								aiSkillScopes.add(AISkillScope.BUFF);
+								aiSkillScopes.Add(AISkillScope.BUFF);
 							}
 							else
 							{
-								aiSkillScopes.add(AISkillScope.DEBUFF);
-								aiSkillScopes.add(AISkillScope.COT);
-								aiSkillScopes.add(shortOrLongRangeScope);
+								aiSkillScopes.Add(AISkillScope.DEBUFF);
+								aiSkillScopes.Add(AISkillScope.COT);
+								aiSkillScopes.Add(shortOrLongRangeScope);
 							}
 						}
 						else if (skill.hasEffectType(EffectType.DISPEL, EffectType.DISPEL_BY_SLOT))
 						{
-							aiSkillScopes.add(AISkillScope.NEGATIVE);
-							aiSkillScopes.add(shortOrLongRangeScope);
+							aiSkillScopes.Add(AISkillScope.NEGATIVE);
+							aiSkillScopes.Add(shortOrLongRangeScope);
 						}
 						else if (skill.hasEffectType(EffectType.HEAL))
 						{
-							aiSkillScopes.add(AISkillScope.HEAL);
+							aiSkillScopes.Add(AISkillScope.HEAL);
 						}
 						else if (skill.hasEffectType(EffectType.PHYSICAL_ATTACK, EffectType.PHYSICAL_ATTACK_HP_LINK,
 							         EffectType.MAGICAL_ATTACK, EffectType.DEATH_LINK, EffectType.HP_DRAIN))
 						{
-							aiSkillScopes.add(AISkillScope.ATTACK);
-							aiSkillScopes.add(AISkillScope.UNIVERSAL);
-							aiSkillScopes.add(shortOrLongRangeScope);
+							aiSkillScopes.Add(AISkillScope.ATTACK);
+							aiSkillScopes.Add(AISkillScope.UNIVERSAL);
+							aiSkillScopes.Add(shortOrLongRangeScope);
 						}
 						else if (skill.hasEffectType(EffectType.SLEEP))
 						{
-							aiSkillScopes.add(AISkillScope.IMMOBILIZE);
+							aiSkillScopes.Add(AISkillScope.IMMOBILIZE);
 						}
 						else if (skill.hasEffectType(EffectType.BLOCK_ACTIONS, EffectType.ROOT))
 						{
-							aiSkillScopes.add(AISkillScope.IMMOBILIZE);
-							aiSkillScopes.add(shortOrLongRangeScope);
+							aiSkillScopes.Add(AISkillScope.IMMOBILIZE);
+							aiSkillScopes.Add(shortOrLongRangeScope);
 						}
 						else if (skill.hasEffectType(EffectType.MUTE, EffectType.BLOCK_CONTROL))
 						{
-							aiSkillScopes.add(AISkillScope.COT);
-							aiSkillScopes.add(shortOrLongRangeScope);
+							aiSkillScopes.Add(AISkillScope.COT);
+							aiSkillScopes.Add(shortOrLongRangeScope);
 						}
 						else if (skill.hasEffectType(EffectType.DMG_OVER_TIME, EffectType.DMG_OVER_TIME_PERCENT))
 						{
-							aiSkillScopes.add(shortOrLongRangeScope);
+							aiSkillScopes.Add(shortOrLongRangeScope);
 						}
 						else if (skill.hasEffectType(EffectType.RESURRECTION))
 						{
-							aiSkillScopes.add(AISkillScope.RES);
+							aiSkillScopes.Add(AISkillScope.RES);
 						}
 						else
 						{
-							aiSkillScopes.add(AISkillScope.UNIVERSAL);
+							aiSkillScopes.Add(AISkillScope.UNIVERSAL);
 						}
 					}
 
@@ -520,7 +520,7 @@ public class NpcData: DataReaderBase
 							aiSkillLists.put(aiSkillScope, aiSkills);
 						}
 
-						aiSkills.add(skill);
+						aiSkills.Add(skill);
 					}
 				}
 			}
@@ -570,7 +570,7 @@ public class NpcData: DataReaderBase
 				dropLists = new();
 			}
 
-			dropLists.add(new DropHolder(DropType.DROP, Inventory.LCOIN_ID, Config.LCOIN_MIN_QUANTITY,
+			dropLists.Add(new DropHolder(DropType.DROP, Inventory.LCOIN_ID, Config.LCOIN_MIN_QUANTITY,
 				Config.LCOIN_MAX_QUANTITY, Config.LCOIN_DROP_CHANCE));
 		}
 
@@ -603,7 +603,7 @@ public class NpcData: DataReaderBase
 			}
 		}
 
-		if (!template.getParameters().getMinionList("Privates").isEmpty() &&
+		if (template.getParameters().getMinionList("Privates").Count != 0 &&
 		    (template.getParameters().getSet().get("SummonPrivateRate") == null))
 		{
 			_masterMonsterIDs.add(template.getId());
@@ -615,7 +615,7 @@ public class NpcData: DataReaderBase
 	 * @param clanName the clan name to get or create its id
 	 * @return the clan id for the given clan name
 	 */
-	private int getOrCreateClanId(String clanName)
+	private int getOrCreateClanId(string clanName)
 	{
 		int id = _clans.get(clanName);
 		if (id == null)
@@ -631,15 +631,15 @@ public class NpcData: DataReaderBase
 	 * @param clanName the clan name to get its id
 	 * @return the clan id for the given clan name if it exists, -1 otherwise
 	 */
-	public int getClanId(String clanName)
+	public int getClanId(string clanName)
 	{
 		int id = _clans.get(clanName);
 		return id != null ? id : -1;
 	}
 	
-	public Set<String> getClansByIds(Set<int> clanIds)
+	public Set<string> getClansByIds(Set<int> clanIds)
 	{
-		Set<String> result = new();
+		Set<string> result = new();
 		if (clanIds == null)
 		{
 			return result;
@@ -672,7 +672,7 @@ public class NpcData: DataReaderBase
 	 * @param name of the template to get.
 	 * @return the template for the given name.
 	 */
-	public NpcTemplate? getTemplateByName(String name)
+	public NpcTemplate? getTemplateByName(string name)
 	{
 		foreach (NpcTemplate npcTemplate in _npcs.values())
 		{
@@ -696,7 +696,7 @@ public class NpcData: DataReaderBase
 		{
 			if (filter(npcTemplate))
 			{
-				result.add(npcTemplate);
+				result.Add(npcTemplate);
 			}
 		}
 		return result;
@@ -727,7 +727,7 @@ public class NpcData: DataReaderBase
 	 * @param text of all the NPC templates which its name start with.
 	 * @return the template list for the given letter.
 	 */
-	public List<NpcTemplate> getAllNpcStartingWith(String text)
+	public List<NpcTemplate> getAllNpcStartingWith(string text)
 	{
 		return getTemplates(template => template.isType("Folk") && template.getName().startsWith(text));
 	}
@@ -737,7 +737,7 @@ public class NpcData: DataReaderBase
 	 * @param classTypes of all the templates to get.
 	 * @return the template list for the given class type.
 	 */
-	public List<NpcTemplate> getAllNpcOfClassType(params String[] classTypes)
+	public List<NpcTemplate> getAllNpcOfClassType(params string[] classTypes)
 	{
 		return getTemplates(
 			template => classTypes.Contains(template.getType(), StringComparer.CurrentCultureIgnoreCase));
@@ -765,9 +765,9 @@ public class NpcData: DataReaderBase
 		public static readonly NpcData INSTANCE = new();
 	}
 	
-	private static Map<String, Object> parseParameters(XElement element)
+	private static Map<string, object> parseParameters(XElement element)
 	{
-		Map<String, Object> parameters = new();
+		Map<string, object> parameters = new();
 		
 		element.Elements("param").ForEach(el =>
 		{
@@ -804,10 +804,10 @@ public class NpcData: DataReaderBase
 				int max = e.Attribute("max").GetInt32(0);
 				int respawnTime = e.GetAttributeValueAsInt32("respawnTime");
 				int weightPoint = e.Attribute("weightPoint").GetInt32(0);
-				minions.add(new MinionHolder(id, count, max, TimeSpan.FromMilliseconds(respawnTime), weightPoint));
+				minions.Add(new MinionHolder(id, count, max, TimeSpan.FromMilliseconds(respawnTime), weightPoint));
 			});
 					
-			if (!minions.isEmpty())
+			if (minions.Count != 0)
 				parameters.put(el.GetAttributeValueAsString("name"), minions);
 		});
 

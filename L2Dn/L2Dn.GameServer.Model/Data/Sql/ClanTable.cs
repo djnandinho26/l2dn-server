@@ -62,7 +62,7 @@ public class ClanTable
 			}
 		}
 		
-		LOGGER.Info(GetType().Name + ": Restored " + cids.size() + " clans from the database.");
+		LOGGER.Info(GetType().Name + ": Restored " + cids.Count + " clans from the database.");
 		allianceCheck();
 		restoreClanWars();
 	}
@@ -94,7 +94,7 @@ public class ClanTable
 		return _clans.get(clanId);
 	}
 	
-	public Clan getClanByName(String clanName)
+	public Clan getClanByName(string clanName)
 	{
 		foreach (Clan clan in _clans.values())
 		{
@@ -112,7 +112,7 @@ public class ClanTable
 	 * @param clanName
 	 * @return NULL if clan with same name already exists
 	 */
-	public Clan? createClan(Player player, String clanName)
+	public Clan? createClan(Player player, string clanName)
 	{
 		if (player == null)
 		{
@@ -291,7 +291,7 @@ public class ClanTable
 		}, delay);
 	}
 	
-	public bool isAllyExists(String allyName)
+	public bool isAllyExists(string allyName)
 	{
 		foreach (Clan clan in _clans.values())
 		{
@@ -392,7 +392,7 @@ public class ClanTable
 		foreach (Clan clan in _clans.values())
 		{
 			int? allyId = clan.getAllyId();
-			if ((allyId != null) && (clan.getId() != allyId) && !_clans.containsKey(allyId.Value))
+			if ((allyId != null) && (clan.getId() != allyId) && !_clans.ContainsKey(allyId.Value))
 			{
 				clan.setAllyId(0);
 				clan.setAllyName(null);
@@ -412,7 +412,7 @@ public class ClanTable
 			{
 				if ((clan != null) && (clan.getAllyId() == allianceId))
 				{
-					clanAllies.add(clan);
+					clanAllies.Add(clan);
 				}
 			}
 		}

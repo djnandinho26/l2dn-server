@@ -25,14 +25,14 @@ public readonly struct ExQuestUiPacket: IOutgoingPacket
 		
         writer.WritePacketCode(OutgoingPacketCodes.EX_QUEST_UI);
         
-        if (!_allQuests.isEmpty())
+        if (_allQuests.Count != 0)
         {
             List<QuestState> activeQuests = new List<QuestState>();
             foreach (QuestState qs in _allQuests)
             {
                 if (qs.isStarted() && !qs.isCompleted())
                 {
-                    activeQuests.add(qs);
+                    activeQuests.Add(qs);
                 }
             }
 			
@@ -44,7 +44,7 @@ public readonly struct ExQuestUiPacket: IOutgoingPacket
                 writer.WriteByte(qs.getState());
             }
 
-            writer.WriteInt32(activeQuests.size());
+            writer.WriteInt32(activeQuests.Count);
         }
         else
         {

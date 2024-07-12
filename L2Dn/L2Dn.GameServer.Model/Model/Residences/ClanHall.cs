@@ -1,3 +1,4 @@
+using L2Dn.Extensions;
 using L2Dn.GameServer.Data.Sql;
 using L2Dn.GameServer.Db;
 using L2Dn.GameServer.InstanceManagers;
@@ -137,7 +138,7 @@ public class ClanHall: AbstractResidence
 	 */
 	public void openCloseDoors(bool open)
 	{
-		_doors.forEach(door => door.openCloseMe(open));
+		_doors.ForEach(door => door.openCloseMe(open));
 	}
 	
 	/**
@@ -284,7 +285,7 @@ public class ClanHall: AbstractResidence
 		{
 			if (holder.getMinFunctionLevel() <= functionLevel)
 			{
-				result.add(holder);
+				result.Add(holder);
 			}
 		}
 		return result;
@@ -344,7 +345,7 @@ public class ClanHall: AbstractResidence
 		}
 	}
 	
-	public override String ToString()
+	public override string ToString()
 	{
 		return GetType().Name + ":" + getName() + "[" + getResidenceId() + "]";
 	}

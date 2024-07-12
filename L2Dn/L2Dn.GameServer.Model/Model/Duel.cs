@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using L2Dn.Extensions;
 using L2Dn.GameServer.AI;
 using L2Dn.GameServer.Enums;
 using L2Dn.GameServer.InstanceManagers;
@@ -295,7 +296,7 @@ public class Duel
 				temp.getAI().setIntention(CtrlIntention.AI_INTENTION_ACTIVE);
 				temp.setTarget(null);
 				temp.sendPacket(af);
-				temp.getServitorsAndPets().forEach(s =>
+				temp.getServitorsAndPets().ForEach(s =>
 				{
 					s.abortCast();
 					s.abortAttack();
@@ -309,7 +310,7 @@ public class Duel
 				temp.getAI().setIntention(CtrlIntention.AI_INTENTION_ACTIVE);
 				temp.setTarget(null);
 				temp.sendPacket(af);
-				temp.getServitorsAndPets().forEach(s =>
+				temp.getServitorsAndPets().ForEach(s =>
 				{
 					s.abortCast();
 					s.abortAttack();
@@ -328,14 +329,14 @@ public class Duel
 			_playerB.setTarget(null);
 			_playerA.sendPacket(af);
 			_playerB.sendPacket(af);
-			_playerA.getServitorsAndPets().forEach(s =>
+			_playerA.getServitorsAndPets().ForEach(s =>
 			{
 				s.abortCast();
 				s.abortAttack();
 				s.setTarget(null);
 				s.getAI().setIntention(CtrlIntention.AI_INTENTION_ACTIVE);
 			});
-			_playerB.getServitorsAndPets().forEach(s =>
+			_playerB.getServitorsAndPets().ForEach(s =>
 			{
 				s.abortCast();
 				s.abortAttack();
@@ -361,7 +362,7 @@ public class Duel
 		{
 			if (sendMessage)
 			{
-				String engagedInPvP = "The duel was canceled because a duelist engaged in PvP combat.";
+				string engagedInPvP = "The duel was canceled because a duelist engaged in PvP combat.";
 				_playerA.sendMessage(engagedInPvP);
 				_playerB.sendMessage(engagedInPvP);
 			}
@@ -377,7 +378,7 @@ public class Duel
 	{
 		if ((_playerA == null) || (_playerB == null) || _playerA.isInDuel() || _playerB.isInDuel())
 		{
-			_playerConditions.clear();
+			_playerConditions.Clear();
 			DuelManager.getInstance().removeDuel(this);
 			return;
 		}
@@ -506,7 +507,7 @@ public class Duel
 		}
 		
 		// restore player conditions
-		_playerConditions.values().forEach(x => x.restoreCondition());
+		_playerConditions.values().ForEach(x => x.restoreCondition());
 	}
 	
 	/**
@@ -761,7 +762,7 @@ public class Duel
 		if ((_playerA == null) || (_playerB == null))
 		{
 			// clean up
-			_playerConditions.clear();
+			_playerConditions.Clear();
 			DuelManager.getInstance().removeDuel(this);
 			return;
 		}
@@ -823,7 +824,7 @@ public class Duel
 		broadcastToTeam2(duelEnd);
 		
 		// clean up
-		_playerConditions.clear();
+		_playerConditions.Clear();
 		DuelManager.getInstance().removeDuel(this);
 	}
 	

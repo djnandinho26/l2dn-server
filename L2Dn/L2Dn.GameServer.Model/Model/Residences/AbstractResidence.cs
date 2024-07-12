@@ -1,3 +1,4 @@
+using L2Dn.Extensions;
 using L2Dn.GameServer.Data.Xml;
 using L2Dn.GameServer.Db;
 using L2Dn.GameServer.Model.Actor;
@@ -74,13 +75,13 @@ public abstract class AbstractResidence: INamable
 	
 	public virtual void giveResidentialSkills(Player player)
 	{
-		if ((_residentialSkills != null) && !_residentialSkills.isEmpty())
+		if (_residentialSkills != null && _residentialSkills.Count != 0)
 		{
 			SocialClass playerSocialClass = player.getPledgeClass() + 1;
 			foreach (SkillLearn skill  in  _residentialSkills)
 			{
 				SocialClass skillSocialClass = skill.getSocialClass();
-				if ((skillSocialClass == null) || (playerSocialClass >= skillSocialClass))
+				if (skillSocialClass == null || playerSocialClass >= skillSocialClass)
 				{
 					player.addSkill(SkillData.getInstance().getSkill(skill.getSkillId(), skill.getSkillLevel()), false);
 				}
@@ -90,7 +91,7 @@ public abstract class AbstractResidence: INamable
 	
 	public virtual void removeResidentialSkills(Player player)
 	{
-		if ((_residentialSkills != null) && !_residentialSkills.isEmpty())
+		if (_residentialSkills != null && _residentialSkills.Count != 0)
 		{
 			foreach (SkillLearn skill  in  _residentialSkills)
 			{
@@ -113,8 +114,8 @@ public abstract class AbstractResidence: INamable
 				int id = record.Id;
 				int level = record.Level;
 				DateTime expiration = record.Expiration;
-				ResidenceFunction func = new ResidenceFunction(id, level, expiration, this);
-				if ((expiration <= DateTime.UtcNow) && !func.reactivate())
+				ResidenceFunction func = new(id, level, expiration, this);
+				if (expiration <= DateTime.UtcNow && !func.reactivate())
 				{
 					removeFunction(func);
 					continue;
@@ -165,10 +166,11 @@ public abstract class AbstractResidence: INamable
 		}
 		finally
 		{
-			if (_functions.containsKey(func.getId()))
+			if (_functions.TryGetValue(func.getId(), out ResidenceFunction? function))
 			{
-				removeFunction(_functions.get(func.getId()));
+				removeFunction(function);
 			}
+
 			_functions.put(func.getId(), func);
 		}
 	}
@@ -212,8 +214,8 @@ public abstract class AbstractResidence: INamable
 		}
 		finally
 		{
-			_functions.values().forEach(x => x.cancelExpiration());
-			_functions.clear();
+			_functions.Values.ForEach(x => x.cancelExpiration());
+			_functions.Clear();
 		}
 	}
 	
@@ -226,7 +228,7 @@ public abstract class AbstractResidence: INamable
 		foreach (ResidenceFunction function  in  _functions.values())
 		{
 			ResidenceFunctionTemplate template = function.getTemplate();
-			if ((template != null) && (template.getType() == type))
+			if (template != null && template.getType() == type)
 			{
 				return true;
 			}
@@ -259,7 +261,7 @@ public abstract class AbstractResidence: INamable
 	{
 		foreach (ResidenceFunction func  in  _functions.values())
 		{
-			if ((func.getId() == id) && (func.getLevel() == level))
+			if (func.getId() == id && func.getLevel() == level)
 			{
 				return func;
 			}
@@ -322,7 +324,7 @@ public abstract class AbstractResidence: INamable
 	
 	public override bool Equals(object? obj)
 	{
-		return (obj is AbstractResidence) && (((AbstractResidence) obj).getResidenceId() == getResidenceId());
+		return obj is AbstractResidence && ((AbstractResidence) obj).getResidenceId() == getResidenceId();
 	}
 	
 	public override string ToString()

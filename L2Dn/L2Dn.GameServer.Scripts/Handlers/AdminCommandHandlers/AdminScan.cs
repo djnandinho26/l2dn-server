@@ -28,10 +28,10 @@ public class AdminScan: IAdminCommandHandler
 	
 	private static int DEFAULT_RADIUS = 1000;
 	
-	public bool useAdminCommand(String command, Player activeChar)
+	public bool useAdminCommand(string command, Player activeChar)
 	{
 		StringTokenizer st = new StringTokenizer(command, " ");
-		String actualCommand = st.nextToken();
+		string actualCommand = st.nextToken();
 		switch (actualCommand.toLowerCase())
 		{
 			case "admin_scan":
@@ -99,7 +99,7 @@ public class AdminScan: IAdminCommandHandler
 	private void processBypass(Player activeChar, BypassParser parser)
 	{
 		int id = parser.getInt("id", 0);
-		String name = parser.getString("name", null);
+		string name = parser.getString("name", null);
 		int radius = parser.getInt("radius", parser.getInt("range", DEFAULT_RADIUS));
 		int page = parser.getInt("page", 0);
 		Predicate<Npc> condition;
@@ -119,10 +119,10 @@ public class AdminScan: IAdminCommandHandler
 		sendNpcList(activeChar, radius, page, condition, parser);
 	}
 	
-	private BypassBuilder createBypassBuilder(BypassParser parser, String bypass)
+	private BypassBuilder createBypassBuilder(BypassParser parser, string bypass)
 	{
 		int id = parser.getInt("id", 0);
-		String name = parser.getString("name", null);
+		string name = parser.getString("name", null);
 		int radius = parser.getInt("radius", parser.getInt("range", DEFAULT_RADIUS));
 		BypassBuilder builder = new BypassBuilder(bypass);
 		if (id > 0)
@@ -156,12 +156,12 @@ public class AdminScan: IAdminCommandHandler
 			.bodyHandler((pages, character, sb) =>
 		{
 			BypassBuilder builder = createBypassBuilder(parser, "bypass -h admin_deleteNpcByObjectId");
-			String npcName = character.getName();
+			string npcName = character.getName();
 			builder.addParam("page", page);
 			builder.addParam("objectId", character.getObjectId());
 			sb.Append("<tr>");
 			sb.Append("<td width=\"45\">").Append(character.getId()).Append("</td>");
-			sb.Append("<td><a action=\"bypass -h admin_move_to ").Append(character.getX()).Append(SPACE).Append(character.getY()).Append(SPACE).Append(character.getZ()).Append("\">").Append(npcName.isEmpty() ? "No name NPC" : npcName).Append("</a></td>");
+			sb.Append("<td><a action=\"bypass -h admin_move_to ").Append(character.getX()).Append(SPACE).Append(character.getY()).Append(SPACE).Append(character.getZ()).Append("\">").Append(string.IsNullOrEmpty(npcName) ? "No name NPC" : npcName).Append("</a></td>");
 			sb.Append("<td width=\"60\">").Append(Util.formatAdena((long)Math.Round(activeChar.Distance2D(character)))).Append("</td>");
 			sb.Append("<td width=\"54\"><a action=\"").Append(builder.toStringBuilder()).Append("\"><font color=\"LEVEL\">Delete</font></a></td>");
 			sb.Append("</tr>");
@@ -181,7 +181,7 @@ public class AdminScan: IAdminCommandHandler
 		activeChar.sendPacket(html);
 	}
 	
-	public String[] getAdminCommandList()
+	public string[] getAdminCommandList()
 	{
 		return ADMIN_COMMANDS;
 	}

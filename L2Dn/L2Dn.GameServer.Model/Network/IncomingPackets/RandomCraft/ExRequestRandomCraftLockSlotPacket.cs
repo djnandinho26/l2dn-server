@@ -37,14 +37,14 @@ public struct ExRequestRandomCraftLockSlotPacket: IIncomingPacket<GameSession>
         {
             PlayerRandomCraft rc = player.getRandomCraft();
             int lockedItemCount = rc.getLockedSlotCount();
-            if (rc.getRewards().size() - 1 >= _id && lockedItemCount < 3)
+            if (rc.getRewards().Count - 1 >= _id && lockedItemCount < 3)
             {
                 int price = LOCK_PRICE[Math.Min(lockedItemCount, 2)];
                 Item lcoin = player.getInventory().getItemByItemId(Inventory.LCOIN_ID);
                 if (lcoin != null && lcoin.getCount() >= price)
                 {
                     player.destroyItem("RandomCraft Lock Slot", lcoin, price, player, true);
-                    rc.getRewards().get(_id).@lock();
+                    rc.getRewards()[_id].@lock();
                     player.sendPacket(new ExCraftRandomLockSlotPacket());
                     player.sendPacket(new ExCraftRandomInfoPacket(player));
                 }

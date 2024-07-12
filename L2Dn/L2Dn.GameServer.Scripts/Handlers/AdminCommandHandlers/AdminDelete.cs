@@ -20,7 +20,7 @@ public class AdminDelete: IAdminCommandHandler
 		"admin_delete_group" // for territory spawns
 	};
 	
-	public bool useAdminCommand(String command, Player activeChar)
+	public bool useAdminCommand(string command, Player activeChar)
 	{
 		if (command.contains("group"))
 		{
@@ -28,7 +28,7 @@ public class AdminDelete: IAdminCommandHandler
 		}
 		else if (command.startsWith("admin_delete"))
 		{
-			String[] Split = command.Split(" ");
+			string[] Split = command.Split(" ");
 			handleDelete(activeChar, (Split.Length > 1) && Util.isDigit(Split[1]) ? int.Parse(Split[1]) : 0);
 		}
 		return true;
@@ -74,7 +74,7 @@ public class AdminDelete: IAdminCommandHandler
 			NpcSpawnTemplate npcSpawnTemplate = spawn.getNpcSpawnTemplate();
 			SpawnGroup group = npcSpawnTemplate != null ? npcSpawnTemplate.getGroup() : null;
 			List<SpawnTerritory> territories = group != null ? group.getTerritories() : new();
-			if (territories.isEmpty())
+			if (territories.Count == 0)
 			{
 				SpawnTemplate spawnTemplate = npcSpawnTemplate != null ? npcSpawnTemplate.getSpawnTemplate() : null;
 				if (spawnTemplate != null)
@@ -82,7 +82,7 @@ public class AdminDelete: IAdminCommandHandler
 					territories = spawnTemplate.getTerritories();
 				}
 			}
-			if (territories.isEmpty())
+			if (territories.Count == 0)
 			{
 				target.deleteMe();
 				spawn.stopRespawn();
@@ -112,7 +112,7 @@ public class AdminDelete: IAdminCommandHandler
 			SpawnGroup group = npcSpawnTemplate != null ? npcSpawnTemplate.getGroup() : null;
 			List<SpawnTerritory> territories = group != null ? group.getTerritories() : new();
 			bool simpleTerritory = false;
-			if (territories.isEmpty())
+			if (territories.Count == 0)
 			{
 				SpawnTemplate spawnTemplate = npcSpawnTemplate != null ? npcSpawnTemplate.getSpawnTemplate() : null;
 				if (spawnTemplate != null)
@@ -121,7 +121,7 @@ public class AdminDelete: IAdminCommandHandler
 					simpleTerritory = true;
 				}
 			}
-			if (territories.isEmpty())
+			if (territories.Count == 0)
 			{
 				BuilderUtil.sendSysMessage(player, "Incorrect target.");
 			}
@@ -155,7 +155,7 @@ public class AdminDelete: IAdminCommandHandler
 		}
 	}
 	
-	public String[] getAdminCommandList()
+	public string[] getAdminCommandList()
 	{
 		return ADMIN_COMMANDS;
 	}

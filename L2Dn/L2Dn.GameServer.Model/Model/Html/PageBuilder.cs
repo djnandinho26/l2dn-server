@@ -8,12 +8,12 @@ namespace L2Dn.GameServer.Model.Html;
 
 public static class PageBuilder
 {
-	public static PageBuilder<T> newBuilder<T>(List<T> elements, int elementsPerPage, String bypass)
+	public static PageBuilder<T> newBuilder<T>(List<T> elements, int elementsPerPage, string bypass)
 	{
 		return new PageBuilder<T>(elements, elementsPerPage, bypass.Trim());
 	}
 	
-	public static PageBuilder<T> newBuilder<T>(T[] elements, int elementsPerPage, String bypass)
+	public static PageBuilder<T> newBuilder<T>(T[] elements, int elementsPerPage, string bypass)
 	{
 		return new PageBuilder<T>(elements.ToList(), elementsPerPage, bypass.Trim());
 	}
@@ -23,14 +23,14 @@ public class PageBuilder<T>
 {
 	private readonly List<T> _elements;
 	private readonly int _elementsPerPage;
-	private readonly String _bypass;
+	private readonly string _bypass;
 	private int _currentPage = 0;
 	private IPageHandler _pageHandler = DefaultPageHandler.INSTANCE;
 	private IBypassFormatter _formatter = DefaultFormatter.INSTANCE;
 	private IHtmlStyle _style = DefaultStyle.INSTANCE;
 	private Action<int, T, StringBuilder> _bodyHandler;
 	
-	public PageBuilder(List<T> elements, int elementsPerPage, String bypass)
+	public PageBuilder(List<T> elements, int elementsPerPage, string bypass)
 	{
 		_elements = elements;
 		_elementsPerPage = elementsPerPage;
@@ -45,14 +45,14 @@ public class PageBuilder<T>
 	
 	public PageBuilder<T> bodyHandler(Action<int, T, StringBuilder> bodyHandler)
 	{
-		Objects.requireNonNull(bodyHandler, "Body Handler cannot be null!");
+		ArgumentNullException.ThrowIfNull(bodyHandler);
 		_bodyHandler = bodyHandler;
 		return this;
 	}
 	
 	public PageBuilder<T> bodyHandler(IBodyHandler<T> bodyHandler)
 	{
-		Objects.requireNonNull(bodyHandler, "Body Handler cannot be null!");
+		ArgumentNullException.ThrowIfNull(bodyHandler);
 		_bodyHandler = bodyHandler.apply;
 		return this;
 	}
@@ -60,29 +60,30 @@ public class PageBuilder<T>
 	
 	public PageBuilder<T> pageHandler(IPageHandler pageHandler)
 	{
-		Objects.requireNonNull(pageHandler, "Page Handler cannot be null!");
+		ArgumentNullException.ThrowIfNull(pageHandler);
 		_pageHandler = pageHandler;
 		return this;
 	}
 	
 	public PageBuilder<T> formatter(IBypassFormatter formatter)
 	{
-		Objects.requireNonNull(formatter, "Formatter cannot be null!");
+		ArgumentNullException.ThrowIfNull(formatter);
 		_formatter = formatter;
 		return this;
 	}
 	
 	public PageBuilder<T> style(IHtmlStyle style)
 	{
-		Objects.requireNonNull(style, "Style cannot be null!");
+		ArgumentNullException.ThrowIfNull(style);
 		_style = style;
 		return this;
 	}
 	
 	public PageResult build()
 	{
-		Objects.requireNonNull(_bodyHandler, "Body was not set!");
-		
+		if (_bodyHandler is null)
+			throw new InvalidOperationException("Body was not set!");
+
 		int pages = (_elements.Count / _elementsPerPage) + ((_elements.Count % _elementsPerPage) > 0 ? 1 : 0);
 		StringBuilder pagerTemplate = new StringBuilder();
 		if (pages > 1)

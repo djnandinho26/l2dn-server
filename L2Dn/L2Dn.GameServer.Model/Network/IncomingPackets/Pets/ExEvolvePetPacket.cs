@@ -1,4 +1,5 @@
-﻿using L2Dn.GameServer.Data.Xml;
+﻿using L2Dn.Extensions;
+using L2Dn.GameServer.Data.Xml;
 using L2Dn.GameServer.Enums;
 using L2Dn.GameServer.Model;
 using L2Dn.GameServer.Model.Actor;
@@ -55,7 +56,7 @@ public struct ExEvolvePetPacket: IIncomingPacket<GameSession>
 		Item controlItem = pet.getControlItem();
 		pet.unSummon(activeChar);
 		List<PetData> pets = PetDataTable.getInstance().getPetDatasByEvolve(controlItem.getId(), evolveLevel);
-		PetData targetPet = pets.get(Rnd.get(pets.size()));
+		PetData targetPet = pets.GetRandomElement();
 		PetData petData = PetDataTable.getInstance().getPetData(targetPet.getNpcId());
 		if (petData == null || petData.getNpcId() == -1)
 			return;
@@ -68,7 +69,7 @@ public struct ExEvolvePetPacket: IIncomingPacket<GameSession>
 		if (evolveLevel == EvolveLevel.First)
 		{
 			var skillType = PetTypeData.getInstance().getRandomSkill();
-			String name = PetTypeData.getInstance().getNamePrefix(skillType.Key) + " " + PetTypeData.getInstance().getRandomName();
+			string name = PetTypeData.getInstance().getNamePrefix(skillType.Key) + " " + PetTypeData.getInstance().getRandomName();
 			evolved.addSkill(skillType.Value.getSkill());
 			evolved.setName(name);
 			PetDataTable.getInstance().setPetName(controlItem.getObjectId(), name);

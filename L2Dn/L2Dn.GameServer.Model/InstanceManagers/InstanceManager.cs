@@ -89,7 +89,7 @@ public class InstanceManager: DataReaderBase
 	public void load()
 	{
 		// Load instance names
-		_instanceNames.clear();
+		_instanceNames.Clear();
 
 		LoadXmlDocument<XmlInstanceNameList>(DataFileLocation.Data, "InstanceNames.xml")
 			.Instances
@@ -98,14 +98,14 @@ public class InstanceManager: DataReaderBase
 		_logger.Info(GetType().Name +": Loaded " + _instanceNames.size() + " instance names.");
 		
 		// Load instance templates
-		_instanceTemplates.clear();
+		_instanceTemplates.Clear();
 
 		LoadXmlDocuments<XmlInstance>(DataFileLocation.Data, "instances", true)
 			.ForEach(t => parseInstanceTemplate(t.FilePath, t.Document));
 		
 		_logger.Info(GetType().Name +": Loaded " + _instanceTemplates.Count + " instance templates.");
 		// Load player's reenter data
-		_playerTimes.clear();
+		_playerTimes.Clear();
 		restoreInstanceTimes();
 		_logger.Info(GetType().Name +": Loaded instance reenter times for " + _playerTimes.Count + " players.");
 	}
@@ -189,7 +189,7 @@ public class InstanceManager: DataReaderBase
 							.Select(loc => new Location3D(loc.X, loc.Y, loc.Z))
 							.ToImmutableArray();
 
-						if (locations.isEmpty())
+						if (locations.Length == 0)
 						{
 							_logger.Warn(GetType().Name + ": Missing exit location data for instance " +
 							             template.getName() + " (" + template.getId() + ")!");
@@ -317,7 +317,7 @@ public class InstanceManager: DataReaderBase
 				else
 				{
 					Condition condition = factory(template, parameters, onlyLeader, showMessageAndHtml);
-					conditions.add(condition);
+					conditions.Add(condition);
 				}
 			}
 
@@ -501,12 +501,12 @@ public class InstanceManager: DataReaderBase
 		{
 			if (entry.Value <= DateTime.UtcNow)
 			{
-				invalidPenalty.add(entry.Key);
+				invalidPenalty.Add(entry.Key);
 			}
 		}
 		
 		// Remove them
-		if (!invalidPenalty.isEmpty())
+		if (invalidPenalty.Count != 0)
 		{
 			try 
 			{
@@ -515,7 +515,7 @@ public class InstanceManager: DataReaderBase
 				foreach (int id in invalidPenalty)
 					ctx.CharacterInstances.Where(r => r.CharacterId == playerId && r.InstanceId == id).ExecuteDelete();
 
-				invalidPenalty.forEach(x => instanceTimes.remove(x));
+				invalidPenalty.ForEach(x => instanceTimes.remove(x));
 			}
 			catch (Exception e)
 			{
@@ -548,13 +548,12 @@ public class InstanceManager: DataReaderBase
 	{
 		// Check if exists reenter data for player.
 		Map<int, DateTime>? playerData = _playerTimes.GetValueOrDefault(player.getObjectId());
-		if (playerData == null || !playerData.containsKey(id))
+		if (playerData == null || !playerData.TryGetValue(id, out DateTime time))
 		{
 			return DateTime.MinValue;
 		}
 		
 		// If reenter time is higher than current, delete it.
-		DateTime time = playerData.get(id);
 		if (time <= DateTime.UtcNow)
 		{
 			deleteInstanceTime(player, id);

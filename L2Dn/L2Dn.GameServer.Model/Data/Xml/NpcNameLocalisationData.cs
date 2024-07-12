@@ -13,8 +13,8 @@ public class NpcNameLocalisationData: DataReaderBase
 {
 	private static readonly Logger LOGGER = LogManager.GetLogger(nameof(NpcNameLocalisationData));
 	
-	private static readonly Map<String, Map<int, String[]>> NPC_NAME_LOCALISATIONS = new();
-	private static String _lang;
+	private static readonly Map<string, Map<int, string[]>> NPC_NAME_LOCALISATIONS = new();
+	private static string _lang;
 	
 	protected NpcNameLocalisationData()
 	{
@@ -23,7 +23,7 @@ public class NpcNameLocalisationData: DataReaderBase
 	
 	public void load()
 	{
-		NPC_NAME_LOCALISATIONS.clear();
+		NPC_NAME_LOCALISATIONS.Clear();
 		
 		if (Config.MULTILANG_ENABLE)
 		{
@@ -65,9 +65,9 @@ public class NpcNameLocalisationData: DataReaderBase
 	 * @param id
 	 * @return a String Array[] that contains NPC name and title or Null if is does not exist.
 	 */
-	public String[] getLocalisation(String lang, int id)
+	public string[] getLocalisation(string lang, int id)
 	{
-		Map<int, String[]> localisations = NPC_NAME_LOCALISATIONS.get(lang);
+		Map<int, string[]> localisations = NPC_NAME_LOCALISATIONS.get(lang);
 		if (localisations != null)
 		{
 			return localisations.get(id);
@@ -77,14 +77,7 @@ public class NpcNameLocalisationData: DataReaderBase
 	
 	public bool hasLocalisation(int id)
 	{
-		foreach (Map<int, String[]> data in NPC_NAME_LOCALISATIONS.values())
-		{
-			if (data.containsKey(id))
-			{
-				return true;
-			}
-		}
-		return false;
+		return NPC_NAME_LOCALISATIONS.Values.Any(data => data.ContainsKey(id));
 	}
 	
 	public static NpcNameLocalisationData getInstance()

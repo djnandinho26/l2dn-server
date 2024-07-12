@@ -109,7 +109,7 @@ public class SpawnData: DataReaderBase
 	public void despawnAll()
 	{
 		_logger.Info(GetType().Name + ": Removing all spawns...");
-		_spawns.forEach(x => x.despawnAll());
+		_spawns.ForEach(x => x.despawnAll());
 		_logger.Info(GetType().Name + ": All spawns has been removed!");
 	}
 	
@@ -125,13 +125,13 @@ public class SpawnData: DataReaderBase
 		{
 			if (condition(spawnTemplate))
 			{
-				result.add(spawnTemplate);
+				result.Add(spawnTemplate);
 			}
 		}
 		return result;
 	}
 	
-	public SpawnTemplate getSpawnByName(String name)
+	public SpawnTemplate getSpawnByName(string name)
 	{
 		foreach (SpawnTemplate spawn in _spawns)
 		{
@@ -143,7 +143,7 @@ public class SpawnData: DataReaderBase
 		return null;
 	}
 	
-	public SpawnGroup getSpawnGroupByName(String name)
+	public SpawnGroup getSpawnGroupByName(string name)
 	{
 		foreach (SpawnTemplate spawnTemplate in _spawns)
 		{
@@ -169,7 +169,7 @@ public class SpawnData: DataReaderBase
 				{
 					if (condition(spawn))
 					{
-						result.add(spawn);
+						result.Add(spawn);
 					}
 				}
 			}

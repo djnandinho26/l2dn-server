@@ -31,7 +31,7 @@ public class AdminDoorControl: IAdminCommandHandler
 		"admin_showdoors"
 	};
 	
-	public bool useAdminCommand(String command, Player activeChar)
+	public bool useAdminCommand(string command, Player activeChar)
 	{
 		try
 		{
@@ -147,12 +147,7 @@ public class AdminDoorControl: IAdminCommandHandler
 				}
 				else
 				{
-					Set<int> doorIds;
-					if (PLAYER_SHOWN_DOORS.containsKey(activeChar))
-					{
-						doorIds = PLAYER_SHOWN_DOORS.get(activeChar);
-					}
-					else
+					if (!PLAYER_SHOWN_DOORS.TryGetValue(activeChar, out Set<int>? doorIds))
 					{
 						doorIds = new();
 						PLAYER_SHOWN_DOORS.put(activeChar, doorIds);
@@ -199,7 +194,7 @@ public class AdminDoorControl: IAdminCommandHandler
 		return true;
 	}
 	
-	public String[] getAdminCommandList()
+	public string[] getAdminCommandList()
 	{
 		return ADMIN_COMMANDS;
 	}

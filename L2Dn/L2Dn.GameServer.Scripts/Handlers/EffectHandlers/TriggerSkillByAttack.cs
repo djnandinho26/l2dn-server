@@ -63,26 +63,26 @@ public class TriggerSkillByAttack: AbstractEffect
 		}
 		else
 		{
-			foreach (String s in @params.getString("allowWeapons").Split(","))
+			foreach (string s in @params.getString("allowWeapons").Split(","))
 			{
 				_allowWeapons |= Enum.Parse<WeaponType>(s);
 			}
 		}
 		
 		// Specific skills by level.
-		String triggerSkills = @params.getString("triggerSkills", "");
-		if (triggerSkills.isEmpty())
+		string triggerSkills = @params.getString("triggerSkills", "");
+		if (string.IsNullOrEmpty(triggerSkills))
 		{
 			_triggerSkills = null;
 		}
 		else
 		{
-			String[] split = triggerSkills.Split(";");
+			string[] split = triggerSkills.Split(";");
 			_triggerSkills = new();
-			foreach (String skill in split)
+			foreach (string skill in split)
 			{
-				String[] splitSkill = skill.Split(",");
-				_triggerSkills.add(new SkillHolder(int.Parse(splitSkill[0]), int.Parse(splitSkill[1])));
+				string[] splitSkill = skill.Split(",");
+				_triggerSkills.Add(new SkillHolder(int.Parse(splitSkill[0]), int.Parse(splitSkill[1])));
 			}
 		}
 	}
@@ -164,7 +164,7 @@ public class TriggerSkillByAttack: AbstractEffect
 		try
 		{
 			target = TargetHandler.getInstance().getHandler(_targetType).getTarget(@event.getAttacker(),
-				@event.getTarget(), _triggerSkills == null ? _skill.getSkill() : _triggerSkills.get(0).getSkill(),
+				@event.getTarget(), _triggerSkills == null ? _skill.getSkill() : _triggerSkills[0].getSkill(),
 				false, false, false);
 		}
 		catch (Exception e)
@@ -227,7 +227,7 @@ public class TriggerSkillByAttack: AbstractEffect
 			}
 			if (triggerSkill == null)
 			{
-				triggerSkill = _triggerSkills.get(0).getSkill();
+				triggerSkill = _triggerSkills[0].getSkill();
 			}
 			
 			SkillCaster.triggerCast(@event.getAttacker(), (Creature) target, triggerSkill);

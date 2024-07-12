@@ -20,7 +20,7 @@ public class AdminRes: IAdminCommandHandler
 		"admin_res_monster"
 	};
 	
-	public bool useAdminCommand(String command, Player activeChar)
+	public bool useAdminCommand(string command, Player activeChar)
 	{
 		if (command.startsWith("admin_res "))
 		{
@@ -41,7 +41,7 @@ public class AdminRes: IAdminCommandHandler
 		return true;
 	}
 	
-	public String[] getAdminCommandList()
+	public string[] getAdminCommandList()
 	{
 		return ADMIN_COMMANDS;
 	}
@@ -51,7 +51,7 @@ public class AdminRes: IAdminCommandHandler
 		handleRes(activeChar, null);
 	}
 	
-	private void handleRes(Player activeChar, String resParam)
+	private void handleRes(Player activeChar, string resParam)
 	{
 		WorldObject obj = activeChar.getTarget();
 		if (resParam != null)
@@ -99,14 +99,14 @@ public class AdminRes: IAdminCommandHandler
 		handleNonPlayerRes(activeChar, "");
 	}
 	
-	private void handleNonPlayerRes(Player activeChar, String radiusStr)
+	private void handleNonPlayerRes(Player activeChar, string radiusStr)
 	{
 		WorldObject obj = activeChar.getTarget();
 		
 		try
 		{
 			int radius = 0;
-			if (!radiusStr.isEmpty())
+			if (!string.IsNullOrEmpty(radiusStr))
 			{
 				radius = int.Parse(radiusStr);
 				World.getInstance().forEachVisibleObjectInRange<Creature>(activeChar, radius, knownChar =>

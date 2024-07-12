@@ -49,11 +49,11 @@ public class ChangeAttributeCrystal: IItemHandler
 		{
 			if (i.isWeapon() && i.hasAttributes() && (i.getTemplate().getItemGrade() == ITEM_GRADES.get(item.getId())))
 			{
-				itemList.add(new ItemInfo(i));
+				itemList.Add(new ItemInfo(i));
 			}
 		}
 		
-		if (itemList.isEmpty())
+		if (itemList.Count == 0)
 		{
 			player.sendPacket(SystemMessageId.THE_ITEM_FOR_CHANGING_AN_ATTRIBUTE_DOES_NOT_EXIST);
 			return false;

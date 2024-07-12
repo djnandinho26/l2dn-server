@@ -28,7 +28,7 @@ public class MagicLampData: DataReaderBase
 		XDocument document = LoadXmlDocument(DataFileLocation.Data, "MagicLampData.xml");
 		document.Elements("list").Elements("levelRange").ForEach(parseElement);
 		
-		LOGGER.Info("MagicLampData: Loaded " + LAMPS.size() + " magic lamps exp types.");
+		LOGGER.Info("MagicLampData: Loaded " + LAMPS.Count + " magic lamps exp types.");
 	}
 
 	private void parseElement(XElement element)
@@ -43,7 +43,7 @@ public class MagicLampData: DataReaderBase
 			long sp = el.GetAttributeValueAsInt64("sp");
 			double chance = el.GetAttributeValueAsDouble("chance");
 			
-			LAMPS.add(new MagicLampDataHolder(type, exp, sp, chance, minLevel, maxLevel));
+			LAMPS.Add(new MagicLampDataHolder(type, exp, sp, chance, minLevel, maxLevel));
 		});
 	}
 

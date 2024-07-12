@@ -1,4 +1,5 @@
-﻿using L2Dn.GameServer.Data.Sql;
+﻿using L2Dn.Extensions;
+using L2Dn.GameServer.Data.Sql;
 using L2Dn.GameServer.Enums;
 using L2Dn.GameServer.InstanceManagers;
 using L2Dn.GameServer.Model;
@@ -8,7 +9,6 @@ using L2Dn.GameServer.Model.Zones;
 using L2Dn.GameServer.Network;
 using L2Dn.GameServer.Network.OutgoingPackets;
 using L2Dn.Network;
-using L2Dn.Utilities;
 using NLog;
 
 namespace L2Dn.GameServer.Utilities;
@@ -112,7 +112,7 @@ public class OfflineTradeUtil
 			}
 		}
 		
-		player.getServitors().values().forEach(s =>
+		player.getServitors().values().ForEach(s =>
 		{
 			s.setRestoreSummon(true);
 			s.unSummon(player);
@@ -138,9 +138,9 @@ public class OfflineTradeUtil
 		player.storeMe();
 		LOGGER_ACCOUNTING.Info("Entering offline mode, " + client);
 		
-		if (!Config.OFFLINE_ABNORMAL_EFFECTS.isEmpty())
+		if (!Config.OFFLINE_ABNORMAL_EFFECTS.IsDefaultOrEmpty)
 		{
-			player.getEffectList().startAbnormalVisualEffect(Config.OFFLINE_ABNORMAL_EFFECTS[Rnd.get(Config.OFFLINE_ABNORMAL_EFFECTS.Length)]);
+			player.getEffectList().startAbnormalVisualEffect(Config.OFFLINE_ABNORMAL_EFFECTS.GetRandomElement());
 		}
 		
 		return true;

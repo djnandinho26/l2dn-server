@@ -1,4 +1,5 @@
 using System.Text;
+using L2Dn.Extensions;
 using L2Dn.GameServer.Data;
 using L2Dn.GameServer.Handlers;
 using L2Dn.GameServer.InstanceManagers;
@@ -45,10 +46,10 @@ public class AdminInstance: IAdminCommandHandler
 		148, // Three Bridges Arena
 	};
 	
-	public bool useAdminCommand(String command, Player activeChar)
+	public bool useAdminCommand(string command, Player activeChar)
 	{
 		StringTokenizer st = new StringTokenizer(command, " ");
-		String actualCommand = st.nextToken();
+		string actualCommand = st.nextToken();
 		
 		switch (actualCommand.toLowerCase())
 		{
@@ -70,17 +71,17 @@ public class AdminInstance: IAdminCommandHandler
 			case "admin_instancecreate":
 			{
 				int templateId = CommonUtil.parseNextInt(st, 0);
-				InstanceTemplate template = InstanceManager.getInstance().getInstanceTemplate(templateId);
+				InstanceTemplate? template = InstanceManager.getInstance().getInstanceTemplate(templateId);
 				if (template != null)
 				{
-					String enterGroup = st.hasMoreTokens() ? st.nextToken() : "Alone";
+					string enterGroup = st.hasMoreTokens() ? st.nextToken() : "Alone";
 					List<Player> members = new();
 					
 					switch (enterGroup)
 					{
 						case "Alone":
 						{
-							members.add(activeChar);
+							members.Add(activeChar);
 							break;
 						}
 						case "Party":
@@ -91,7 +92,7 @@ public class AdminInstance: IAdminCommandHandler
 							}
 							else
 							{
-								members.add(activeChar);
+								members.Add(activeChar);
 							}
 							break;
 						}
@@ -107,7 +108,7 @@ public class AdminInstance: IAdminCommandHandler
 							}
 							else
 							{
-								members.add(activeChar);
+								members.Add(activeChar);
 							}
 							break;
 						}
@@ -161,7 +162,7 @@ public class AdminInstance: IAdminCommandHandler
 				Instance instance = InstanceManager.getInstance().getInstance(CommonUtil.parseNextInt(st, -1));
 				if (instance != null)
 				{
-					instance.getPlayers().forEach(player => player.sendPacket(new ExShowScreenMessagePacket("Your instance has been destroyed by Game Master!", 10000)));
+					instance.getPlayers().ForEach(player => player.sendPacket(new ExShowScreenMessagePacket("Your instance has been destroyed by Game Master!", 10000)));
 					BuilderUtil.sendSysMessage(activeChar, "You destroyed Instance " + instance.getId() + " with " + instance.getPlayersCount() + " players inside.");
 					instance.destroy();
 					sendTemplateDetails(activeChar, instance.getTemplateId());
@@ -196,7 +197,7 @@ public class AdminInstance: IAdminCommandHandler
 			sb.Append("</tr>");
 			sb.Append("</table>");
 			
-			InstanceManager.getInstance().getInstances().Where(inst => (inst.getTemplateId() == templateId)).OrderBy(x => x.getPlayersCount()).forEach(instance =>
+			InstanceManager.getInstance().getInstances().Where(inst => (inst.getTemplateId() == templateId)).OrderBy(x => x.getPlayersCount()).ForEach(instance =>
 			{
 				sb.Append("<table border=0 cellpadding=2 cellspacing=0 bgcolor=\"363636\">");
 				sb.Append("<tr>");
@@ -225,7 +226,7 @@ public class AdminInstance: IAdminCommandHandler
 		InstanceManager instManager = InstanceManager.getInstance();
 		List<InstanceTemplate> templateList = instManager.getInstanceTemplates()
 			.OrderByDescending(x => x.getWorldCount())
-			.Where(template => !CommonUtil.contains(IGNORED_TEMPLATES, template.getId())).ToList();
+			.Where(template => Array.IndexOf(IGNORED_TEMPLATES, template.getId()) < 0).ToList();
 		
 		//@formatter:off
 		PageResult result = PageBuilder.newBuilder(templateList, 4, "bypass -h admin_instancelist")
@@ -277,7 +278,7 @@ public class AdminInstance: IAdminCommandHandler
 		}
 	}
 	
-	public String[] getAdminCommandList()
+	public string[] getAdminCommandList()
 	{
 		return ADMIN_COMMANDS;
 	}

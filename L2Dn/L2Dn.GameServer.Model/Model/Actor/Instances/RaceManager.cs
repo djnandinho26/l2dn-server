@@ -19,7 +19,7 @@ public class RaceManager: Npc
 	{
 	}
 	
-	public override void onBypassFeedback(Player player, String command)
+	public override void onBypassFeedback(Player player, string command)
 	{
 		if (command.startsWith("BuyTicket"))
 		{
@@ -42,7 +42,7 @@ public class RaceManager: Npc
 				val = 0;
 			}
 			
-			String search, replace;
+			string search, replace;
 
 			HtmlContent htmlContent;
 			if (val < 10)
@@ -166,7 +166,7 @@ public class RaceManager: Npc
 				htmlContent.Replace("Mob" + n, MonsterRace.getInstance().getMonsters()[i].getTemplate().getName());
 				
 				// Odd
-				double odd = MonsterRace.getInstance().getOdds().get(i);
+				double odd = MonsterRace.getInstance().getOdds()[i];
 				htmlContent.Replace("Odd" + n, (odd > 0D) ? odd.ToString("N1") : "&$804;");
 			}
 
@@ -188,7 +188,7 @@ public class RaceManager: Npc
 			for (int i = 0; i < 8; i++)
 			{
 				int n = i + 1;
-				String search = "Mob" + n;
+				string search = "Mob" + n;
 				htmlContent.Replace(search, MonsterRace.getInstance().getMonsters()[i].getTemplate().getName());
 			}
 			
@@ -217,8 +217,16 @@ public class RaceManager: Npc
 				{
 					continue;
 				}
-				
-				StringUtil.append(sb, "<tr><td><a action=\"bypass -h npc_%objectId%_ShowTicket ", "" + ticket.getObjectId(), "\">", "" + ticket.getEnchantLevel(), " Race Number</a></td><td align=right><font color=\"LEVEL\">", "" + ticket.getCustomType1(), "</font> Number</td><td align=right><font color=\"LEVEL\">", "" + (ticket.getCustomType2() * 100), "</font> Adena</td></tr>");
+
+				sb.Append("<tr><td><a action=\"bypass -h npc_%objectId%_ShowTicket ");
+				sb.Append(ticket.getObjectId());
+				sb.Append("\">");
+				sb.Append(ticket.getEnchantLevel());
+				sb.Append(" Race Number</a></td><td align=right><font color=\"LEVEL\">");
+				sb.Append(ticket.getCustomType1());
+				sb.Append("</font> Number</td><td align=right><font color=\"LEVEL\">");
+				sb.Append(ticket.getCustomType2() * 100);
+				sb.Append("</font> Adena</td></tr>");
 			}
 
 			HtmlContent htmlContent = HtmlContent.LoadFromFile(getHtmlPath(getId(), 7, player), player);
@@ -251,7 +259,7 @@ public class RaceManager: Npc
 			int bet = ticket.getCustomType2() * 100;
 			
 			// Retrieve HistoryInfo for that race.
-			MonsterRace.HistoryInfo info = MonsterRace.getInstance().getHistory().get(raceId - 1);
+			MonsterRace.HistoryInfo info = MonsterRace.getInstance().getHistory()[raceId - 1];
 			if (info == null)
 			{
 				base.onBypassFeedback(player, "Chat 0");
@@ -293,7 +301,7 @@ public class RaceManager: Npc
 			int bet = ticket.getCustomType2() * 100;
 			
 			// Retrieve HistoryInfo for that race.
-			MonsterRace.HistoryInfo info = MonsterRace.getInstance().getHistory().get(raceId - 1);
+			MonsterRace.HistoryInfo info = MonsterRace.getInstance().getHistory()[raceId - 1];
 			if (info == null)
 			{
 				base.onBypassFeedback(player, "Chat 0");
@@ -322,16 +330,21 @@ public class RaceManager: Npc
 			
 			// Use whole history, pickup from 'last element' and stop at 'latest element - 7'.
 			List<MonsterRace.HistoryInfo> history = MonsterRace.getInstance().getHistory();
-			for (int i = history.size() - 1; i >= Math.Max(0, history.size() - 7); i--)
+			for (int i = history.Count - 1; i >= Math.Max(0, history.Count - 7); i--)
 			{
-				MonsterRace.HistoryInfo info = history.get(i);
-				StringUtil.append(sb, "<tr><td><font color=\"LEVEL\">", "" + info.getRaceId(),
-					"</font> th</td><td><font color=\"LEVEL\">", "" + info.getFirst(),
-					"</font> Lane </td><td><font color=\"LEVEL\">", "" + info.getSecond(),
-					"</font> Lane</td><td align=right><font color=00ffff>",
-					info.getOddRate().ToString("N2"), "</font> Times</td></tr>");
+				MonsterRace.HistoryInfo info = history[i];
+
+				sb.Append("<tr><td><font color=\"LEVEL\">");
+				sb.Append(info.getRaceId());
+				sb.Append("</font> th</td><td><font color=\"LEVEL\">");
+				sb.Append(info.getFirst());
+				sb.Append("</font> Lane </td><td><font color=\"LEVEL\">");
+				sb.Append(info.getSecond());
+				sb.Append("</font> Lane</td><td align=right><font color=00ffff>");
+				sb.Append(info.getOddRate().ToString("N2"));
+				sb.Append("</font> Times</td></tr>");
 			}
-			
+
 			HtmlContent htmlContent = HtmlContent.LoadFromFile(getHtmlPath(getId(), 9, player), player);
 			htmlContent.Replace("%infos%", sb.ToString());
 			htmlContent.Replace("%objectId%", getObjectId().ToString());

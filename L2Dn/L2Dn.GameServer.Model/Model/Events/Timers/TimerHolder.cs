@@ -83,9 +83,9 @@ public class TimerHolder<T>: TimerHolder
 		IEventTimerEvent<T> eventScript, IEventTimerCancel<T> cancelScript, TimerExecutor<T> postExecutor)
 		: base(@params, npc, player, isRepeating)
 	{
-		Objects.requireNonNull(@event, GetType().Name + ": \"event\" cannot be null!");
-		Objects.requireNonNull(eventScript, GetType().Name + ": \"script\" cannot be null!");
-		Objects.requireNonNull(postExecutor, GetType().Name + ": \"postExecutor\" cannot be null!");
+		ArgumentNullException.ThrowIfNull(@event);
+		ArgumentNullException.ThrowIfNull(eventScript);
+		ArgumentNullException.ThrowIfNull(postExecutor);
 		_event = @event;
 		_timeInMs = timeInMs;
 		_eventScript = eventScript;
@@ -191,7 +191,7 @@ public class TimerHolder<T>: TimerHolder
 		_eventScript.onTimerEvent(this);
 	}
 
-	public override String ToString()
+	public override string ToString()
 	{
 		return "event: " + _event + " params: " + getParams() + " time: " + _timeInMs + " npc: " + getNpc() + " player: " +
 		       getPlayer() + " repeating: " + isRepeating() + " script: " + _eventScript.GetType().Name +

@@ -26,7 +26,7 @@ public class WorldExchangeManager: DataReaderBase
 	private static readonly Logger LOGGER = LogManager.GetLogger(nameof(WorldExchangeManager));
 	private readonly Map<long, WorldExchangeHolder> _itemBids = new();
 	private readonly Map<int, WorldExchangeItemSubType> _itemCategories = new();
-	private readonly Map<String, Map<int, String>> _localItemNames = new();
+	private readonly Map<string, Map<int, string>> _localItemNames = new();
 	private int _lastWorldExchangeId;
 	
 	private ScheduledFuture _checkStatus = null;
@@ -97,7 +97,7 @@ public class WorldExchangeManager: DataReaderBase
 	// 	_localItemNames.put(doc.getDocumentURI().split("data/lang/")[1].split("/")[0], local);
 	// }
 	
-	public Map<int, String> getItemLocalByLang(String lang)
+	public Map<int, string> getItemLocalByLang(string lang)
 	{
 		return _localItemNames.get(lang);
 	}
@@ -428,7 +428,7 @@ public class WorldExchangeManager: DataReaderBase
 			return;
 		}
 		
-		if (!_itemBids.containsKey(worldExchangeItem.getWorldExchangeId()))
+		if (!_itemBids.TryGetValue(worldExchangeItem.getWorldExchangeId(), out WorldExchangeHolder? itemBid))
 		{
 			player.sendPacket(new WorldExchangeSettleListPacket(player));
 			player.sendPacket(new SystemMessagePacket(SystemMessageId.THE_ITEM_IS_NOT_FOUND));
@@ -436,7 +436,7 @@ public class WorldExchangeManager: DataReaderBase
 			return;
 		}
 		
-		if (_itemBids.get(worldExchangeItem.getWorldExchangeId()) != worldExchangeItem)
+		if (itemBid != worldExchangeItem)
 		{
 			player.sendPacket(new WorldExchangeSettleListPacket(player));
 			player.sendPacket(new SystemMessagePacket(SystemMessageId.THE_ITEM_IS_NOT_FOUND));
@@ -490,7 +490,7 @@ public class WorldExchangeManager: DataReaderBase
 			return;
 		}
 		
-		if (!_itemBids.containsKey(worldExchangeItem.getWorldExchangeId()))
+		if (!_itemBids.TryGetValue(worldExchangeItem.getWorldExchangeId(), out WorldExchangeHolder? itemBid))
 		{
 			player.sendPacket(new WorldExchangeSettleListPacket(player));
 			player.sendPacket(new SystemMessagePacket(SystemMessageId.THE_ITEM_IS_NOT_FOUND));
@@ -498,7 +498,7 @@ public class WorldExchangeManager: DataReaderBase
 			return;
 		}
 		
-		if (_itemBids.get(worldExchangeItem.getWorldExchangeId()) != worldExchangeItem)
+		if (itemBid != worldExchangeItem)
 		{
 			player.sendPacket(new WorldExchangeSettleListPacket(player));
 			player.sendPacket(new SystemMessagePacket(SystemMessageId.THE_ITEM_IS_NOT_FOUND));
@@ -565,7 +565,7 @@ public class WorldExchangeManager: DataReaderBase
 			return;
 		}
 		
-		if (!_itemBids.containsKey(worldExchangeItem.getWorldExchangeId()))
+		if (!_itemBids.TryGetValue(worldExchangeItem.getWorldExchangeId(), out WorldExchangeHolder? itemBid))
 		{
 			player.sendPacket(new WorldExchangeSettleListPacket(player));
 			player.sendPacket(new SystemMessagePacket(SystemMessageId.THE_ITEM_IS_NOT_FOUND));
@@ -573,7 +573,7 @@ public class WorldExchangeManager: DataReaderBase
 			return;
 		}
 		
-		if (_itemBids.get(worldExchangeItem.getWorldExchangeId()) != worldExchangeItem)
+		if (itemBid != worldExchangeItem)
 		{
 			player.sendPacket(new WorldExchangeSettleListPacket(player));
 			player.sendPacket(new SystemMessagePacket(SystemMessageId.ITEM_OUT_OF_STOCK));
@@ -627,14 +627,13 @@ public class WorldExchangeManager: DataReaderBase
 			return;
 		}
 		
-		if (!_itemBids.containsKey(worldExchangeId))
+		if (!_itemBids.TryGetValue(worldExchangeId, out WorldExchangeHolder? worldExchangeItem))
 		{
 			player.sendPacket(new SystemMessagePacket(SystemMessageId.THE_ITEM_IS_NOT_FOUND));
 			player.sendPacket(WorldExchangeBuyItemPacket.FAIL);
 			return;
 		}
 		
-		WorldExchangeHolder worldExchangeItem = _itemBids.get(worldExchangeId);
 		if (worldExchangeItem.getStoreType() == WorldExchangeItemStatusType.WORLD_EXCHANGE_NONE)
 		{
 			player.sendPacket(new SystemMessagePacket(SystemMessageId.THE_ITEM_IS_NOT_FOUND));
@@ -738,7 +737,7 @@ public class WorldExchangeManager: DataReaderBase
 	 * @param lang
 	 * @return items, which player can buy
 	 */
-	public List<WorldExchangeHolder> getItemBids(int ownerId, WorldExchangeItemSubType type, WorldExchangeSortType sortType, String lang)
+	public List<WorldExchangeHolder> getItemBids(int ownerId, WorldExchangeItemSubType type, WorldExchangeSortType sortType, string lang)
 	{
 		if (!Config.ENABLE_WORLD_EXCHANGE)
 		{
@@ -760,7 +759,7 @@ public class WorldExchangeManager: DataReaderBase
 			
 			if (holder.getStoreType() == WorldExchangeItemStatusType.WORLD_EXCHANGE_REGISTERED)
 			{
-				returnList.add(holder);
+				returnList.Add(holder);
 			}
 		}
 		
@@ -773,7 +772,7 @@ public class WorldExchangeManager: DataReaderBase
 	 * @param lang
 	 * @return items with the same id (used in registration, where shows similar items with price)
 	 */
-	public List<WorldExchangeHolder> getItemBids(List<int> ids, WorldExchangeSortType sortType, String lang)
+	public List<WorldExchangeHolder> getItemBids(List<int> ids, WorldExchangeSortType sortType, string lang)
 	{
 		if (!Config.ENABLE_WORLD_EXCHANGE)
 		{
@@ -790,7 +789,7 @@ public class WorldExchangeManager: DataReaderBase
 			
 			if (ids.Contains(holder.getItemInstance().getId()) && (holder.getStoreType() == WorldExchangeItemStatusType.WORLD_EXCHANGE_REGISTERED))
 			{
-				returnList.add(holder);
+				returnList.Add(holder);
 			}
 		}
 		
@@ -803,7 +802,7 @@ public class WorldExchangeManager: DataReaderBase
 	 * @param lang
 	 * @return sort items by type if it needs 399 - that max value which can been in list buffer size - 32768 - list has 11 + cycle of 82 bytes - 32768 / 82 = 399.6 = 32718 for item info + 50 reserved = 32729 item info and initial data + 39 reserved
 	 */
-	private List<WorldExchangeHolder> sortList(List<WorldExchangeHolder> unsortedList, WorldExchangeSortType sortType, String lang)
+	private List<WorldExchangeHolder> sortList(List<WorldExchangeHolder> unsortedList, WorldExchangeSortType sortType, string lang)
 	{
 		List<WorldExchangeHolder> sortedList = new(unsortedList);
 		switch (sortType)
@@ -820,7 +819,7 @@ public class WorldExchangeManager: DataReaderBase
 			}
 			case WorldExchangeSortType.ITEM_NAME_ASCE:
 			{
-				if ((lang == null) || (!lang.equals("en") && _localItemNames.containsKey(lang)))
+				if ((lang == null) || (!lang.equals("en") && _localItemNames.ContainsKey(lang)))
 				{
 					// TODO extract to comparer classes
 					sortedList.Sort((a, b) =>
@@ -838,7 +837,7 @@ public class WorldExchangeManager: DataReaderBase
 			}
 			case WorldExchangeSortType.ITEM_NAME_DESC:
 			{
-				if ((lang == null) || (!lang.equals("en") && _localItemNames.containsKey(lang)))
+				if ((lang == null) || (!lang.equals("en") && _localItemNames.ContainsKey(lang)))
 				{
 					// TODO extract to comparer classes
 					sortedList.Sort((a, b) =>
@@ -866,7 +865,7 @@ public class WorldExchangeManager: DataReaderBase
 			}
 		}
 		
-		if (sortedList.size() > 399)
+		if (sortedList.Count > 399)
 		{
 			return sortedList[..399];
 		}
@@ -874,18 +873,17 @@ public class WorldExchangeManager: DataReaderBase
 		return sortedList;
 	}
 	
-	private String getItemName(String lang, int id, bool isBlessed)
+	private string getItemName(string lang, int id, bool isBlessed)
 	{
-		if (!_localItemNames.containsKey(lang))
+		if (!_localItemNames.TryGetValue(lang, out Map<int, string>? names))
 		{
-			return "";
+			return string.Empty;
 		}
 		
-		Map<int, String> names = _localItemNames.get(lang);
-		String name = names.get(id);
-		if (name == null)
+		string? name = names.GetValueOrDefault(id);
+		if (name is null)
 		{
-			return "";
+			return string.Empty;
 		}
 		
 		if (isBlessed)
@@ -926,17 +924,17 @@ public class WorldExchangeManager: DataReaderBase
 			{
 				case WorldExchangeItemStatusType.WORLD_EXCHANGE_REGISTERED:
 				{
-					registered.add(holder);
+					registered.Add(holder);
 					break;
 				}
 				case WorldExchangeItemStatusType.WORLD_EXCHANGE_SOLD:
 				{
-					sold.add(holder);
+					sold.Add(holder);
 					break;
 				}
 				case WorldExchangeItemStatusType.WORLD_EXCHANGE_OUT_TIME:
 				{
-					outTime.add(holder);
+					outTime.Add(holder);
 					break;
 				}
 			}

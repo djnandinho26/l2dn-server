@@ -29,11 +29,11 @@ public class CellPathFinding: PathFinding
 	{
 		try
 		{
-			String[] array = Config.PATHFIND_BUFFERS.Split(";");
+			string[] array = Config.PATHFIND_BUFFERS.Split(";");
 			_allBuffers = new BufferInfo[array.Length];
 			
-			String buf;
-			String[] args;
+			string buf;
+			string[] args;
 			for (int i = 0; i < array.Length; i++)
 			{
 				buf = array[i];
@@ -138,7 +138,7 @@ public class CellPathFinding: PathFinding
 			buffer.free();
 		}
 		
-		if ((path.size() < 3) || (Config.MAX_POSTFILTER_PASSES <= 0))
+		if ((path.Count < 3) || (Config.MAX_POSTFILTER_PASSES <= 0))
 		{
 			_findSuccess++;
 			return path;
@@ -189,11 +189,11 @@ public class CellPathFinding: PathFinding
 		}
 
 		// Only one postfilter pass for AI.
-		while (playable && remove && (path.size() > 2) && (pass < Config.MAX_POSTFILTER_PASSES));
+		while (playable && remove && (path.Count > 2) && (pass < Config.MAX_POSTFILTER_PASSES));
 		
 		if (debug)
 		{
-			path.forEach(n => dropDebugItem(1061, 1, n));
+			path.ForEach(n => dropDebugItem(1061, 1, n));
 		}
 		
 		_findSuccess++;
@@ -278,9 +278,9 @@ public class CellPathFinding: PathFinding
 				// Not found, allocate temporary buffer.
 				current = new CellNodeBuffer(i.mapSize);
 				current.@lock();
-				if (i.bufs.size() < i.count)
+				if (i.bufs.Count < i.count)
 				{
-					i.bufs.add(current);
+					i.bufs.Add(current);
 					i.uses++;
 					if (playable)
 					{
@@ -306,7 +306,7 @@ public class CellPathFinding: PathFinding
 		Item item = new Item(IdManager.getInstance().getNextId(), itemId);
 		item.setCount(num);
 		item.spawnMe(loc.Location);
-		_debugItems.add(item);
+		_debugItems.Add(item);
 	}
 	
 	private class BufferInfo
@@ -326,43 +326,73 @@ public class CellPathFinding: PathFinding
 			count = cnt;
 			bufs = new(count);
 		}
-		
-		public override String ToString()
+
+		public override string ToString()
 		{
-			StringBuilder stat = new StringBuilder(100);
-			StringUtil.append(stat, mapSize.ToString(), "x", mapSize.ToString(), " num:", bufs.size().ToString(), "/", count.ToString(), " uses:", uses.ToString(), "/", playableUses.ToString());
+			StringBuilder stat = new(100);
+			stat.Append(mapSize);
+			stat.Append('x');
+			stat.Append(mapSize);
+			stat.Append(" num:");
+			stat.Append(bufs.Count);
+			stat.Append('/');
+			stat.Append(count);
+			stat.Append(" uses:");
+			stat.Append(uses);
+			stat.Append('/');
+			stat.Append(playableUses);
 			if (uses > 0)
 			{
-				StringUtil.append(stat, " total/avg(ms):", elapsed.ToString(), "/", (elapsed / uses).ToString());
+				stat.Append(" total/avg(ms):");
+				stat.Append(elapsed.ToString());
+				stat.Append('/');
+				stat.Append((elapsed / uses).ToString());
 			}
-			
-			StringUtil.append(stat, " ovf:", overflows.ToString(), "/", playableOverflows.ToString());
-			
+
+			stat.Append(" ovf:");
+			stat.Append(overflows);
+			stat.Append('/');
+			stat.Append(playableOverflows);
+
 			return stat.ToString();
 		}
 	}
-	
-	public override String[] getStat()
+
+	public override string[] getStat()
 	{
-		String[] result = new String[_allBuffers.Length + 1];
+		string[] result = new string[_allBuffers.Length + 1];
 		for (int i = 0; i < _allBuffers.Length; i++)
 		{
 			result[i] = _allBuffers[i].ToString();
 		}
-		
-		StringBuilder stat = new StringBuilder(100);
-		StringUtil.append(stat, "LOS postfilter uses:", _postFilterUses.ToString(), "/", _postFilterPlayableUses.ToString());
+
+		StringBuilder stat = new(100);
+		stat.Append("LOS postfilter uses:");
+		stat.Append(_postFilterUses);
+		stat.Append('/');
+		stat.Append(_postFilterPlayableUses);
 		if (_postFilterUses > 0)
 		{
-			StringUtil.append(stat, " total/avg(ms):", _postFilterElapsed.ToString(), "/", (_postFilterElapsed / _postFilterUses).ToString(), 
-				" passes total/avg:", _postFilterPasses.ToString(), "/", ((double) _postFilterPasses / _postFilterUses).ToString(), Environment.NewLine);
+			stat.Append(" total/avg(ms):");
+			stat.Append(_postFilterElapsed.ToString());
+			stat.Append('/');
+			stat.Append((_postFilterElapsed / _postFilterUses).ToString());
+			stat.Append(" passes total/avg:");
+			stat.Append(_postFilterPasses);
+			stat.Append('/');
+			stat.Append((double)_postFilterPasses / _postFilterUses);
+			stat.AppendLine();
 		}
-		StringUtil.append(stat, "Pathfind success/fail:", _findSuccess.ToString(), "/", _findFails.ToString());
-		result[result.Length - 1] = stat.ToString();
-		
+
+		stat.Append("Pathfind success/fail:");
+		stat.Append(_findSuccess);
+		stat.Append('/');
+		stat.Append(_findFails);
+		result[^1] = stat.ToString();
+
 		return result;
 	}
-	
+
 	public static CellPathFinding getInstance()
 	{
 		return SingletonHolder.INSTANCE;

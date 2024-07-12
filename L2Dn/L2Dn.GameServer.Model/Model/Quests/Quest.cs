@@ -1,4 +1,5 @@
 using System.Globalization;
+using L2Dn.Extensions;
 using L2Dn.GameServer.Cache;
 using L2Dn.GameServer.Data.Xml;
 using L2Dn.GameServer.Db;
@@ -302,7 +303,7 @@ public class Quest: AbstractScript, IIdentifiable
 		
 		lock (_questTimers)
 		{
-			if (!_questTimers.containsKey(name))
+			if (!_questTimers.ContainsKey(name))
 			{
 				_questTimers.put(name, new());
 			}
@@ -310,7 +311,7 @@ public class Quest: AbstractScript, IIdentifiable
 			// If there exists a timer with this name, allow the timer only if the [npc, player] set is unique nulls act as wildcards.
 			if (getQuestTimer(name, npc, player) == null)
 			{
-				_questTimers.get(name).add(new QuestTimer(this, name, time, npc, player, repeating));
+				_questTimers.get(name).Add(new QuestTimer(this, name, time, npc, player, repeating));
 			}
 		}
 	}
@@ -330,7 +331,7 @@ public class Quest: AbstractScript, IIdentifiable
 		}
 		
 		List<QuestTimer> timers = _questTimers.get(name);
-		if (timers == null || timers.isEmpty())
+		if (timers == null || timers.Count == 0)
 		{
 			return null;
 		}
@@ -358,7 +359,7 @@ public class Quest: AbstractScript, IIdentifiable
 		}
 		
 		List<QuestTimer> timers = _questTimers.get(name);
-		if (timers == null || timers.isEmpty())
+		if (timers == null || timers.Count == 0)
 		{
 			return;
 		}
@@ -388,7 +389,7 @@ public class Quest: AbstractScript, IIdentifiable
 		}
 		
 		List<QuestTimer> timers = _questTimers.get(name);
-		if (timers == null || timers.isEmpty())
+		if (timers == null || timers.Count == 0)
 		{
 			return;
 		}
@@ -2300,11 +2301,11 @@ public class Quest: AbstractScript, IIdentifiable
 			return null;
 		}
 		Party party = player.getParty();
-		if (party == null || party.getMembers().isEmpty())
+		if (party == null || party.getMembers().Count == 0)
 		{
 			return player;
 		}
-		return party.getMembers().get(Rnd.get(party.getMembers().size()));
+		return party.getMembers().GetRandomElement();
 	}
 	
 	/**
@@ -2347,7 +2348,7 @@ public class Quest: AbstractScript, IIdentifiable
 		QuestState temp = null;
 		Party party = player.getParty();
 		// if this player is not in a party, just check if this player instance matches the conditions itself
-		if (party == null || party.getMembers().isEmpty())
+		if (party == null || party.getMembers().Count == 0)
 		{
 			temp = player.getQuestState(Name);
 			if (temp != null && temp.isSet(var) && temp.get(var).equalsIgnoreCase(value))
@@ -2376,16 +2377,16 @@ public class Quest: AbstractScript, IIdentifiable
 			if (temp != null && temp.get(var) != null && temp.get(var).equalsIgnoreCase(value) &&
 			    partyMember.IsInsideRadius3D(target, Config.ALT_PARTY_RANGE))
 			{
-				candidates.add(partyMember);
+				candidates.Add(partyMember);
 			}
 		}
 		// if there was no match, return null...
-		if (candidates.isEmpty())
+		if (candidates.Count == 0)
 		{
 			return null;
 		}
 		// if a match was found from the party, return one of them at random.
-		return candidates.get(Rnd.get(candidates.size()));
+		return candidates.GetRandomElement();
 	}
 	
 	/**
@@ -2408,7 +2409,7 @@ public class Quest: AbstractScript, IIdentifiable
 		QuestState temp = null;
 		Party party = player.getParty();
 		// if this player is not in a party, just check if this player instance matches the conditions itself
-		if (party == null || party.getMembers().isEmpty())
+		if (party == null || party.getMembers().Count == 0)
 		{
 			temp = player.getQuestState(Name);
 			if (temp != null && temp.getState() == state)
@@ -2439,17 +2440,17 @@ public class Quest: AbstractScript, IIdentifiable
 			temp = partyMember.getQuestState(Name);
 			if (temp != null && temp.getState() == state && partyMember.IsInsideRadius3D(target, Config.ALT_PARTY_RANGE))
 			{
-				candidates.add(partyMember);
+				candidates.Add(partyMember);
 			}
 		}
 		// if there was no match, return null...
-		if (candidates.isEmpty())
+		if (candidates.Count == 0)
 		{
 			return null;
 		}
 		
 		// if a match was found from the party, return one of them at random.
-		return candidates.get(Rnd.get(candidates.size()));
+		return candidates.GetRandomElement();
 	}
 	
 	/**
@@ -2532,7 +2533,7 @@ public class Quest: AbstractScript, IIdentifiable
 		{
 			for (int i = 0; i < playerChance; i++)
 			{
-				candidates.add(qs);
+				candidates.Add(qs);
 			}
 		}
 		
@@ -2546,16 +2547,16 @@ public class Quest: AbstractScript, IIdentifiable
 			qs = member.getQuestState(Name);
 			if (checkPartyMemberConditions(qs, condition, target))
 			{
-				candidates.add(qs);
+				candidates.Add(qs);
 			}
 		}
 		
-		if (candidates.isEmpty())
+		if (candidates.Count == 0)
 		{
 			return null;
 		}
 		
-		qs = candidates.get(getRandom(candidates.size()));
+		qs = candidates.GetRandomElement();
 		return !checkDistanceToTarget(qs.getPlayer(), target) ? null : qs;
 	}
 	
@@ -2640,7 +2641,7 @@ public class Quest: AbstractScript, IIdentifiable
 			}
 			timers.Clear();
 		}
-		_questTimers.clear();
+		_questTimers.Clear();
 		
 		if (removeFromList)
 		{
@@ -2692,7 +2693,7 @@ public class Quest: AbstractScript, IIdentifiable
 	{
 		if (target != null && target is T)
 		{
-			return CommonUtil.contains(ids, target.getId());
+			return Array.IndexOf(ids, target.getId()) >= 0;
 		}
 		return false;
 	}
@@ -2956,12 +2957,12 @@ public class Quest: AbstractScript, IIdentifiable
 	
 	public void addNewQuestConditions(NewQuestCondition condition, string html)
 	{
-		if (!condition.getAllowedClassIds().isEmpty())
+		if (condition.getAllowedClassIds().Count != 0)
 		{
 			addCondStart(p => condition.getAllowedClassIds().Contains(p.getClassId()), html);
 		}
 		
-		if (!condition.getPreviousQuestIds().isEmpty())
+		if (condition.getPreviousQuestIds().Count != 0)
 		{
 			foreach (int questId in condition.getPreviousQuestIds())
 			{
@@ -3105,7 +3106,7 @@ public class Quest: AbstractScript, IIdentifiable
 		NewQuestReward reward = _questData.getRewards();
 		if (reward.getItems() != null)
 		{
-			if (reward.getItems() != null && !reward.getItems().isEmpty())
+			if (reward.getItems() != null && reward.getItems().Count != 0)
 			{
 				foreach (ItemHolder item in reward.getItems())
 				{

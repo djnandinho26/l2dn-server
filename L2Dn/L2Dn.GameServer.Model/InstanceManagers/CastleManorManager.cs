@@ -111,16 +111,16 @@ public class CastleManorManager: DataReaderBase, IStorable
 				foreach(CastleManorProduction production in ctx.CastleManorProduction.Where(p => p.CastleId == castleId))
 				{
 					int seedId = production.SeedId;
-					if (_seeds.containsKey(seedId)) // Don't load unknown seeds
+					if (_seeds.ContainsKey(seedId)) // Don't load unknown seeds
 					{
 						SeedProduction sp = new SeedProduction(seedId, production.Amount, production.Price, production.StartAmount);
 						if (production.NextPeriod)
 						{
-							pNext.add(sp);
+							pNext.Add(sp);
 						}
 						else
 						{
-							pCurrent.add(sp);
+							pCurrent.Add(sp);
 						}
 					}
 					else
@@ -147,11 +147,11 @@ public class CastleManorManager: DataReaderBase, IStorable
 						
 						if (procure.NextPeriod)
 						{
-							next.add(cp);
+							next.Add(cp);
 						}
 						else
 						{
-							current.add(cp);
+							current.Add(cp);
 						}
 					}
 					else
@@ -375,7 +375,7 @@ public class CastleManorManager: DataReaderBase, IStorable
 				ctx.CastleManorProduction.Where(p => p.CastleId == castleId && p.NextPeriod).ExecuteDelete();
 				
 				// Insert new data
-				if (!list.isEmpty())
+				if (list.Count != 0)
 				{
 					ctx.CastleManorProduction.AddRange(list.Select(sp => new CastleManorProduction()
 					{
@@ -410,7 +410,7 @@ public class CastleManorManager: DataReaderBase, IStorable
 				ctx.CastleManorProcure.Where(p => p.CastleId == castleId && p.NextPeriod).ExecuteDelete();
 				
 				// Insert new data
-				if (!list.isEmpty())
+				if (list.Count != 0)
 				{
 					ctx.CastleManorProcure.AddRange(list.Select(cp => new CastleManorProcure()
 					{
@@ -633,12 +633,12 @@ public class CastleManorManager: DataReaderBase, IStorable
 		return _mode == ManorMode.MODIFIABLE;
 	}
 	
-	public String getCurrentModeName()
+	public string getCurrentModeName()
 	{
 		return _mode.ToString();
 	}
 	
-	public String getNextModeChange()
+	public string getNextModeChange()
 	{
 		return _nextModeChange.ToString("dd/MM HH:mm:ss");
 	}
@@ -654,8 +654,8 @@ public class CastleManorManager: DataReaderBase, IStorable
 		{
 			if (!cropIds.Contains(seed.getCropId()))
 			{
-				seeds.add(seed);
-				cropIds.add(seed.getCropId());
+				seeds.Add(seed);
+				cropIds.Add(seed.getCropId());
 			}
 		}
 		cropIds.Clear();

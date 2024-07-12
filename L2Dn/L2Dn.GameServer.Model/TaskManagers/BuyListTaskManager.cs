@@ -41,7 +41,7 @@ public class BuyListTaskManager
 					{
 						if (!PENDING_UPDATES.Contains(product))
 						{
-							PENDING_UPDATES.add(product);
+							PENDING_UPDATES.Add(product);
 						}
 					}
 				}
@@ -61,12 +61,12 @@ public class BuyListTaskManager
 			}
 			_workingSaves = true;
 			
-			if (!PENDING_UPDATES.isEmpty())
+			if (PENDING_UPDATES.Count != 0)
 			{
 				Product product;
 				lock (PENDING_UPDATES)
 				{
-					product = PENDING_UPDATES.get(0);
+					product = PENDING_UPDATES[0];
 					PENDING_UPDATES.Remove(product);
 				}
 				product.restock();
@@ -78,7 +78,7 @@ public class BuyListTaskManager
 	
 	public void add(Product product, DateTime endTime)
 	{
-		if (!PRODUCTS.containsKey(product))
+		if (!PRODUCTS.ContainsKey(product))
 		{
 			PRODUCTS.put(product, endTime);
 		}

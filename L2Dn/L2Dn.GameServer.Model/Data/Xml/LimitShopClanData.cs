@@ -31,9 +31,9 @@ public class LimitShopClanData: DataReaderBase
 		document.Elements("list").Where(l => l.Attribute("enabled").GetBoolean(false)).Elements("product")
 			.ForEach(parseElement);
 		
-		if (!_products.isEmpty())
+		if (_products.Count != 0)
 		{
-			LOGGER.Info(GetType().Name + ": Loaded " + _products.size() + " items.");
+			LOGGER.Info(GetType().Name + ": Loaded " + _products.Count + " items.");
 		}
 		else
 		{
@@ -149,7 +149,7 @@ public class LimitShopClanData: DataReaderBase
 
 		});
 
-		_products.add(new LimitShopProductHolder(id, category, minLevel, maxLevel, ingredientIds, ingredientQuantities,
+		_products.Add(new LimitShopProductHolder(id, category, minLevel, maxLevel, ingredientIds, ingredientQuantities,
 			ingredientEnchants, productionId, 1, 100, false, 0, 0, 0, 0, false, 0, 0, 0, false, 0, 0, 0, false, 0, 0,
 			false, accountDailyLimit, accountMontlyLimit, accountBuyLimit));
 	}

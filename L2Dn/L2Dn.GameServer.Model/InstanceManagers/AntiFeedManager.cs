@@ -59,7 +59,7 @@ internal class AntiFeedManager
 			return false;
 		}
 
-		if ((Config.ANTIFEED_INTERVAL > 0) && _lastDeathTimes.containsKey(targetPlayer.getObjectId()) &&
+		if ((Config.ANTIFEED_INTERVAL > 0) && _lastDeathTimes.ContainsKey(targetPlayer.getObjectId()) &&
 		    (DateTime.UtcNow - _lastDeathTimes.get(targetPlayer.getObjectId())) < TimeSpan.FromMilliseconds(Config.ANTIFEED_INTERVAL))
 		{
 			return false;
@@ -93,7 +93,7 @@ internal class AntiFeedManager
 	 */
 	public void clear()
 	{
-		_lastDeathTimes.clear();
+		_lastDeathTimes.Clear();
 	}
 	
 	/**
@@ -139,7 +139,7 @@ internal class AntiFeedManager
 		
 		int addrHash = client.IpAddress.GetHashCode();
 		AtomicInteger connectionCount = @event.computeIfAbsent(addrHash, k => new AtomicInteger());
-		if ((connectionCount.get() + 1) <= (max + Config.DUALBOX_CHECK_WHITELIST.getOrDefault(addrHash, 0)))
+		if ((connectionCount.get() + 1) <= (max + Config.DUALBOX_CHECK_WHITELIST.GetValueOrDefault(addrHash, 0)))
 		{
 			connectionCount.incrementAndGet();
 			return true;
@@ -244,7 +244,7 @@ internal class AntiFeedManager
 		Map<int, AtomicInteger> @event = _eventIPs.get(eventId);
 		if (@event != null)
 		{
-			@event.clear();
+			@event.Clear();
 		}
 	}
 	
@@ -272,10 +272,11 @@ internal class AntiFeedManager
 		
 		int addrHash = client.IpAddress.GetHashCode();
 		int limit = max;
-		if (Config.DUALBOX_CHECK_WHITELIST.containsKey(addrHash))
+		if (Config.DUALBOX_CHECK_WHITELIST.TryGetValue(addrHash, out int value))
 		{
-			limit += Config.DUALBOX_CHECK_WHITELIST.get(addrHash);
+			limit += value;
 		}
+
 		return limit;
 	}
 	

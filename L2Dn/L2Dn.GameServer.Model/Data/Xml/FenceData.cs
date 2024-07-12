@@ -32,7 +32,7 @@ public class FenceData: DataReaderBase
 		if (!_fences.isEmpty())
 		{
 			// Remove old fences when reloading
-			_fences.values().forEach(x => removeFence(x));
+			_fences.Values.ForEach(removeFence);
 		}
 
 		XDocument document = LoadXmlDocument(DataFileLocation.Data, "FenceData.xml");
@@ -103,7 +103,7 @@ public class FenceData: DataReaderBase
 	{
 		WorldRegion? region = World.getInstance().getRegion(location.X, location.Y);
 		List<Fence>? fences = region?.getFences();
-		if (fences == null || fences.isEmpty())
+		if (fences == null || fences.Count == 0)
 		{
 			return false;
 		}

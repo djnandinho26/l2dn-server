@@ -1,4 +1,5 @@
-﻿using L2Dn.GameServer.Enums;
+﻿using L2Dn.Extensions;
+using L2Dn.GameServer.Enums;
 using L2Dn.GameServer.InstanceManagers;
 using L2Dn.GameServer.Model;
 using L2Dn.GameServer.Model.Actor;
@@ -93,7 +94,7 @@ public struct RequestExPledgeDonationRequestPacket: IIncomingPacket<GameSession>
 			if (Rnd.get(100) < 5)
 			{
 				player.setHonorCoins(player.getHonorCoins() + 200);
-				clan.getMembers().forEach(clanMember => sendMail(clanMember.getObjectId(), 1, player.getName()));
+				clan.getMembers().ForEach(clanMember => sendMail(clanMember.getObjectId(), 1, player.getName()));
 			}
 		}
 		else if (type == 2)
@@ -101,12 +102,12 @@ public struct RequestExPledgeDonationRequestPacket: IIncomingPacket<GameSession>
 			if (Rnd.get(100) < 5)
 			{
 				player.setHonorCoins(player.getHonorCoins() + 1000);
-				clan.getMembers().forEach(clanMember => sendMail(clanMember.getObjectId(), 5, player.getName()));
+				clan.getMembers().ForEach(clanMember => sendMail(clanMember.getObjectId(), 5, player.getName()));
 			}
 		}
 	}
 	
-	private static void sendMail(int charId, int amount, String donator)
+	private static void sendMail(int charId, int amount, string donator)
 	{
 		Message msg = new Message(charId, "Clan Rewards for " + donator + " Donation",
 			"The entire clan receives rewards for " + donator + " donation.",

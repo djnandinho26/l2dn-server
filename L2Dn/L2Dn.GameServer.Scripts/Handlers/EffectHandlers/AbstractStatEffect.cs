@@ -34,10 +34,10 @@ public abstract class AbstractStatEffect: AbstractEffect
 		_mode = @params.getEnum("mode", StatModifierType.DIFF);
 		
 		ItemTypeMask weaponTypesMask = ItemTypeMask.Zero;
-		List<String> weaponTypes = @params.getList<string>("weaponType");
+		List<string> weaponTypes = @params.getList<string>("weaponType");
 		if (weaponTypes != null)
 		{
-			foreach (String weaponType in weaponTypes)
+			foreach (string weaponType in weaponTypes)
 			{
 				try
 				{
@@ -52,10 +52,10 @@ public abstract class AbstractStatEffect: AbstractEffect
 		}
 		
 		ItemTypeMask armorTypesMask = ItemTypeMask.Zero;
-		List<String> armorTypes = @params.getList<string>("armorType");
+		List<string> armorTypes = @params.getList<string>("armorType");
 		if (armorTypes != null)
 		{
-			foreach (String armorType in armorTypes)
+			foreach (string armorType in armorTypes)
 			{
 				try
 				{
@@ -85,28 +85,25 @@ public abstract class AbstractStatEffect: AbstractEffect
 
 		if (@params.contains("magicWeapon"))
 		{
-			_conditions.add(new ConditionUsingMagicWeapon(@params.getBoolean("magicWeapon")));
+			_conditions.Add(new ConditionUsingMagicWeapon(@params.getBoolean("magicWeapon")));
 		}
 		
 		if (@params.contains("twoHandWeapon"))
 		{
-			_conditions.add(new ConditionUsingTwoHandWeapon(@params.getBoolean("twoHandWeapon")));
+			_conditions.Add(new ConditionUsingTwoHandWeapon(@params.getBoolean("twoHandWeapon")));
 		}
 	}
 	
 	public override void pump(Creature effected, Skill skill)
 	{
-		if (!_conditions.isEmpty())
+		foreach (Condition cond in _conditions)
 		{
-			foreach (Condition cond in _conditions)
+			if (!cond.test(effected, effected, skill))
 			{
-				if (!cond.test(effected, effected, skill))
-				{
-					return;
-				}
+				return;
 			}
 		}
-		
+
 		switch (_mode)
 		{
 			case StatModifierType.DIFF:

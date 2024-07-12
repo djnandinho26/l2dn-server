@@ -1,4 +1,5 @@
 using System.Text;
+using L2Dn.Extensions;
 using L2Dn.GameServer.Data;
 using L2Dn.GameServer.Data.Xml;
 using L2Dn.GameServer.Enums;
@@ -32,7 +33,7 @@ public class NpcViewMod: IBypassHandler
 	
 	private const int DROP_LIST_ITEMS_PER_PAGE = 10;
 	
-	public bool useBypass(String command, Player player, Creature bypassOrigin)
+	public bool useBypass(string command, Player player, Creature bypassOrigin)
 	{
 		StringTokenizer st = new StringTokenizer(command);
 		st.nextToken();
@@ -43,7 +44,7 @@ public class NpcViewMod: IBypassHandler
 			return false;
 		}
 		
-		String actualCommand = st.nextToken();
+		string actualCommand = st.nextToken();
 		switch (actualCommand.toLowerCase())
 		{
 			case "view":
@@ -82,7 +83,7 @@ public class NpcViewMod: IBypassHandler
 					return false;
 				}
 				
-				String dropListTypeString = st.nextToken();
+				string dropListTypeString = st.nextToken();
 				try
 				{
 					DropType dropListType = Enum.Parse<DropType>(dropListTypeString);
@@ -167,7 +168,7 @@ public class NpcViewMod: IBypassHandler
 		return true;
 	}
 	
-	public String[] getBypassList()
+	public string[] getBypassList()
 	{
 		return COMMANDS;
 	}
@@ -228,8 +229,8 @@ public class NpcViewMod: IBypassHandler
 	{
 		HtmlContent htmlContent = HtmlContent.LoadFromFile("html/mods/NpcView/Skills.htm", player);
 		
-		StringBuilder sb = new StringBuilder();
-		npc.getSkills().values().forEach(s =>
+		StringBuilder sb = new();
+		npc.getSkills().Values.ForEach(s =>
 		{
 			sb.Append("<table width=277 height=32 cellspacing=0 background=\"L2UI_CT1.Windows.Windows_DF_TooltipBG\">");
 			sb.Append("<tr><td width=32>");
@@ -262,7 +263,7 @@ public class NpcViewMod: IBypassHandler
 		StringBuilder sb = new StringBuilder();
 		if (npc.isAttackable())
 		{
-			((Attackable) npc).getAggroList().values().forEach(a =>
+			((Attackable) npc).getAggroList().Values.ForEach(a =>
 			{
 				sb.Append("<table width=277 height=32 cellspacing=0 background=\"L2UI_CT1.Windows.Windows_DF_TooltipBG\">");
 				sb.Append("<tr><td width=110>");
@@ -286,7 +287,7 @@ public class NpcViewMod: IBypassHandler
 		player.sendPacket(html);
 	}
 	
-	private static String getDropListButtons(Npc npc)
+	private static string getDropListButtons(Npc npc)
 	{
 		StringBuilder sb = new StringBuilder();
 		List<DropGroupHolder> dropListGroups = npc.getTemplate().getDropGroups();
@@ -336,7 +337,7 @@ public class NpcViewMod: IBypassHandler
 					double chance = dropGroup.getChance() / 100;
 					foreach (DropHolder dropHolder in dropGroup.getDropList())
 					{
-						dropList.add(new DropHolder(dropHolder.getDropType(), dropHolder.getItemId(),
+						dropList.Add(new DropHolder(dropHolder.getDropType(), dropHolder.getItemId(),
 							dropHolder.getMin(), dropHolder.getMax(), dropHolder.getChance() * chance));
 					}
 				}
@@ -349,8 +350,8 @@ public class NpcViewMod: IBypassHandler
 		
 		dropList.Sort((d1, d2) => d1.getItemId().CompareTo(d2.getItemId()));
 		
-		int pages = dropList.size() / DROP_LIST_ITEMS_PER_PAGE;
-		if ((DROP_LIST_ITEMS_PER_PAGE * pages) < dropList.size())
+		int pages = dropList.Count / DROP_LIST_ITEMS_PER_PAGE;
+		if ((DROP_LIST_ITEMS_PER_PAGE * pages) < dropList.Count)
 		{
 			pages++;
 		}
@@ -374,9 +375,9 @@ public class NpcViewMod: IBypassHandler
 		
 		int start = page > 0 ? page * DROP_LIST_ITEMS_PER_PAGE : 0;
 		int end = (page * DROP_LIST_ITEMS_PER_PAGE) + DROP_LIST_ITEMS_PER_PAGE;
-		if (end > dropList.size())
+		if (end > dropList.Count)
 		{
-			end = dropList.size();
+			end = dropList.Count;
 		}
 		
 		int leftHeight = 0;
@@ -387,12 +388,12 @@ public class NpcViewMod: IBypassHandler
 		double spoilRateEffectBonus = player.getStat().getMul(Stat.BONUS_SPOIL_RATE, 1);
 		StringBuilder leftSb = new StringBuilder();
 		StringBuilder rightSb = new StringBuilder();
-		String limitReachedMsg = "";
+		string limitReachedMsg = "";
 		for (int i = start; i < end; i++)
 		{
 			StringBuilder sb = new StringBuilder();
 			int height = 64;
-			DropHolder dropItem = dropList.get(i);
+			DropHolder dropItem = dropList[i];
 			ItemTemplate item = ItemData.getInstance().getTemplate(dropItem.getItemId());
 			
 			// real time server rate calculations

@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using L2Dn.Extensions;
 using L2Dn.GameServer.Data.Xml;
 using L2Dn.GameServer.Enums;
 using L2Dn.GameServer.InstanceManagers;
@@ -115,7 +116,7 @@ public class Party : AbstractPlayerGroup
 				availableMembers.Add(member);
 			}
 		}
-		return !availableMembers.isEmpty() ? availableMembers.get(Rnd.get(availableMembers.size())) : null;
+		return availableMembers.GetRandomElementOrDefault();
 	}
 	
 	/**
@@ -259,7 +260,7 @@ public class Party : AbstractPlayerGroup
 				{
 					player.sendPacket(new ExPartyPetWindowAddPacket(pet));
 				}
-				pMember.getServitors().values().forEach(s => player.sendPacket(new ExPartyPetWindowAddPacket(s)));
+				pMember.getServitors().values().ForEach(s => player.sendPacket(new ExPartyPetWindowAddPacket(s)));
 			}
 		}
 		
@@ -290,7 +291,7 @@ public class Party : AbstractPlayerGroup
 			broadcastPacket(new ExPartyPetWindowAddPacket(pet));
 		}
 		
-		player.getServitors().values().forEach(s => broadcastPacket(new ExPartyPetWindowAddPacket(s)));
+		player.getServitors().values().ForEach(s => broadcastPacket(new ExPartyPetWindowAddPacket(s)));
 		
 		// adjust party level
 		if (player.getLevel() > _partyLvl)
@@ -316,7 +317,7 @@ public class Party : AbstractPlayerGroup
 				{
 					summon.updateEffectIcons();
 				}
-				member.getServitors().values().forEach(x => x.updateEffectIcons());
+				member.getServitors().values().ForEach(x => x.updateEffectIcons());
 				
 				// send hp status update
 				member.sendPacket(su);
@@ -364,7 +365,7 @@ public class Party : AbstractPlayerGroup
 			return;
 		}
 		
-		_tacticalSigns.forEach(entry => player.sendPacket(new ExTacticalSignPacket(entry.Value, remove ? 0 : entry.Key)));
+		_tacticalSigns.ForEach(entry => player.sendPacket(new ExTacticalSignPacket(entry.Value, remove ? 0 : entry.Key)));
 	}
 	
 	public void addTacticalSign(Player player, int tacticalSignId, Creature target)
@@ -385,7 +386,7 @@ public class Party : AbstractPlayerGroup
 			sm.Params.addString(target.getName());
 			sm.Params.addSystemString(TACTICAL_SYS_STRINGS[tacticalSignId]);
 			
-			_members.forEach(m =>
+			_members.ForEach(m =>
 			{
 				m.sendPacket(new ExTacticalSignPacket(target, tacticalSignId));
 				m.sendPacket(sm);
@@ -396,7 +397,7 @@ public class Party : AbstractPlayerGroup
 			// Sign already assigned
 			// If the sign is applied on the same target, remove it
 			_tacticalSigns.remove(tacticalSignId);
-			_members.forEach(m => m.sendPacket(new ExTacticalSignPacket(tacticalTarget, 0)));
+			_members.ForEach(m => m.sendPacket(new ExTacticalSignPacket(tacticalTarget, 0)));
 		}
 		else
 		{
@@ -436,7 +437,7 @@ public class Party : AbstractPlayerGroup
 	 * @param name player the player to be removed from the party.
 	 * @param type the message type {@link PartyMessageType}.
 	 */
-	public void removePartyMember(String name, PartyMessageType type)
+	public void removePartyMember(string name, PartyMessageType type)
 	{
 		removePartyMember(getPlayerByName(name), type);
 	}
@@ -509,14 +510,14 @@ public class Party : AbstractPlayerGroup
 			{
 				broadcastPacket(new ExPartyPetWindowDeletePacket(pet));
 			}
-			player.getServitors().values().forEach(s => player.sendPacket(new ExPartyPetWindowDeletePacket(s)));
+			player.getServitors().values().ForEach(s => player.sendPacket(new ExPartyPetWindowDeletePacket(s)));
 			
 			// Close the CCInfoWindow
 			if (isInCommandChannel())
 			{
 				player.sendPacket(ExCloseMPCCPacket.STATIC_PACKET);
 			}
-			if (isLeader && (_members.size() > 1) && (Config.ALT_LEAVE_PARTY_LEADER || (type == PartyMessageType.DISCONNECTED)))
+			if (isLeader && (_members.Count > 1) && (Config.ALT_LEAVE_PARTY_LEADER || (type == PartyMessageType.DISCONNECTED)))
 			{
 				msg = new SystemMessagePacket(SystemMessageId.C1_HAS_BECOME_THE_PARTY_LEADER);
 				msg.Params.addString(getLeader().getName());
@@ -587,7 +588,7 @@ public class Party : AbstractPlayerGroup
 	 * Change party leader (used for string arguments)
 	 * @param name the name of the player to set as the new party leader
 	 */
-	public void changePartyLeader(String name)
+	public void changePartyLeader(string name)
 	{
 		setLeader(getPlayerByName(name));
 	}
@@ -607,8 +608,8 @@ public class Party : AbstractPlayerGroup
 					// Swap party members
 					Player temp = getLeader();
 					int p1 = _members.IndexOf(player);
-					_members.set(0, player);
-					_members.set(p1, temp);
+					_members[0] = player;
+					_members[p1] = temp;
 					SystemMessagePacket msg = new SystemMessagePacket(SystemMessageId.C1_HAS_BECOME_THE_PARTY_LEADER);
 					msg.Params.addString(getLeader().getName());
 					broadcastPacket(msg);
@@ -634,7 +635,7 @@ public class Party : AbstractPlayerGroup
 	 * @param name
 	 * @return
 	 */
-	private Player getPlayerByName(String name)
+	private Player getPlayerByName(string name)
 	{
 		foreach (Player member in _members)
 		{
@@ -749,7 +750,7 @@ public class Party : AbstractPlayerGroup
 			}
 		}
 		
-		if (!toReward.isEmpty())
+		if (toReward.Count != 0)
 		{
 			// Now we can actually distribute the adena reward
 			// (Total adena splitted by the number of party members that are in range and must be rewarded)
@@ -925,7 +926,7 @@ public class Party : AbstractPlayerGroup
 				{
 					if ((topLvl - member.getLevel()) <= Config.PARTY_XP_CUTOFF_LEVEL)
 					{
-						validMembers.add(member);
+						validMembers.Add(member);
 					}
 				}
 				break;
@@ -942,7 +943,7 @@ public class Party : AbstractPlayerGroup
 					int sqLevel = member.getLevel() * member.getLevel();
 					if ((sqLevel * 100) >= (sqLevelSum * Config.PARTY_XP_CUTOFF_PERCENT))
 					{
-						validMembers.add(member);
+						validMembers.Add(member);
 					}
 				}
 				break;
@@ -954,7 +955,7 @@ public class Party : AbstractPlayerGroup
 				{
 					sqLevelSum += (member.getLevel() * member.getLevel());
 				}
-				int i = members.size() - 1;
+				int i = members.Count - 1;
 				if (i < 1)
 				{
 					return members;
@@ -966,9 +967,9 @@ public class Party : AbstractPlayerGroup
 				foreach (Player member in members)
 				{
 					int sqLevel = member.getLevel() * member.getLevel();
-					if (sqLevel >= (sqLevelSum / (members.size() * members.size())))
+					if (sqLevel >= (sqLevelSum / (members.Count * members.Count)))
 					{
-						validMembers.add(member);
+						validMembers.Add(member);
 					}
 				}
 				break;
@@ -1043,11 +1044,12 @@ public class Party : AbstractPlayerGroup
 	 */
 	public override Player getLeader()
 	{
-		if (_members.isEmpty())
+		if (_members.Count == 0)
 		{
 			return null;
 		}
-		return _members.get(0);
+
+		return _members[0];
 	}
 	
 	[MethodImpl(MethodImplOptions.Synchronized)]

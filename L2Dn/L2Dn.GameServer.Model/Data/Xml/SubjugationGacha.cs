@@ -13,7 +13,7 @@ public class SubjugationGacha: DataReaderBase
 {
 	private static readonly Logger LOGGER = LogManager.GetLogger(nameof(SubjugationGacha));
 	
-	private static readonly Map<int, Map<int, Double>> _subjugations = new();
+	private static readonly Map<int, Map<int, double>> _subjugations = new();
 	
 	public SubjugationGacha()
 	{
@@ -22,7 +22,7 @@ public class SubjugationGacha: DataReaderBase
 	
 	public void load()
 	{
-		_subjugations.clear();
+		_subjugations.Clear();
 		
 		XDocument document = LoadXmlDocument(DataFileLocation.Data, "SubjugationGacha.xml");
 		document.Elements("list").Elements("purge").ForEach(parseElement);
@@ -33,7 +33,7 @@ public class SubjugationGacha: DataReaderBase
 	private void parseElement(XElement element)
 	{
 		int category = element.GetAttributeValueAsInt32("category");
-		Map<int, Double> items = new();
+		Map<int, double> items = new();
 		element.Elements("item").ForEach(el =>
 		{
 			int itemId = el.GetAttributeValueAsInt32("id");
@@ -44,7 +44,7 @@ public class SubjugationGacha: DataReaderBase
 		_subjugations.put(category, items);
 	}
 
-	public Map<int, Double> getSubjugation(int category)
+	public Map<int, double> getSubjugation(int category)
 	{
 		return _subjugations.get(category);
 	}

@@ -20,10 +20,10 @@ public class AdminMissingHtmls: IAdminCommandHandler
 		"admin_next_missing_html"
 	};
 	
-	public bool useAdminCommand(String command, Player activeChar)
+	public bool useAdminCommand(string command, Player activeChar)
 	{
 		StringTokenizer st = new StringTokenizer(command, " ");
-		String actualCommand = st.nextToken();
+		string actualCommand = st.nextToken();
 		switch (actualCommand.toLowerCase())
 		{
 			case "admin_geomap_missing_htmls":
@@ -54,7 +54,7 @@ public class AdminMissingHtmls: IAdminCommandHandler
 								|| (((obj is Merchant) && !(obj is Fisherman)) && (HtmCache.getInstance().getHtm(null, "html/merchant/" + npc.getId() + ".htm") == null)) //
 								|| ((obj is Guard) && (HtmCache.getInstance().getHtm(null, "html/guard/" + npc.getId() + ".htm") == null)))
 							{
-								results.add(npc.getId());
+								results.Add(npc.getId());
 							}
 						}
 					}
@@ -65,7 +65,7 @@ public class AdminMissingHtmls: IAdminCommandHandler
 				{
 					BuilderUtil.sendSysMessage(activeChar, "NPC " + id + " does not have a default html.");
 				}
-				BuilderUtil.sendSysMessage(activeChar, "Found " + results.size() + " results.");
+				BuilderUtil.sendSysMessage(activeChar, "Found " + results.Count + " results.");
 				break;
 			}
 			case "admin_world_missing_htmls":
@@ -90,7 +90,7 @@ public class AdminMissingHtmls: IAdminCommandHandler
 								|| (((obj is Merchant) && !(obj is Fisherman)) && (HtmCache.getInstance().getHtm(null, "html/merchant/" + npc.getId() + ".htm") == null)) //
 								|| ((obj is Guard) && (HtmCache.getInstance().getHtm(null, "html/guard/" + npc.getId() + ".htm") == null)))
 							{
-								results.add(npc.getId());
+								results.Add(npc.getId());
 							}
 						}
 					}
@@ -101,7 +101,7 @@ public class AdminMissingHtmls: IAdminCommandHandler
 				{
 					BuilderUtil.sendSysMessage(activeChar, "NPC " + id + " does not have a default html.");
 				}
-				BuilderUtil.sendSysMessage(activeChar, "Found " + results.size() + " results.");
+				BuilderUtil.sendSysMessage(activeChar, "Found " + results.Count + " results.");
 				break;
 			}
 			case "admin_next_missing_html":
@@ -136,7 +136,7 @@ public class AdminMissingHtmls: IAdminCommandHandler
 		return true;
 	}
 	
-	public String[] getAdminCommandList()
+	public string[] getAdminCommandList()
 	{
 		return ADMIN_COMMANDS;
 	}

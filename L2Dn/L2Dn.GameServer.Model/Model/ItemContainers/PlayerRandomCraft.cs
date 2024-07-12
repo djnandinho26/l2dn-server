@@ -224,22 +224,22 @@ public class PlayerRandomCraft
 			for (int i = 0; i < 5; i++)
 			{
 				RandomCraftRewardItemHolder holder;
-				if (i > (_rewardList.size() - 1))
+				if (i > (_rewardList.Count - 1))
 				{
 					holder = null;
 				}
 				else
 				{
-					holder = _rewardList.get(i);
+					holder = _rewardList[i];
 				}
 				
 				if (holder == null)
 				{
-					_rewardList.add(i, getNewReward());
+					_rewardList.Insert(i, getNewReward());
 				}
 				else if (!holder.isLocked())
 				{
-					_rewardList.set(i, getNewReward());
+					_rewardList[i] = getNewReward();
 				}
 				else
 				{
@@ -286,7 +286,7 @@ public class PlayerRandomCraft
 		if (_player.reduceAdena("RandomCraft Make", Config.RANDOM_CRAFT_CREATE_FEE, _player, true))
 		{
 			int madeId = Rnd.get(0, 4);
-			RandomCraftRewardItemHolder holder = _rewardList.get(madeId);
+			RandomCraftRewardItemHolder holder = _rewardList[madeId];
 			_rewardList.Clear();
 			
 			int itemId = holder.getItemId();

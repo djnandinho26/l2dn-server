@@ -27,7 +27,7 @@ public class ResidenceFunctionsData: DataReaderBase
 	[MethodImpl(MethodImplOptions.Synchronized)] 
 	public void load()
 	{
-		_functions.clear();
+		_functions.Clear();
 		
 		XDocument document = LoadXmlDocument(DataFileLocation.Data, "ResidenceFunctions.xml");
 		document.Elements("list").Elements("function").ForEach(parseElement);
@@ -50,7 +50,7 @@ public class ResidenceFunctionsData: DataReaderBase
 
 			ItemHolder cost = new ItemHolder(costId, costCount);
 			ResidenceFunctionTemplate template = new ResidenceFunctionTemplate(id, level, type, cost, duration, value);
-			_functions.computeIfAbsent(template.getId(), key => new()).add(template);
+			_functions.computeIfAbsent(template.getId(), key => new()).Add(template);
 		});
 	}
 
@@ -61,9 +61,9 @@ public class ResidenceFunctionsData: DataReaderBase
 	 */
 	public ResidenceFunctionTemplate getFunction(int id, int level)
 	{
-		if (_functions.containsKey(id))
+		if (_functions.TryGetValue(id, out List<ResidenceFunctionTemplate>? functions))
 		{
-			foreach (ResidenceFunctionTemplate template in _functions.get(id))
+			foreach (ResidenceFunctionTemplate template in functions)
 			{
 				if (template.getLevel() == level)
 				{

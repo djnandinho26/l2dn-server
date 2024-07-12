@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using System.Text;
+using L2Dn.Extensions;
 using L2Dn.GameServer.Cache;
 using L2Dn.GameServer.Data.Sql;
 using L2Dn.GameServer.Data.Xml;
@@ -31,27 +32,22 @@ namespace L2Dn.GameServer.Model.Olympiads;
 public class Hero
 {
 	private static readonly Logger LOGGER = LogManager.GetLogger(nameof(Hero));
-	
-	private const String UPDATE_ALL = "UPDATE heroes SET played = 0";
-	private const String INSERT_HERO = "INSERT INTO heroes (charId, class_id, count, legend_count, played, claimed) VALUES (?,?,?,?,?,?)";
-	private const String UPDATE_HERO = "UPDATE heroes SET class_id = ?, count = ?, legend_count = ?, played = ?, claimed = ? WHERE charId = ?";
-	private const String GET_CLAN_ALLY = "SELECT characters.clanid AS clanid, coalesce(clan_data.ally_Id, 0) AS allyId FROM characters LEFT JOIN clan_data ON clan_data.clan_id = characters.clanid WHERE characters.charId = ?";
-	
+
 	private static readonly Map<int, StatSet> HEROES = new();
 	private static readonly Map<int, StatSet> COMPLETE_HEROS = new();
 	private static readonly Map<int, StatSet> HERO_COUNTS = new();
 	private static readonly Map<int, List<StatSet>> HERO_FIGHTS = new();
 	private static readonly Map<int, List<StatSet>> HERO_DIARY = new();
-	private static readonly Map<int, String> HERO_MESSAGE = new();
+	private static readonly Map<int, string> HERO_MESSAGE = new();
 	
-	public const String COUNT = "count";
-	public const String LEGEND_COUNT = "legend_count";
-	public const String PLAYED = "played";
-	public const String CLAIMED = "claimed";
-	public const String CLAN_NAME = "clan_name";
-	public const String CLAN_CREST = "clan_crest";
-	public const String ALLY_NAME = "ally_name";
-	public const String ALLY_CREST = "ally_crest";
+	public const string COUNT = "count";
+	public const string LEGEND_COUNT = "legend_count";
+	public const string PLAYED = "played";
+	public const string CLAIMED = "claimed";
+	public const string CLAN_NAME = "clan_name";
+	public const string CLAN_CREST = "clan_crest";
+	public const string ALLY_NAME = "ally_name";
+	public const string ALLY_CREST = "ally_crest";
 	
 	public const int ACTION_RAID_KILLED = 1;
 	public const int ACTION_HERO_GAINED = 2;
@@ -67,12 +63,12 @@ public class Hero
 	
 	private void init()
 	{
-		HEROES.clear();
-		COMPLETE_HEROS.clear();
-		HERO_COUNTS.clear();
-		HERO_FIGHTS.clear();
-		HERO_DIARY.clear();
-		HERO_MESSAGE.clear();
+		HEROES.Clear();
+		COMPLETE_HEROS.Clear();
+		HERO_COUNTS.Clear();
+		HERO_FIGHTS.Clear();
+		HERO_DIARY.Clear();
+		HERO_MESSAGE.Clear();
 		
 		try 
 		{
@@ -163,8 +159,8 @@ public class Hero
 		{
 			int? clanId = record.ClanId;
 			int? allyId = record.AllyId;
-			String? clanName = null;
-			String? allyName = null;
+			string? clanName = null;
+			string? allyName = null;
 			int? clanCrest = null;
 			int? allyCrest = null;
 			if (clanId != null)
@@ -248,7 +244,7 @@ public class Hero
 					}
 				}
 
-				diary.add(diaryEntry);
+				diary.Add(diaryEntry);
 				diaryentries++;
 			}
 
@@ -294,8 +290,8 @@ public class Hero
 					bool classed = record.Classed;
 					if (charId == charOneId)
 					{
-						String name = CharInfoTable.getInstance().getNameById(charTwoId);
-						String cls = ClassListData.getInstance().getClass(charTwoClass).getClientCode();
+						string name = CharInfoTable.getInstance().getNameById(charTwoId);
+						string cls = ClassListData.getInstance().getClass(charTwoClass).getClientCode();
 						if ((name != null) && (cls != null))
 						{
 							StatSet fight = new StatSet();
@@ -320,14 +316,14 @@ public class Hero
 								fight.set("result", "<font color=\"ffff00\">draw</font>");
 								draws++;
 							}
-							fights.add(fight);
+							fights.Add(fight);
 							numberOfFights++;
 						}
 					}
 					else if (charId == charTwoId)
 					{
-						String name = CharInfoTable.getInstance().getNameById(charOneId);
-						String cls = ClassListData.getInstance().getClass(charOneClass).getClientCode();
+						string name = CharInfoTable.getInstance().getNameById(charOneId);
+						string cls = ClassListData.getInstance().getClass(charOneClass).getClientCode();
 						if ((name != null) && (cls != null))
 						{
 							StatSet fight = new StatSet();
@@ -352,7 +348,7 @@ public class Hero
 								fight.set("result", "<font color=\"ffff00\">draw</font>");
 								draws++;
 							}
-							fights.add(fight);
+							fights.Add(fight);
 							numberOfFights++;
 						}
 					}
@@ -396,10 +392,10 @@ public class Hero
 	
 	public void resetData()
 	{
-		HERO_DIARY.clear();
-		HERO_FIGHTS.clear();
-		HERO_COUNTS.clear();
-		HERO_MESSAGE.clear();
+		HERO_DIARY.Clear();
+		HERO_FIGHTS.Clear();
+		HERO_COUNTS.Clear();
+		HERO_MESSAGE.Clear();
 	}
 	
 	public void showHeroDiary(Player player, int heroclass, int charid, int page)
@@ -408,8 +404,8 @@ public class Hero
 		List<StatSet> mainList = HERO_DIARY.get(charid);
 		if (mainList != null)
 		{
-			String htmContent = HtmCache.getInstance().getHtm("html/olympiad/herodiary.htm", player.getLang());
-			String heroMessage = HERO_MESSAGE.get(charid);
+			string htmContent = HtmCache.getInstance().getHtm("html/olympiad/herodiary.htm", player.getLang());
+			string heroMessage = HERO_MESSAGE.get(charid);
 			if ((htmContent != null) && (heroMessage != null))
 			{
 				HtmlContent diaryReply = HtmlContent.LoadFromText(htmContent, player); 
@@ -417,7 +413,7 @@ public class Hero
 				diaryReply.Replace("%message%", heroMessage);
 				diaryReply.DisableValidation();
 				
-				if (!mainList.isEmpty())
+				if (mainList.Count != 0)
 				{
 					List<StatSet> list = new(mainList);
 					list.Reverse();
@@ -426,10 +422,10 @@ public class Hero
 					StringBuilder fList = new StringBuilder(500);
 					int counter = 0;
 					int breakat = 0;
-					for (int i = (page - 1) * perpage; i < list.size(); i++)
+					for (int i = (page - 1) * perpage; i < list.Count; i++)
 					{
 						breakat = i;
-						StatSet diaryEntry = list.get(i);
+						StatSet diaryEntry = list[i];
 						fList.Append("<tr><td>");
 						if (color)
 						{
@@ -451,7 +447,7 @@ public class Hero
 						}
 					}
 					
-					if (breakat < (list.size() - 1))
+					if (breakat < (list.Count - 1))
 					{
 						diaryReply.Replace("%buttprev%", "<button value=\"Prev\" action=\"bypass _diary?class=" + heroclass + "&page=" + (page + 1) + "\" width=60 height=25 back=\"L2UI_ct1.button_df\" fore=\"L2UI_ct1.button_df\">");
 					}
@@ -494,12 +490,12 @@ public class Hero
 		List<StatSet> heroFights = HERO_FIGHTS.get(charid);
 		if (heroFights != null)
 		{
-			String htmContent = HtmCache.getInstance().getHtm("html/olympiad/herohistory.htm", player.getLang());
+			string htmContent = HtmCache.getInstance().getHtm("html/olympiad/herohistory.htm", player.getLang());
 			if (htmContent != null)
 			{
 				HtmlContent fightReply = HtmlContent.LoadFromText(htmContent, player); 
 				fightReply.Replace("%heroname%", CharInfoTable.getInstance().getNameById(charid));
-				if (!heroFights.isEmpty())
+				if (heroFights.Count != 0)
 				{
 					StatSet heroCount = HERO_COUNTS.get(charid);
 					if (heroCount != null)
@@ -513,10 +509,10 @@ public class Hero
 					StringBuilder fList = new StringBuilder(500);
 					int counter = 0;
 					int breakat = 0;
-					for (int i = (page - 1) * perpage; i < heroFights.size(); i++)
+					for (int i = (page - 1) * perpage; i < heroFights.Count; i++)
 					{
 						breakat = i;
-						StatSet fight = heroFights.get(i);
+						StatSet fight = heroFights[i];
 						fList.Append("<tr><td>");
 						if (color)
 						{
@@ -538,7 +534,7 @@ public class Hero
 						}
 					}
 					
-					if (breakat < (heroFights.size() - 1))
+					if (breakat < (heroFights.Count - 1))
 					{
 						fightReply.Replace("%buttprev%", "<button value=\"Prev\" action=\"bypass _match?class=" + heroclass + "&page=" + (page + 1) + "\" width=60 height=25 back=\"L2UI_ct1.button_df\" fore=\"L2UI_ct1.button_df\">");
 					}
@@ -609,7 +605,7 @@ public class Hero
 				}
 			}
 			
-			if (!items.isEmpty())
+			if (items.Count != 0)
 			{
 				InventoryUpdatePacket iu = new InventoryUpdatePacket();
 				player.sendInventoryUpdate(iu);
@@ -619,9 +615,9 @@ public class Hero
 		}
 		
 		deleteItemsInDb();
-		HEROES.clear();
+		HEROES.Clear();
 		
-		if (newHeroes.isEmpty())
+		if (newHeroes.Count == 0)
 		{
 			return;
 		}
@@ -629,9 +625,8 @@ public class Hero
 		foreach (StatSet hero in newHeroes)
 		{
 			int charId = hero.getInt(Olympiad.CHAR_ID);
-			if (COMPLETE_HEROS.containsKey(charId))
+			if (COMPLETE_HEROS.TryGetValue(charId, out StatSet? oldHero))
 			{
-				StatSet oldHero = COMPLETE_HEROS.get(charId);
 				if (hero.getInt(LEGEND_COUNT, 0) == 1)
 				{
 					int count = oldHero.getInt(LEGEND_COUNT);
@@ -701,7 +696,7 @@ public class Hero
 					record.Played = hero.getBoolean(PLAYED, false);
 					record.Claimed = hero.getBoolean(CLAIMED, false);
 					
-					if (!COMPLETE_HEROS.containsKey(heroId))
+					if (!COMPLETE_HEROS.ContainsKey(heroId))
 					{
 						loadHeroClanAlly(ctx, heroId, hero);
 
@@ -741,7 +736,7 @@ public class Hero
 		diaryEntry.set("action", template.getName() + " was defeated");
 		
 		// Add to old list
-		list.add(diaryEntry);
+		list.Add(diaryEntry);
 	}
 	
 	public void setCastleTaken(int charId, int castleId)
@@ -761,7 +756,7 @@ public class Hero
 		diaryEntry.set("action", castle.getName() + " Castle was successfuly taken");
 		
 		// Add to old list
-		list.add(diaryEntry);
+		list.Add(diaryEntry);
 	}
 	
 	public void setDiaryData(int charId, int action, int param)
@@ -790,7 +785,7 @@ public class Hero
 	 * @param player the player instance
 	 * @param message String to set
 	 */
-	public void setHeroMessage(Player player, String message)
+	public void setHeroMessage(Player player, string message)
 	{
 		HERO_MESSAGE.put(player.getObjectId(), message);
 	}
@@ -801,7 +796,7 @@ public class Hero
 	 */
 	public void saveHeroMessage(int charId)
 	{
-		if (!HERO_MESSAGE.containsKey(charId))
+		if (!HERO_MESSAGE.TryGetValue(charId, out string? message))
 		{
 			return;
 		}
@@ -809,7 +804,6 @@ public class Hero
 		try 
 		{
 			using GameServerDbContext ctx = DbFactory.Instance.CreateDbContext();
-			string message = HERO_MESSAGE.get(charId);
 			ctx.Heroes.Where(r => r.CharacterId == charId).ExecuteUpdate(s => s.SetProperty(r => r.Message, message));
 		}
 		catch (Exception e)
@@ -845,7 +839,7 @@ public class Hero
 	 */
 	public void shutdown()
 	{
-		HERO_MESSAGE.Keys.forEach(saveHeroMessage);
+		HERO_MESSAGE.Keys.ForEach(saveHeroMessage);
 	}
 	
 	/**
@@ -855,7 +849,7 @@ public class Hero
 	 */
 	public bool isHero(int objectId)
 	{
-		return HEROES.containsKey(objectId) && HEROES.get(objectId).getBoolean(CLAIMED);
+		return HEROES.GetValueOrDefault(objectId)?.getBoolean(CLAIMED) ?? false;
 	}
 	
 	/**
@@ -865,7 +859,7 @@ public class Hero
 	 */
 	public bool isUnclaimedHero(int objectId)
 	{
-		return HEROES.containsKey(objectId) && !HEROES.get(objectId).getBoolean(CLAIMED);
+		return HEROES.TryGetValue(objectId, out StatSet? hero) && !hero.getBoolean(CLAIMED);
 	}
 	
 	/**
@@ -874,8 +868,7 @@ public class Hero
 	 */
 	public void claimHero(Player player)
 	{
-		StatSet hero = HEROES.get(player.getObjectId());
-		if (hero == null)
+		if (!HEROES.TryGetValue(player.getObjectId(), out StatSet? hero))
 		{
 			hero = new StatSet();
 			HEROES.put(player.getObjectId(), hero);

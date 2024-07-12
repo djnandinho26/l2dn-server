@@ -74,7 +74,7 @@ public abstract class DataReaderBase
 
     protected static Map<string, object> parseParameters(XElement element)
     {
-        Map<String, Object> parameters = new();
+        Map<string, object> parameters = new();
         foreach (XElement parameterNode in element.Elements())
         {
             switch (parameterNode.Name.LocalName.toLowerCase())
@@ -114,10 +114,10 @@ public abstract class DataReaderBase
                         int max = minionsNode.Attribute("max").GetInt32(0);
                         int respawnTime = minionsNode.GetAttributeValueAsInt32("respawnTime");
                         int weightPoint = minionsNode.Attribute("weightPoint").GetInt32(0);
-                        minions.add(new MinionHolder(id, count, max, TimeSpan.FromMilliseconds(respawnTime), weightPoint));
+                        minions.Add(new MinionHolder(id, count, max, TimeSpan.FromMilliseconds(respawnTime), weightPoint));
                     }
 					
-                    if (!minions.isEmpty())
+                    if (minions.Count != 0)
                         parameters.put(name, minions);
                     
                     break;

@@ -1,3 +1,4 @@
+using L2Dn.Extensions;
 using L2Dn.GameServer.Model;
 using L2Dn.GameServer.Model.Actor;
 using L2Dn.GameServer.Model.Effects;
@@ -18,12 +19,12 @@ public class CallRandomSkill: AbstractEffect
 	
 	public CallRandomSkill(StatSet @params)
 	{
-		String skills = @params.getString("skills", null);
+		string skills = @params.getString("skills", null);
 		if (skills != null)
 		{
 			foreach (string skill in skills.Split(";"))
 			{
-				_skills.add(new SkillHolder(int.Parse(skill.Split(",")[0]), int.Parse(skill.Split(",")[1])));
+				_skills.Add(new SkillHolder(int.Parse(skill.Split(",")[0]), int.Parse(skill.Split(",")[1])));
 			}
 		}
 	}
@@ -35,6 +36,6 @@ public class CallRandomSkill: AbstractEffect
 	
 	public override void instant(Creature effector, Creature effected, Skill skill, Item item)
 	{
-		SkillCaster.triggerCast(effector, effected, _skills.get(Rnd.get(_skills.size())).getSkill());
+		SkillCaster.triggerCast(effector, effected, _skills.GetRandomElement().getSkill());
 	}
 }

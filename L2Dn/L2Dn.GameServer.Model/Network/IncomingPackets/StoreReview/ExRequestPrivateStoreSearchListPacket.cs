@@ -1,4 +1,5 @@
-﻿using L2Dn.GameServer.Data.Xml;
+﻿using L2Dn.Extensions;
+using L2Dn.GameServer.Data.Xml;
 using L2Dn.GameServer.Enums;
 using L2Dn.GameServer.Handlers;
 using L2Dn.GameServer.InstanceManagers;
@@ -18,7 +19,7 @@ public struct ExRequestPrivateStoreSearchListPacket: IIncomingPacket<GameSession
 {
     public const int MAX_ITEM_PER_PAGE = 120;
 	
-    private String _searchWord;
+    private string _searchWord;
     private StoreType _storeType;
     private StoreItemType _itemType;
     private StoreSubItemType _itemSubtype;
@@ -48,7 +49,7 @@ public struct ExRequestPrivateStoreSearchListPacket: IIncomingPacket<GameSession
 		StoreItemType itemType = _itemType;
 		StoreSubItemType itemSubtype = _itemSubtype;
 		int searchCollection = _searchCollection;
-		stores.forEach(vendor =>
+		stores.ForEach(vendor =>
 		{
 			foreach (TradeItem item in vendor.getPrivateStoreType() == PrivateStoreType.BUY
 				         ? vendor.getBuyList().getItems()
@@ -67,15 +68,15 @@ public struct ExRequestPrivateStoreSearchListPacket: IIncomingPacket<GameSession
 						                               item.getItem().getName().toLowerCase()
 							                               .contains(searchWord.toLowerCase())))
 						{
-							items.add(new ShopItem(item, vendor, vendor.getPrivateStoreType()));
-							itemIds.add(item.getItem().getId());
+							items.Add(new ShopItem(item, vendor, vendor.getPrivateStoreType()));
+							itemIds.Add(item.getItem().getId());
 						}
 					}
 				}
 			}
 		});
 		
-		int nSize = items.size();
+		int nSize = items.Count;
 		int maxPage = Math.Max(1,
 			nSize / (MAX_ITEM_PER_PAGE * 1F) > nSize / MAX_ITEM_PER_PAGE
 				? nSize / MAX_ITEM_PER_PAGE + 1
@@ -92,22 +93,22 @@ public struct ExRequestPrivateStoreSearchListPacket: IIncomingPacket<GameSession
 		
 		List<PrivateStoreHistoryManager.ItemHistoryTransaction> history = new();
 		List<PrivateStoreHistoryManager.ItemHistoryTransaction> historyTemp = new();
-		PrivateStoreHistoryManager.getInstance().getHistory().forEach(transaction =>
+		PrivateStoreHistoryManager.getInstance().getHistory().ForEach(transaction =>
 		{
 			if (itemIds.Contains(transaction.getItemId()))
 			{
-				history.add(transaction);
+				history.Add(transaction);
 			}
 		});
 		
 		int page = 1;
-		maxPage = Math.Max(1, history.size() / (MAX_ITEM_PER_PAGE * 1F) > history.size() / MAX_ITEM_PER_PAGE ? history.size() / MAX_ITEM_PER_PAGE + 1 : history.size() / MAX_ITEM_PER_PAGE);
+		maxPage = Math.Max(1, history.Count / (MAX_ITEM_PER_PAGE * 1F) > history.Count / MAX_ITEM_PER_PAGE ? history.Count / MAX_ITEM_PER_PAGE + 1 : history.Count / MAX_ITEM_PER_PAGE);
 		
-		for (int index = 0; index < history.size(); index++)
+		for (int index = 0; index < history.Count; index++)
 		{
-			historyTemp.add(history.get(index));
+			historyTemp.Add(history[index]);
 			
-			if (index == history.size() - 1 || index == MAX_ITEM_PER_PAGE - 1 || (index > 0 && index % (MAX_ITEM_PER_PAGE - 1) == 0))
+			if (index == history.Count - 1 || index == MAX_ITEM_PER_PAGE - 1 || (index > 0 && index % (MAX_ITEM_PER_PAGE - 1) == 0))
 			{
 				player.sendPacket(new ExPrivateStoreSearchHistoryPacket(page, maxPage, historyTemp));
 				page++;

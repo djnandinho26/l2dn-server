@@ -56,7 +56,7 @@ public class SkillLearn
 	/**
 	 * @return the name of this skill.
 	 */
-	public String getName()
+	public string getName()
 	{
 		return _skillName;
 	}
@@ -123,7 +123,7 @@ public class SkillLearn
 	 */
 	public void addRequiredItem(List<ItemHolder> list)
 	{
-		_requiredItems.add(list);
+		_requiredItems.Add(list);
 	}
 	
 	/**
@@ -251,7 +251,7 @@ public class SkillLearn
 		return _pointsRequired;
 	}
 
-	public override String ToString()
+	public override string ToString()
 	{
 		Skill skill = SkillData.getInstance().getSkill(_skillId, _skillLevel);
 		return "[" + skill + " treeId: " + _treeId + " row: " + _row + " column: " + _column + " pointsRequired:" +

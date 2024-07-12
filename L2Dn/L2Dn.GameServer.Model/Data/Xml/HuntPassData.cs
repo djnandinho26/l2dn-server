@@ -33,8 +33,8 @@ public class HuntPassData: DataReaderBase
 			XDocument document = LoadXmlDocument(DataFileLocation.Data, "HuntPass.xml");
 			document.Elements("hitConditionBonus").Elements("item").ForEach(parseElement);
 			
-			_rewardCount = _rewards.size();
-			_premiumRewardCount = _premiumRewards.size();
+			_rewardCount = _rewards.Count;
+			_premiumRewardCount = _premiumRewards.Count;
 			LOGGER.Info(GetType().Name + ": Loaded " + _rewardCount + " HuntPass rewards.");
 		}
 		else
@@ -55,8 +55,8 @@ public class HuntPassData: DataReaderBase
 		}
 		else
 		{
-			_rewards.add(new ItemHolder(itemId, itemCount));
-			_premiumRewards.add(new ItemHolder(premiumitemId, premiumitemCount));
+			_rewards.Add(new ItemHolder(itemId, itemCount));
+			_premiumRewards.Add(new ItemHolder(premiumitemId, premiumitemCount));
 		}
 	}
 	

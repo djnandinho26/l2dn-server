@@ -1,3 +1,4 @@
+using L2Dn.Extensions;
 using L2Dn.GameServer.Model;
 using L2Dn.GameServer.Model.Actor;
 using L2Dn.GameServer.Model.Effects;
@@ -18,13 +19,13 @@ public class Transformation: AbstractEffect
 	
 	public Transformation(StatSet @params)
 	{
-		String ids = @params.getString("transformationId", null);
+		string ids = @params.getString("transformationId", null);
 		_id = new();
-		if ((ids != null) && !ids.isEmpty())
+		if (!string.IsNullOrEmpty(ids))
 		{
-			foreach (String id in ids.Split(";"))
+			foreach (string id in ids.Split(";"))
 			{
-				_id.add(int.Parse(id));
+				_id.Add(int.Parse(id));
 			}
 		}
 	}
@@ -36,9 +37,9 @@ public class Transformation: AbstractEffect
 	
 	public override void onStart(Creature effector, Creature effected, Skill skill, Item item)
 	{
-		if (!_id.isEmpty())
+		if (_id.Count != 0)
 		{
-			effected.transform(_id.get(Rnd.get(_id.size())), true);
+			effected.transform(_id.GetRandomElement(), true);
 		}
 	}
 	

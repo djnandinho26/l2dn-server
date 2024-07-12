@@ -13,7 +13,6 @@ using L2Dn.GameServer.Utilities;
 using L2Dn.Geometry;
 using L2Dn.Utilities;
 using NLog;
-using CollectionExtensions = L2Dn.GameServer.Utilities.CollectionExtensions;
 using ThreadPool = L2Dn.GameServer.Utilities.ThreadPool;
 
 namespace L2Dn.GameServer.InstanceManagers;
@@ -42,7 +41,7 @@ public class FakePlayerChatManager: DataReaderBase
 			XDocument document = LoadXmlDocument(DataFileLocation.Data, "FakePlayerChatData.xml");
 			document.Elements("list").Elements("fakePlayerChat").ForEach(parseElement);
 			
-			LOGGER.Info(GetType().Name +": Loaded " + CollectionExtensions.size(MESSAGES) + " chat templates.");
+			LOGGER.Info(GetType().Name +": Loaded " + MESSAGES.Count + " chat templates.");
 		}
 		else
 		{
@@ -53,28 +52,28 @@ public class FakePlayerChatManager: DataReaderBase
 	private void parseElement(XElement element)
 	{
 		StatSet set = new StatSet(element);
-		MESSAGES.add(new FakePlayerChatHolder(set.getString("fpcName"), set.getString("searchMethod"),
+		MESSAGES.Add(new FakePlayerChatHolder(set.getString("fpcName"), set.getString("searchMethod"),
 				set.getString("searchText"), set.getString("answers")));
 	}
 
-	public void manageChat(Player player, String fpcName, String message)
+	public void manageChat(Player player, string fpcName, string message)
 	{
 		ThreadPool.schedule(() => manageResponce(player, fpcName, message), Rnd.get(MIN_DELAY, MAX_DELAY));
 	}
 	
-	public void manageChat(Player player, String fpcName, String message, int minDelay, int maxDelay)
+	public void manageChat(Player player, string fpcName, string message, int minDelay, int maxDelay)
 	{
 		ThreadPool.schedule(() => manageResponce(player, fpcName, message), Rnd.get(minDelay, maxDelay));
 	}
 	
-	private void manageResponce(Player player, String fpcName, String message)
+	private void manageResponce(Player player, string fpcName, string message)
 	{
 		if (player == null)
 		{
 			return;
 		}
 		
-		String text = message.ToLower();
+		string text = message.ToLower();
 		
 		// tricky question
 		if (text.Contains("can you see me"))
@@ -116,24 +115,24 @@ public class FakePlayerChatManager: DataReaderBase
 			{
 				case "EQUALS":
 				{
-					if (text.equals(chatHolder.getSearchText().get(0)))
+					if (text.equals(chatHolder.getSearchText()[0]))
 					{
-						sendChat(player, fpcName, chatHolder.getAnswers().get(Rnd.get(chatHolder.getAnswers().size())));
+						sendChat(player, fpcName, chatHolder.getAnswers().GetRandomElement());
 					}
 					break;
 				}
 				case "STARTS_WITH":
 				{
-					if (text.startsWith(chatHolder.getSearchText().get(0)))
+					if (text.startsWith(chatHolder.getSearchText()[0]))
 					{
-						sendChat(player, fpcName, chatHolder.getAnswers().get(Rnd.get(chatHolder.getAnswers().size())));
+						sendChat(player, fpcName, chatHolder.getAnswers().GetRandomElement());
 					}
 					break;
 				}
 				case "CONTAINS":
 				{
 					bool allFound = true;
-					foreach (String word in chatHolder.getSearchText())
+					foreach (string word in chatHolder.getSearchText())
 					{
 						if (!text.Contains(word))
 						{
@@ -142,7 +141,7 @@ public class FakePlayerChatManager: DataReaderBase
 					}
 					if (allFound)
 					{
-						sendChat(player, fpcName, chatHolder.getAnswers().get(Rnd.get(chatHolder.getAnswers().size())));
+						sendChat(player, fpcName, chatHolder.getAnswers().GetRandomElement());
 					}
 					break;
 				}
@@ -150,7 +149,7 @@ public class FakePlayerChatManager: DataReaderBase
 		}
 	}
 	
-	public void sendChat(Player player, String fpcName, String message)
+	public void sendChat(Player player, string fpcName, string message)
 	{
 		Spawn spawn = SpawnTable.getInstance().getAnySpawn(FakePlayerData.getInstance().getNpcIdByName(fpcName));
 		if (spawn != null)

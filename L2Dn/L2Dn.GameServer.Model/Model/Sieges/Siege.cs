@@ -1,4 +1,5 @@
 using L2Dn.Events;
+using L2Dn.Extensions;
 using L2Dn.GameServer.Cache;
 using L2Dn.GameServer.Data.Sql;
 using L2Dn.GameServer.Data.Xml;
@@ -359,7 +360,7 @@ public class Siege: Siegable
 				SiegeGuardManager.getInstance().removeSiegeGuards(getCastle()); // Remove all merc entry from db
 			}
 
-			if (getDefenderClans().isEmpty() && // If defender doesn't exist (Pc vs Npc)
+			if (getDefenderClans().Count == 0 && // If defender doesn't exist (Pc vs Npc)
 				getAttackerClans().Count == 1) // Only 1 attacker
 			{
 				SiegeClan scNewOwner = getAttackerClan(_castle.getOwnerId());
@@ -373,7 +374,7 @@ public class Siege: Siegable
 			{
 				// If defender doesn't exist (Pc vs Npc) and only an alliance attacks
 				int? allyId = ClanTable.getInstance().getClan(getCastle().getOwnerId()).getAllyId();
-				if (getDefenderClans().isEmpty() && allyId != null)
+				if (getDefenderClans().Count == 0 && allyId != null)
 				{
 					bool allinsamealliance = true;
 					foreach (SiegeClan sc in getAttackerClans())
@@ -448,7 +449,7 @@ public class Siege: Siegable
 		{
 			SystemMessagePacket sm;
 			_firstOwnerClanId = _castle.getOwnerId();
-			if (getAttackerClans().isEmpty())
+			if (getAttackerClans().Count == 0)
 			{
 				if (_firstOwnerClanId <= 0)
 				{
@@ -594,7 +595,7 @@ public class Siege: Siegable
 							}
 							if (member.hasServitors())
 							{
-								member.getServitors().values().forEach(s => rc.addRelation(s, relation, isAutoAttackable));
+								member.getServitors().values().ForEach(s => rc.addRelation(s, relation, isAutoAttackable));
 							}
 						}
 						player.sendPacket(rc);
@@ -654,7 +655,7 @@ public class Siege: Siegable
 							}
 							if (member.hasServitors())
 							{
-								member.getServitors().values().forEach(s => rc.addRelation(s, relation, isAutoAttackable));
+								member.getServitors().values().ForEach(s => rc.addRelation(s, relation, isAutoAttackable));
 							}
 						}
 						player.sendPacket(rc);
@@ -781,7 +782,7 @@ public class Siege: Siegable
 				{
 					if (member.isInSiege())
 					{
-						result.add(member);
+						result.Add(member);
 					}
 				}
 			}
@@ -814,7 +815,7 @@ public class Siege: Siegable
 					{
 						if (member.isInSiege())
 						{
-							result.add(member);
+							result.Add(member);
 						}
 					}
 				}
@@ -833,7 +834,7 @@ public class Siege: Siegable
 		{
 			if (!player.isInSiege())
 			{
-				result.add(player);
+				result.Add(player);
 			}
 		}
 		return result;
@@ -854,7 +855,7 @@ public class Siege: Siegable
 	 */
 	public void killedFlag(Npc flag)
 	{
-		getAttackerClans().forEach(siegeClan => siegeClan.removeFlag(flag));
+		getAttackerClans().ForEach(siegeClan => siegeClan.removeFlag(flag));
 	}
 
 	/**
@@ -1479,14 +1480,14 @@ public class Siege: Siegable
 			{
 				Spawn spawn = new Spawn(ts.getId());
 				spawn.Location = new Location(ts.getLocation(), 0);
-				_controlTowers.add((ControlTower) spawn.doSpawn(false));
+				_controlTowers.Add((ControlTower) spawn.doSpawn(false));
 			}
 		}
 		catch (Exception e)
 		{
 			LOGGER.Warn(GetType().Name + ": Cannot spawn control tower! " + e);
 		}
-		_controlTowerCount = _controlTowers.size();
+		_controlTowerCount = _controlTowers.Count;
 	}
 
 	/**
@@ -1503,7 +1504,7 @@ public class Siege: Siegable
 				FlameTower tower = (FlameTower)spawn.doSpawn(false);
 				tower.setUpgradeLevel(ts.getUpgradeLevel());
 				tower.setZoneList(ts.getZoneList());
-				_flameTowers.add(tower);
+				_flameTowers.Add(tower);
 			}
 		}
 		catch (Exception e)

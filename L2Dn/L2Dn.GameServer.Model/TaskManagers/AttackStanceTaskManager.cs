@@ -1,3 +1,4 @@
+using L2Dn.Extensions;
 using L2Dn.GameServer.Model.Actor;
 using L2Dn.GameServer.Network.OutgoingPackets;
 using L2Dn.GameServer.Utilities;
@@ -56,7 +57,7 @@ public class AttackStanceTaskManager: Runnable
 								{
 									pet.broadcastPacket(new AutoAttackStopPacket(pet.getObjectId()));
 								}
-								creature.getServitors().values().forEach(s => s.broadcastPacket(new AutoAttackStopPacket(s.getObjectId())));
+								creature.getServitors().Values.ForEach(s => s.broadcastPacket(new AutoAttackStopPacket(s.getObjectId())));
 							}
 
 							toRemove.Add(creature);
@@ -124,7 +125,7 @@ public class AttackStanceTaskManager: Runnable
 			{
 				actor = actor.getActingPlayer();
 			}
-			return CREATURE_ATTACK_STANCES.containsKey(actor);
+			return CREATURE_ATTACK_STANCES.ContainsKey(actor);
 		}
 		
 		return false;

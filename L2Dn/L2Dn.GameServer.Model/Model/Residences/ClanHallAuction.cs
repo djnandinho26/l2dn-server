@@ -17,9 +17,9 @@ public class ClanHallAuction
 	private static readonly Logger LOGGER = LogManager.GetLogger(nameof(ClanHallAuction));
 	
 	private readonly int _clanHallId;
-	private const String DELETE_CLANHALL_BIDDERS = "DELETE FROM clanhall_auctions_bidders WHERE clanHallId=?";
-	private const String INSERT_CLANHALL_BIDDER = "REPLACE INTO clanhall_auctions_bidders (clanHallId, clanId, bid, bidTime) VALUES (?,?,?,?)";
-	private const String DELETE_CLANHALL_BIDDER = "DELETE FROM clanhall_auctions_bidders WHERE clanId=?";
+	private const string DELETE_CLANHALL_BIDDERS = "DELETE FROM clanhall_auctions_bidders WHERE clanHallId=?";
+	private const string INSERT_CLANHALL_BIDDER = "REPLACE INTO clanhall_auctions_bidders (clanHallId, clanId, bid, bidTime) VALUES (?,?,?,?)";
+	private const string DELETE_CLANHALL_BIDDER = "DELETE FROM clanhall_auctions_bidders WHERE clanId=?";
 	
 	public ClanHallAuction(int clanHallId)
 	{
@@ -142,7 +142,7 @@ public class ClanHallAuction
 			Bidder highestBidder = potentialHighestBidder;
 			ClanHall clanHall = ClanHallData.getInstance().getClanHallById(_clanHallId);
 			clanHall.setOwner(highestBidder.getClan());
-			getBids().clear();
+			getBids().Clear();
 			
 			try 
 			{

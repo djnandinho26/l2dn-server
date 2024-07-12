@@ -37,7 +37,7 @@ public class SoulShots: IItemHandler
 		int itemId = item.getId();
 		
 		// Check if Soul shot can be used
-		if ((weaponInst == null) || (weaponItem.getSoulShotCount() == 0))
+		if (weaponInst == null || weaponItem.getSoulShotCount() == 0)
 		{
 			if (!player.getAutoSoulShot().Contains(itemId))
 			{
@@ -54,7 +54,7 @@ public class SoulShots: IItemHandler
 		
 		// Consume Soul shots if player has enough of them
 		int ssCount = weaponItem.getSoulShotCount();
-		if ((weaponItem.getReducedSoulShot() > 0) && (Rnd.get(100) < weaponItem.getReducedSoulShotChance()))
+		if (weaponItem.getReducedSoulShot() > 0 && Rnd.get(100) < weaponItem.getReducedSoulShotChance())
 		{
 			ssCount = weaponItem.getReducedSoulShot();
 		}
@@ -88,7 +88,7 @@ public class SoulShots: IItemHandler
 		}
 		else
 		{
-			skills.forEach(holder => Broadcast.toSelfAndKnownPlayersInRadius(player,
+			skills.ForEach(holder => Broadcast.toSelfAndKnownPlayersInRadius(player,
 				new MagicSkillUsePacket(player, player, holder.getSkillId(), holder.getSkillLevel(), TimeSpan.Zero, TimeSpan.Zero), 600));
 		}
 
@@ -111,7 +111,7 @@ public class SoulShots: IItemHandler
 		}
 		
 		Summon pet = playable.getPet();
-		if ((pet != null) && pet.isDead())
+		if (pet != null && pet.isDead())
 		{
 			activeOwner.sendPacket(SystemMessageId.SOULSHOTS_AND_SPIRITSHOTS_ARE_NOT_AVAILABLE_FOR_A_DEAD_SERVITOR_SAD_ISN_T_IT);
 			return false;
@@ -122,11 +122,11 @@ public class SoulShots: IItemHandler
 		{
 			if (!s.isDead())
 			{
-				aliveServitor.add(s);
+				aliveServitor.Add(s);
 			}
 		}
 		
-		if ((pet == null) && aliveServitor.isEmpty())
+		if (pet == null && aliveServitor.Count == 0)
 		{
 			activeOwner.sendPacket(SystemMessageId.SOULSHOTS_AND_SPIRITSHOTS_ARE_NOT_AVAILABLE_FOR_A_DEAD_SERVITOR_SAD_ISN_T_IT);
 			return false;
@@ -136,7 +136,7 @@ public class SoulShots: IItemHandler
 		long shotCount = item.getCount();
 		List<ItemSkillHolder> skills = item.getTemplate().getSkills(ItemSkillType.NORMAL);
 		short shotConsumption = 0;
-		if ((pet != null) && !pet.isChargedShot(ShotType.SOULSHOTS))
+		if (pet != null && !pet.isChargedShot(ShotType.SOULSHOTS))
 		{
 			shotConsumption += pet.getSoulShotsPerHit();
 		}
@@ -176,7 +176,7 @@ public class SoulShots: IItemHandler
 		}
 		
 		// Pet uses the power of spirit.
-		if ((pet != null) && !pet.isChargedShot(ShotType.SOULSHOTS))
+		if (pet != null && !pet.isChargedShot(ShotType.SOULSHOTS))
 		{
 			activeOwner.sendMessage("Your pet uses soulshot."); // activeOwner.sendPacket(SystemMessageId.YOUR_PET_USES_SPIRITSHOT);
 			pet.chargeShot(ShotType.SOULSHOTS);
@@ -191,12 +191,12 @@ public class SoulShots: IItemHandler
 			}
 			else
 			{
-				skills.forEach(holder => Broadcast.toSelfAndKnownPlayersInRadius(activeOwner,
+				skills.ForEach(holder => Broadcast.toSelfAndKnownPlayersInRadius(activeOwner,
 					new MagicSkillUsePacket(pet, pet, holder.getSkillId(), holder.getSkillLevel(), TimeSpan.Zero, TimeSpan.Zero), 600));
 			}
 		}
 		
-		aliveServitor.forEach(s =>
+		aliveServitor.ForEach(s =>
 		{
 			if (!s.isChargedShot(ShotType.SOULSHOTS))
 			{
@@ -213,7 +213,7 @@ public class SoulShots: IItemHandler
 				}
 				else
 				{
-					skills.forEach(holder => Broadcast.toSelfAndKnownPlayersInRadius(activeOwner,
+					skills.ForEach(holder => Broadcast.toSelfAndKnownPlayersInRadius(activeOwner,
 						new MagicSkillUsePacket(s, s, holder.getSkillId(), holder.getSkillLevel(), TimeSpan.Zero, TimeSpan.Zero), 600));
 				}
 			}

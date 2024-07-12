@@ -13,8 +13,8 @@ public class LetterCollectorManager
 	
 	private readonly Map<int, LetterCollectorRewardHolder> _rewards = new();
 	private readonly Map<int, List<ItemHolder>> _words = new();
-	private readonly Map<String, int> _letter = new();
-	private readonly Map<int, Boolean> _needToSumAllChance = new();
+	private readonly Map<string, int> _letter = new();
+	private readonly Map<int, bool> _needToSumAllChance = new();
 	
 	private int _minLevel = 1;
 	private int _maxLevel = Config.PLAYER_MAXIMUM_LEVEL;
@@ -89,17 +89,17 @@ public class LetterCollectorManager
 	public void resetField()
 	{
 		_minLevel = 1;
-		_rewards.clear();
-		_words.clear();
-		_needToSumAllChance.clear();
+		_rewards.Clear();
+		_words.Clear();
+		_needToSumAllChance.Clear();
 	}
 	
-	public void setLetters(Map<String, int> letters)
+	public void setLetters(Map<string, int> letters)
 	{
 		_letter.putAll(letters);
 	}
 	
-	public Map<String, int> getLetters()
+	public Map<string, int> getLetters()
 	{
 		return _letter;
 	}

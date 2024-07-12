@@ -15,7 +15,7 @@ namespace L2Dn.GameServer.Data.Xml;
  */
 public class BeautyShopData: DataReaderBase
 {
-	private readonly Map<Race, Map<Sex, BeautyData>> _beautyList = new();
+	private readonly Map<Race, Map<Sex, BeautyData>> _beautyList = new(); // TODO: key must be tuple (Race, Sex)
 	
 	protected BeautyShopData()
 	{
@@ -25,7 +25,7 @@ public class BeautyShopData: DataReaderBase
 	[MethodImpl(MethodImplOptions.Synchronized)]
 	public void load()
 	{
-		_beautyList.clear();
+		_beautyList.Clear();
 
 		XDocument document = LoadXmlDocument(DataFileLocation.Data, "BeautyShop.xml");
 		document.Elements("list").Elements("race").ForEach(loadElement);
@@ -78,16 +78,12 @@ public class BeautyShopData: DataReaderBase
 	
 	public bool hasBeautyData(Race race, Sex sex)
 	{
-		return _beautyList.containsKey(race) && _beautyList.get(race).containsKey(sex);
+		return _beautyList.TryGetValue(race, out Map<Sex, BeautyData>? sexSet) && sexSet.ContainsKey(sex);
 	}
 	
-	public BeautyData getBeautyData(Race race, Sex sex)
+	public BeautyData? getBeautyData(Race race, Sex sex)
 	{
-		if (_beautyList.containsKey(race))
-		{
-			return _beautyList.get(race).get(sex);
-		}
-		return null;
+		return _beautyList.GetValueOrDefault(race)?.GetValueOrDefault(sex);
 	}
 	
 	public static BeautyShopData getInstance()

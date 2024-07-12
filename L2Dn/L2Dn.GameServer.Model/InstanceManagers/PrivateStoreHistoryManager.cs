@@ -1,3 +1,4 @@
+using L2Dn.Extensions;
 using L2Dn.GameServer.Db;
 using L2Dn.GameServer.Enums;
 using L2Dn.GameServer.Model.Items.Instances;
@@ -78,7 +79,7 @@ public class PrivateStoreHistoryManager
 			foreach (ItemHistoryTransaction transaction in tempList)
 			{
 				int itemId = transaction.getItemId();
-				if (!uniqueItemIds.containsKey(itemId))
+				if (!uniqueItemIds.ContainsKey(itemId))
 				{
 					uniqueItemIds.put(itemId, 0);
 				}
@@ -92,7 +93,7 @@ public class PrivateStoreHistoryManager
 				int itemId = transaction.getItemId();
 				if (uniqueItemIds.get(itemId) < Config.STORE_REVIEW_LIMIT)
 				{
-					finalList.add(transaction);
+					finalList.Add(transaction);
 					uniqueItemIds.put(itemId, uniqueItemIds.get(itemId) + 1);
 				}
 			}
@@ -128,7 +129,7 @@ public class PrivateStoreHistoryManager
 		}
 
 		List<ItemHistoryTransaction> list = new();
-		map.forEach(kvp => list.add(kvp.Value));
+		map.ForEach(kvp => list.Add(kvp.Value));
 		list.Sort(new SortByQuantity());
 		return list;
 	}
@@ -256,7 +257,7 @@ public class PrivateStoreHistoryManager
 			}
 		}
 
-		public override String ToString()
+		public override string ToString()
 		{
 			return _transactionDate + "(" + _transactionType + ")" + "[" + _itemId + " +" + _enchantLevel + " c:" +
 			       _count + " p:" + _price + " ]";

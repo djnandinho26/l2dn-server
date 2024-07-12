@@ -26,9 +26,9 @@ public class RewardItemsOnFailure
 		_maxEnchantLevel = Math.Max(_maxEnchantLevel, enchantLevel);
 	}
 
-	public ItemChanceHolder getRewardItem(CrystalType grade, int enchantLevel)
+	public ItemChanceHolder? getRewardItem(CrystalType grade, int enchantLevel)
 	{
-		return _rewards.getOrDefault(grade, new()).getOrDefault(enchantLevel, null);
+		return _rewards.GetValueOrDefault(grade)?.GetValueOrDefault(enchantLevel);
 	}
 
 	public bool checkIfRewardUnavailable(CrystalType grade, int enchantLevel)
@@ -44,22 +44,16 @@ public class RewardItemsOnFailure
 			return true;
 		}
 
-		if (!_rewards.containsKey(grade))
+		if (!_rewards.TryGetValue(grade, out Map<int, ItemChanceHolder>? holders))
 		{
 			return true;
 		}
 
-		return !_rewards.get(grade).containsKey(enchantLevel);
+		return !holders.ContainsKey(enchantLevel);
 	}
 
 	public int size()
 	{
-		int count = 0;
-		foreach (Map<int, ItemChanceHolder> rewards in _rewards.values())
-		{
-			count += rewards.size();
-		}
-
-		return count;
+		return _rewards.Values.Sum(rewards => rewards.size());
 	}
 }

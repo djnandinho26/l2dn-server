@@ -13,18 +13,18 @@ namespace L2Dn.GameServer.Scripts.Handlers.EffectHandlers;
  */
 public class DispelBySlot: AbstractEffect
 {
-	private readonly String _dispel;
+	private readonly string _dispel;
 	private readonly Map<AbnormalType, short> _dispelAbnormals;
 	
 	public DispelBySlot(StatSet @params)
 	{
 		_dispel = @params.getString("dispel");
-		if ((_dispel != null) && !_dispel.isEmpty())
+		if (!string.IsNullOrEmpty(_dispel))
 		{
 			_dispelAbnormals = new();
-			foreach (String ngtStack in _dispel.Split(";"))
+			foreach (string ngtStack in _dispel.Split(";"))
 			{
-				String[] ngt = ngtStack.Split(",");
+				string[] ngt = ngtStack.Split(",");
 				_dispelAbnormals.put(Enum.Parse<AbnormalType>(ngt[0]), short.Parse(ngt[1]));
 			}
 		}

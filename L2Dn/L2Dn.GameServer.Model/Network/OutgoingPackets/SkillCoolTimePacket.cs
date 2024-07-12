@@ -17,7 +17,7 @@ public readonly struct SkillCoolTimePacket: IOutgoingPacket
         {
             if (ts.hasNotPassed() && !SkillData.getInstance().getSkill(ts.getSkillId(), ts.getSkillLevel(), ts.getSkillSubLevel()).isNotBroadcastable())
             {
-                _reuseTimestamps.add(ts);
+                _reuseTimestamps.Add(ts);
             }
         }
     }
@@ -26,7 +26,7 @@ public readonly struct SkillCoolTimePacket: IOutgoingPacket
     {
         writer.WritePacketCode(OutgoingPacketCodes.SKILL_COOL_TIME);
         
-        writer.WriteInt32(_reuseTimestamps.size());
+        writer.WriteInt32(_reuseTimestamps.Count);
         foreach (TimeStamp ts in _reuseTimestamps)
         {
             TimeSpan reuse = ts.getReuse();

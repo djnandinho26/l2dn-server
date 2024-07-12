@@ -91,7 +91,7 @@ public class ItemAuctionInstance
 			}
 		});
 		
-		if (_items.isEmpty())
+		if (_items.Count == 0)
 		{
 			throw new ArgumentException(nameof(_items), "No items defined");
 		}
@@ -152,7 +152,7 @@ public class ItemAuctionInstance
 	
 	private AuctionItem getAuctionItem(int auctionItemId)
 	{
-		for (int i = _items.size(); i-- > 0;)
+		for (int i = _items.Count; i-- > 0;)
 		{
 			AuctionItem item = _items[i];
 			if (item.getAuctionItemId() == auctionItemId)
@@ -305,7 +305,7 @@ public class ItemAuctionInstance
 				ItemAuctionBid bid = auction.getBidFor(bidderObjId);
 				if (bid != null)
 				{
-					stack.add(auction);
+					stack.Add(auction);
 				}
 			}
 		}
@@ -478,7 +478,7 @@ public class ItemAuctionInstance
 	
 	private ItemAuction createAuction(DateTime after)
 	{
-		AuctionItem auctionItem = _items[Rnd.get(_items.size())];
+		AuctionItem auctionItem = _items.GetRandomElement();
 		DateTime startingTime = _dateGenerator.nextDate(after);
 		DateTime endingTime = startingTime + TimeSpan.FromMinutes(auctionItem.getAuctionLength());
 		ItemAuction auction = new ItemAuction(_auctionIds.getAndIncrement(), _instanceId, startingTime, endingTime, auctionItem);
@@ -537,7 +537,7 @@ public class ItemAuctionInstance
 			}
 
 			List<ItemAuctionBid> auctionBids = new();
-			const String SELECT_PLAYERS_ID_BY_AUCTION_ID =
+			const string SELECT_PLAYERS_ID_BY_AUCTION_ID =
 				"SELECT playerObjId, playerBid FROM item_auction_bid WHERE auctionId = ?";
 			var query = ctx.ItemAuctionBids.Where(r => r.AuctionId == auctionId)
 				.Select(r => new { r.CharacterId, r.Bid });

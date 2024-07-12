@@ -144,7 +144,7 @@ public class PurgeRankingManager
 						Player onlinePlayer = World.getInstance().getPlayer(charId);
 						if (onlinePlayer != null)
 						{
-							onlinePlayer.getPurgePoints().clear();
+							onlinePlayer.getPurgePoints().Clear();
 							onlinePlayer.sendPacket(
 								new ExSubjugationSidebarPacket(null, new PurgePlayerHolder(0, 0, 0)));
 						}
@@ -156,7 +156,7 @@ public class PurgeRankingManager
 		}
 
 		// Clear ranking.
-		_ranking.clear();
+		_ranking.Clear();
 		
 		// Restore ranking.
 		for (int category = 1; category <= 9; category++)
@@ -191,9 +191,9 @@ public class PurgeRankingManager
 		}
 	}
 	
-	public Map<String, int> getTop5(int category)
+	public Map<string, int> getTop5(int category)
 	{
-		Map<String, int> top5 = new();
+		Map<string, int> top5 = new();
 		for (int i = 1; i <= 5; i++)
 		{
 			try
@@ -209,7 +209,7 @@ public class PurgeRankingManager
 					continue;
 				}
 				
-				String charName = CharInfoTable.getInstance().getNameById(ss.getInt("charId"));
+				string charName = CharInfoTable.getInstance().getNameById(ss.getInt("charId"));
 				int points = ss.getInt("points");
 				top5.put(charName, points);
 			}

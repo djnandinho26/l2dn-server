@@ -26,7 +26,7 @@ public class StatAddForLevel: AbstractEffect
 		int index = 0;
 		foreach (int level in @params.getIntegerList("level"))
 		{
-			_values.put(level, amount.get(index++));
+			_values.put(level, amount[index++]);
 		}
 		
 		if (@params.getEnum("mode", StatModifierType.DIFF) != StatModifierType.DIFF)
@@ -37,7 +37,7 @@ public class StatAddForLevel: AbstractEffect
 	
 	public override void pump(Creature effected, Skill skill)
 	{
-		Double amount = _values.get(effected.getLevel());
+		double amount = _values.get(effected.getLevel());
 		if (amount != null)
 		{
 			effected.getStat().mergeAdd(_stat, amount);

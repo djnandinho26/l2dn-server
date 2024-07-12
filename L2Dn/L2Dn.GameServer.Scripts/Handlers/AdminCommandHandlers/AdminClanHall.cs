@@ -1,4 +1,5 @@
 using System.Text;
+using L2Dn.Extensions;
 using L2Dn.GameServer.Data;
 using L2Dn.GameServer.Data.Xml;
 using L2Dn.GameServer.Handlers;
@@ -185,7 +186,7 @@ public class AdminClanHall: IAdminCommandHandler
 			string grade = clanHall.getGrade().ToString().Replace("GRADE_", "") + " Grade";
 			htmlContent.Replace("%clanHallGrade%", grade);
 			htmlContent.Replace("%clanHallSize%", clanHall.getGrade().ToString());
-			if (!clanHall.getFunctions().isEmpty())
+			if (clanHall.getFunctions().Count != 0)
 			{
 				sb.Append("<table border=0 cellpadding=0 cellspacing=0 bgcolor=\"363636\">");
 				sb.Append("<tr>");
@@ -197,7 +198,7 @@ public class AdminClanHall: IAdminCommandHandler
 				sb.Append("</tr>");
 				sb.Append("</table>");
 				sb.Append("<table border=0 cellpadding=0 cellspacing=0 bgcolor=\"363636\">");
-				clanHall.getFunctions().forEach(function =>
+				clanHall.getFunctions().ForEach(function =>
 				{
 					sb.Append("<tr>");
 					sb.Append("<td align=center fixwidth=\"40\">" + function.getId() + "</td>");

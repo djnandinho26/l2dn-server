@@ -19,7 +19,7 @@ public class PetDataTable: DataReaderBase
 	private static readonly Logger LOGGER = LogManager.GetLogger(nameof(PetDataTable));
 	
 	private readonly Map<int, PetData> _pets = new();
-	private readonly Map<int, String> _petNames = new();
+	private readonly Map<int, string> _petNames = new();
 	
 	/**
 	 * Instantiates a new pet data table.
@@ -31,7 +31,7 @@ public class PetDataTable: DataReaderBase
 	
 	public void load()
 	{
-		_pets.clear();
+		_pets.Clear();
 		
 		LoadXmlDocuments(DataFileLocation.Data, "stats/pets").ForEach(t =>
 		{
@@ -186,13 +186,14 @@ public class PetDataTable: DataReaderBase
 	 * @param petId the pet Id.
 	 * @return the pet data
 	 */
-	public PetData getPetData(int petId)
+	public PetData? getPetData(int petId)
 	{
-		if (!_pets.containsKey(petId))
+		if (!_pets.TryGetValue(petId, out PetData? petData))
 		{
 			LOGGER.Info(GetType().Name + ": Missing pet data for npcid: " + petId);
 		}
-		return _pets.get(petId);
+
+		return petData;
 	}
 	
 	/**
@@ -251,19 +252,19 @@ public class PetDataTable: DataReaderBase
 		return _pets.values().Where(petData => (petData.getItemId() == itemId) && (petData.getEvolveLevel() == evolveLevel)).ToList();
 	}
 	
-	public void setPetName(int objectId, String name)
+	public void setPetName(int objectId, string name)
 	{
 		_petNames.put(objectId, name);
 	}
 	
-	public String getPetName(int objectId)
+	public string getPetName(int objectId)
 	{
-		return _petNames.getOrDefault(objectId, "No name");
+		return _petNames.GetValueOrDefault(objectId, "No name");
 	}
 	
-	public String getNameByItemObjectId(int objectId)
+	public string getNameByItemObjectId(int objectId)
 	{
-		String name = getPetName(objectId);
+		string name = getPetName(objectId);
 		SkillHolder type = PetTypeData.getInstance().getSkillByName(name);
 		if (type == null)
 		{

@@ -432,7 +432,7 @@ public class CreatureStat
 		}
 		double mpConsume = skill.getMpConsume();
 		double nextDanceMpCost = Math.Ceiling(skill.getMpConsume() / 2.0);
-		if (skill.isDance() && Config.DANCE_CONSUME_ADDITIONAL_MP && (_creature != null) && (_creature.getDanceCount() > 0))
+		if (skill.isDance() && Config.DANCE_CONSUME_ADDITIONAL_MP && _creature != null && _creature.getDanceCount() > 0)
 		{
 			mpConsume += _creature.getDanceCount() * nextDanceMpCost;
 		}
@@ -456,7 +456,7 @@ public class CreatureStat
 	{
 		Item weaponInstance = _creature.getActiveWeaponInstance();
 		// 1st order - weapon element
-		if ((weaponInstance != null) && (weaponInstance.getAttackAttributeType() != AttributeType.NONE))
+		if (weaponInstance != null && weaponInstance.getAttackAttributeType() != AttributeType.NONE)
 		{
 			return weaponInstance.getAttackAttributeType();
 		}
@@ -802,8 +802,8 @@ public class CreatureStat
 	
 	protected void resetStats()
 	{
-		_statsAdd.clear();
-		_statsMul.clear();
+		_statsAdd.Clear();
+		_statsMul.Clear();
 		_vampiricSum = 0;
 		_mpVampiricSum = 0;
 		
@@ -891,7 +891,7 @@ public class CreatureStat
 			}
 			
 			// Pump for summon ABILITY_CHANGE abnormal type.
-			if (_creature.isSummon() && (_creature.getActingPlayer() != null) && _creature.getActingPlayer().hasAbnormalType(AbnormalType.ABILITY_CHANGE))
+			if (_creature.isSummon() && _creature.getActingPlayer() != null && _creature.getActingPlayer().hasAbnormalType(AbnormalType.ABILITY_CHANGE))
 			{
 				foreach (BuffInfo info in _creature.getActingPlayer().getEffectList().getEffects())
 				{
@@ -944,10 +944,10 @@ public class CreatureStat
 			{
 				statAddResetValue = stat.GetInfo().ResetAddValue;
 				statMulResetValue = stat.GetInfo().ResetMulValue;
-				addsValue = adds.getOrDefault(stat, statAddResetValue);
-				mulsValue = muls.getOrDefault(stat, statMulResetValue);
-				statAddValue = _statsAdd.getOrDefault(stat, statAddResetValue);
-				statMulValue = _statsMul.getOrDefault(stat, statMulResetValue);
+				addsValue = adds.GetValueOrDefault(stat, statAddResetValue);
+				mulsValue = muls.GetValueOrDefault(stat, statMulResetValue);
+				statAddValue = _statsAdd.GetValueOrDefault(stat, statAddResetValue);
+				statMulValue = _statsMul.GetValueOrDefault(stat, statMulResetValue);
 				if (addsValue.Equals(statAddResetValue) || mulsValue.Equals(statMulResetValue) ||
 				    !addsValue.Equals(statAddValue) || !mulsValue.Equals(statMulValue))
 				{
@@ -1020,7 +1020,7 @@ public class CreatureStat
 	public double getSkillEvasionTypeValue(int magicType)
 	{
 		LinkedList<double> skillEvasions = _skillEvasionStat.get(magicType);
-		if ((skillEvasions != null) && !skillEvasions.isEmpty())
+		if (skillEvasions != null && skillEvasions.Count != 0)
 		{
 			return skillEvasions.Last.Value;
 		}
@@ -1038,7 +1038,7 @@ public class CreatureStat
 		_skillEvasionStat.computeIfPresent(magicType, (k, v) =>
 		{
 			v.Remove(value);
-			return !v.isEmpty() ? v : null;
+			return v.Count != 0 ? v : null;
 		});
 	}
 	
@@ -1075,7 +1075,7 @@ public class CreatureStat
 	 */
 	public virtual TimeSpan getReuseTime(Skill skill)
 	{
-		return (skill.isStaticReuse() || skill.isStatic())
+		return skill.isStaticReuse() || skill.isStatic()
 			? skill.getReuseDelay()
 			: skill.getReuseDelay() * getReuseTypeValue(skill.getMagicType());
 	}
@@ -1089,7 +1089,7 @@ public class CreatureStat
 	 */
 	public bool addAdditionalStat(Stat stat, double value, Func<Creature, StatHolder, bool> condition)
 	{
-		_additionalAdd.add(new StatHolder(stat, value, condition));
+		_additionalAdd.Add(new StatHolder(stat, value, condition));
 		return true;
 	}
 	
@@ -1101,7 +1101,7 @@ public class CreatureStat
 	 */
 	public bool addAdditionalStat(Stat stat, double value)
 	{
-		_additionalAdd.add(new StatHolder(stat, value));
+		_additionalAdd.Add(new StatHolder(stat, value));
 		return true;
 	}
 	
@@ -1115,7 +1115,7 @@ public class CreatureStat
 		List<StatHolder> copy = _additionalAdd.ToList();
 		foreach (StatHolder holder in copy)
 		{
-			if ((holder.getStat() == stat) && (holder.getValue() == value))
+			if (holder.getStat() == stat && holder.getValue() == value)
 			{
 				_additionalAdd.Remove(holder);
 				return true;
@@ -1134,7 +1134,7 @@ public class CreatureStat
 	 */
 	public bool mulAdditionalStat(Stat stat, double value, Func<Creature, StatHolder, bool> condition)
 	{
-		_additionalMul.add(new StatHolder(stat, value, condition));
+		_additionalMul.Add(new StatHolder(stat, value, condition));
 		return true;
 	}
 	
@@ -1146,7 +1146,7 @@ public class CreatureStat
 	 */
 	public bool mulAdditionalStat(Stat stat, double value)
 	{
-		_additionalMul.add(new StatHolder(stat, value));
+		_additionalMul.Add(new StatHolder(stat, value));
 		return true;
 	}
 	
@@ -1160,7 +1160,7 @@ public class CreatureStat
 		List<StatHolder> copy = _additionalMul.ToList();
 		foreach (StatHolder holder in copy)
 		{
-			if ((holder.getStat() == stat) && (holder.getValue() == value))
+			if (holder.getStat() == stat && holder.getValue() == value)
 			{
 				_additionalMul.Remove(holder);
 				return true;

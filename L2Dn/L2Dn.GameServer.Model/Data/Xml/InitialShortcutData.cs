@@ -36,16 +36,16 @@ public class InitialShortcutData: DataReaderBase
 	
 	public void load()
 	{
-		_initialShortcutData.clear();
+		_initialShortcutData.Clear();
 		_initialGlobalShortcutList.Clear();
 		
 		XDocument document = LoadXmlDocument(DataFileLocation.Data, "stats/initialShortcuts.xml");
 		document.Elements("list").Elements("shortcuts").ForEach(parseShortcut);
 		document.Elements("list").Elements("macros").Elements("macro").ForEach(parseMacro);
 
-		LOGGER.Info(GetType().Name + ": Loaded " + _initialGlobalShortcutList.size() + " initial global shortcuts data.");
-		LOGGER.Info(GetType().Name + ": Loaded " + _initialShortcutData.size() + " initial shortcuts data.");
-		LOGGER.Info(GetType().Name + ": Loaded " + _macroPresets.size() + " macro presets.");
+		LOGGER.Info(GetType().Name + ": Loaded " + _initialGlobalShortcutList.Count + " initial global shortcuts data.");
+		LOGGER.Info(GetType().Name + ": Loaded " + _initialShortcutData.Count + " initial shortcuts data.");
+		LOGGER.Info(GetType().Name + ": Loaded " + _macroPresets.Count + " macro presets.");
 	}
 	
 	/**
@@ -68,7 +68,7 @@ public class InitialShortcutData: DataReaderBase
 				int shortcutLevel = slotElement.Attribute("shortcutLevel").GetInt32(0);
 				int characterType = slotElement.Attribute("characterType").GetInt32(0);
 				Shortcut shortcut = new Shortcut(slotId, pageId, shortcutType, shortcutId, shortcutLevel, 0, characterType);
-				list.add(shortcut);
+				list.Add(shortcut);
 			});
 		});
 		
@@ -90,9 +90,9 @@ public class InitialShortcutData: DataReaderBase
 
 		int macroId = element.GetAttributeValueAsInt32("macroId");
 		int icon = element.GetAttributeValueAsInt32("icon");
-		String name = element.GetAttributeValueAsString("name");
-		String description = element.GetAttributeValueAsString("description");
-		String acronym = element.GetAttributeValueAsString("acronym");
+		string name = element.GetAttributeValueAsString("name");
+		string description = element.GetAttributeValueAsString("description");
+		string acronym = element.GetAttributeValueAsString("acronym");
 		List<MacroCmd> commands = new();
 		int entry = 0;
 
@@ -140,7 +140,7 @@ public class InitialShortcutData: DataReaderBase
 				}
 			}
 
-			commands.add(new MacroCmd(entry++, type, d1, d2, cmd));
+			commands.Add(new MacroCmd(entry++, type, d1, d2, cmd));
 		});
 
 		_macroPresets.put(macroId, new Macro(macroId, icon, name, description, acronym, commands));
@@ -194,7 +194,7 @@ public class InitialShortcutData: DataReaderBase
 				}
 				case ShortcutType.SKILL:
 				{
-					if (!player.getSkills().containsKey(shortcutId))
+					if (!player.getSkills().ContainsKey(shortcutId))
 					{
 						continue;
 					}
@@ -219,9 +219,9 @@ public class InitialShortcutData: DataReaderBase
 		}
 		
 		// Register class specific shortcuts.
-		if (_initialShortcutData.containsKey(player.getClassId()))
+		if (_initialShortcutData.TryGetValue(player.getClassId(), out List<Shortcut>? shortcuts))
 		{
-			foreach (Shortcut shortcut in _initialShortcutData.get(player.getClassId()))
+			foreach (Shortcut shortcut in shortcuts)
 			{
 				int shortcutId = shortcut.getId();
 				switch (shortcut.getType())
@@ -238,7 +238,7 @@ public class InitialShortcutData: DataReaderBase
 					}
 					case ShortcutType.SKILL:
 					{
-						if (!player.getSkills().containsKey(shortcut.getId()))
+						if (!player.getSkills().ContainsKey(shortcut.getId()))
 						{
 							continue;
 						}

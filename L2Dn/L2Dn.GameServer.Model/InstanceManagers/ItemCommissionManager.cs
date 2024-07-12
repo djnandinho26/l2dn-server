@@ -92,22 +92,22 @@ public class ItemCommissionManager
 		{
 			if (filter(item.getItemInfo().getItem()))
 			{
-				commissionItems.add(item);
-				if (commissionItems.size() >= ITEMS_LIMIT_PER_REQUEST)
+				commissionItems.Add(item);
+				if (commissionItems.Count >= ITEMS_LIMIT_PER_REQUEST)
 				{
 					break;
 				}
 			}
 		}
 		
-		if (commissionItems.isEmpty())
+		if (commissionItems.Count == 0)
 		{
 			player.sendPacket(new ExResponseCommissionListPacket(CommissionListReplyType.ITEM_DOES_NOT_EXIST));
 			return;
 		}
 		
-		int chunks = commissionItems.size() / ExResponseCommissionListPacket.MAX_CHUNK_SIZE;
-		if (commissionItems.size() > (chunks * ExResponseCommissionListPacket.MAX_CHUNK_SIZE))
+		int chunks = commissionItems.Count / ExResponseCommissionListPacket.MAX_CHUNK_SIZE;
+		if (commissionItems.Count > (chunks * ExResponseCommissionListPacket.MAX_CHUNK_SIZE))
 		{
 			chunks++;
 		}
@@ -130,15 +130,15 @@ public class ItemCommissionManager
 		{
 			if (c.getItemInstance().getOwnerId() == player.getObjectId())
 			{
-				commissionItems.add(c);
-				if (commissionItems.size() == MAX_ITEMS_REGISTRED_PER_PLAYER)
+				commissionItems.Add(c);
+				if (commissionItems.Count == MAX_ITEMS_REGISTRED_PER_PLAYER)
 				{
 					break;
 				}
 			}
 		}
 		
-		if (!commissionItems.isEmpty())
+		if (commissionItems.Count != 0)
 		{
 			player.sendPacket(new ExResponseCommissionListPacket(CommissionListReplyType.PLAYER_AUCTIONS, commissionItems));
 		}

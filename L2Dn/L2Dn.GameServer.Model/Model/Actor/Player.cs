@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using L2Dn.Events;
+using L2Dn.Extensions;
 using L2Dn.GameServer.AI;
 using L2Dn.GameServer.Cache;
 using L2Dn.GameServer.CommunityBbs.Managers;
@@ -240,7 +241,7 @@ public class Player: Playable
 	/** Stored from last ValidatePosition **/
 	private Location3D _lastServerPosition;
 	
-	private readonly AtomicBoolean _blinkActive = new AtomicBoolean();
+	private bool _blinkActive;
 	
 	/** The number of recommendation obtained by the Player */
 	private int _recomHave; // how much I was recommended by others
@@ -551,7 +552,7 @@ public class Player: Playable
 	
 	private readonly AutoPlaySettingsHolder _autoPlaySettings = new AutoPlaySettingsHolder();
 	private readonly AutoUseSettingsHolder _autoUseSettings = new AutoUseSettingsHolder();
-	private readonly AtomicBoolean _autoPlaying = new AtomicBoolean();
+	private bool _autoPlaying;
 	private bool _resumedAutoPlay;
 	
 	private ScheduledFuture _timedHuntingZoneTask;
@@ -702,9 +703,9 @@ public class Player: Playable
 		if ((party != null) && (party == target.getParty()))
 		{
 			result |= RelationChangedPacket.RELATION_HAS_PARTY;
-			for (int i = 0; i < party.getMembers().size(); i++)
+			for (int i = 0; i < party.getMembers().Count; i++)
 			{
-				if (party.getMembers().get(i) != this)
+				if (party.getMembers()[i] != this)
 				{
 					continue;
 				}
@@ -1069,7 +1070,7 @@ public class Player: Playable
 	 */
 	public bool hasRecipeList(int recipeId)
 	{
-		return _dwarvenRecipeBook.containsKey(recipeId) || _commonRecipeBook.containsKey(recipeId);
+		return _dwarvenRecipeBook.ContainsKey(recipeId) || _commonRecipeBook.ContainsKey(recipeId);
 	}
 	
 	/**
@@ -1186,7 +1187,7 @@ public class Player: Playable
 	 */
 	public bool hasQuestState(string quest)
 	{
-		return _quests.containsKey(quest);
+		return _quests.ContainsKey(quest);
 	}
 	
 	public bool hasAnyCompletedQuestStates(List<int> questIds)
@@ -1237,7 +1238,7 @@ public class Player: Playable
 				continue;
 			}
 			
-			activeQuests.add(quest);
+			activeQuests.Add(quest);
 		}
 		return activeQuests;
 	}
@@ -1245,7 +1246,7 @@ public class Player: Playable
 	public void processQuestEvent(string questName, string ev)
 	{
 		Quest quest = QuestManager.getInstance().getQuest(questName);
-		if ((quest == null) || (ev == null) || ev.isEmpty())
+		if ((quest == null) || string.IsNullOrEmpty(ev))
 		{
 			return;
 		}
@@ -1511,7 +1512,7 @@ public class Player: Playable
 			}
 			if (hasServitors())
 			{
-				getServitors().values().forEach(s => rc.addRelation(s, getRelation(this), false));
+				getServitors().values().ForEach(s => rc.addRelation(s, getRelation(this), false));
 			}
 			sendPacket(rc);
 		}
@@ -1539,7 +1540,7 @@ public class Player: Playable
 					}
 					if (hasServitors())
 					{
-						getServitors().values().forEach(s => rc.addRelation(s, relation, isAutoAttackable));
+						getServitors().values().ForEach(s => rc.addRelation(s, relation, isAutoAttackable));
 					}
 				}
 				player.sendPacket(rc);
@@ -1905,7 +1906,7 @@ public class Player: Playable
 		else
 		{
 			getEffectList().stopSkillEffects(SkillFinishType.REMOVED, (int)CommonSkill.EINHASAD_OVERSEEING);
-			getServitors().values().forEach(s => s.getEffectList().stopSkillEffects(SkillFinishType.REMOVED, (int)CommonSkill.EINHASAD_OVERSEEING));
+			getServitors().values().ForEach(s => s.getEffectList().stopSkillEffects(SkillFinishType.REMOVED, (int)CommonSkill.EINHASAD_OVERSEEING));
 			if (getPet() != null)
 			{
 				getPet().getEffectList().stopSkillEffects(SkillFinishType.REMOVED, (int)CommonSkill.EINHASAD_OVERSEEING);
@@ -2011,7 +2012,7 @@ public class Player: Playable
 		int oldInvLimit = getInventoryLimit();
 		if (isEquiped)
 		{
-			getDualInventorySet().set(item.getLocationSlot(), 0);
+			getDualInventorySet()[item.getLocationSlot()] = 0;
 			
 			SystemMessagePacket sm;
 			if (item.getEnchantLevel() > 0)
@@ -2072,7 +2073,7 @@ public class Player: Playable
 					events.NotifyAsync(new OnPlayerItemEquip(this, item));
 				}
 				
-				getDualInventorySet().set(item.getLocationSlot(), item.getObjectId());
+				getDualInventorySet()[item.getLocationSlot()] = item.getObjectId();
 			}
 			else
 			{
@@ -2519,7 +2520,7 @@ public class Player: Playable
 			}
 			
 			addSkill(updatedSkill, false);
-			skillsForStore.add(updatedSkill);
+			skillsForStore.Add(updatedSkill);
 			
 			if (Config.AUTO_LEARN_SKILLS)
 			{
@@ -3943,7 +3944,7 @@ public class Player: Playable
 	{
 		// Send user info to the current player
 		UserInfoPacket ui = new UserInfoPacket(this, false);
-		types.forEach(x => ui.addComponentType(x));
+		types.ForEach(x => ui.addComponentType(x));
 		sendPacket(ui);
 		
 		// Broadcast char info to all known players
@@ -3993,7 +3994,7 @@ public class Player: Playable
 								}
 								if (hasServitors())
 								{
-									getServitors().values().forEach(s => rc.addRelation(s, relation, isAutoAttackable));
+									getServitors().values().ForEach(s => rc.addRelation(s, relation, isAutoAttackable));
 								}
 							}
 							player.sendPacket(rc);
@@ -4790,8 +4791,8 @@ public class Player: Playable
 		// Unsummon Cubics
 		if (!_cubics.isEmpty())
 		{
-			_cubics.values().forEach(x => x.deactivate());
-			_cubics.clear();
+			_cubics.values().ForEach(x => x.deactivate());
+			_cubics.Clear();
 		}
 		
 		if (isChannelized())
@@ -4806,7 +4807,7 @@ public class Player: Playable
 		
 		if (hasServitors())
 		{
-			getServitors().values().forEach(servitor =>
+			getServitors().values().ForEach(servitor =>
 			{
 				if (servitor.isBetrayed())
 				{
@@ -4851,8 +4852,8 @@ public class Player: Playable
 		
 		lock (_lastDamageTaken)
 		{
-			_lastDamageTaken.add(new DamageTakenHolder(attacker, skillId, damage));
-			if (_lastDamageTaken.size() > 20)
+			_lastDamageTaken.Add(new DamageTakenHolder(attacker, skillId, damage));
+			if (_lastDamageTaken.Count > 20)
 			{
 				_lastDamageTaken.RemoveAt(0);
 			}
@@ -4944,7 +4945,7 @@ public class Player: Playable
 					if (Rnd.get(100) < itemDropPercent)
 					{
 						this.dropItem("DieDrop", itemDrop, killer, true);
-						droppedItems.add(itemDrop);
+						droppedItems.Add(itemDrop);
 						
 						if (isKarmaDrop)
 						{
@@ -5311,7 +5312,7 @@ public class Player: Playable
 		summons.AddRange(getServitors().values());
 		if (_pet != null)
 		{
-			summons.add(_pet);
+			summons.Add(_pet);
 		}
 		return summons;
 	}
@@ -5826,10 +5827,10 @@ public class Player: Playable
 		broadcastUserInfo();
 		
 		// This can be 0 if the user pressed the right mousebutton twice very fast.
-		if (!unequipped.isEmpty())
+		if (unequipped.Count != 0)
 		{
 			SystemMessagePacket sm;
-			Item unequippedItem = unequipped.get(0);
+			Item unequippedItem = unequipped[0];
 			if (unequippedItem.getEnchantLevel() > 0)
 			{
 				sm = new SystemMessagePacket(SystemMessageId.S1_S2_UNEQUIPPED);
@@ -5863,10 +5864,10 @@ public class Player: Playable
 			broadcastUserInfo();
 			
 			// this can be 0 if the user pressed the right mousebutton twice very fast
-			if (!unequipped.isEmpty())
+			if (unequipped.Count != 0)
 			{
 				SystemMessagePacket sm;
-				Item unequippedItem = unequipped.get(0);
+				Item unequippedItem = unequipped[0];
 				if (unequippedItem.getEnchantLevel() > 0)
 				{
 					sm = new SystemMessagePacket(SystemMessageId.S1_S2_UNEQUIPPED);
@@ -6293,7 +6294,7 @@ public class Player: Playable
 					}
 					if (hasServitors())
 					{
-						getServitors().values().forEach(s => rc.addRelation(s, relation, isAutoAttackable));
+						getServitors().values().ForEach(s => rc.addRelation(s, relation, isAutoAttackable));
 					}
 				}
 				player.sendPacket(rc);
@@ -6891,7 +6892,7 @@ public class Player: Playable
 	            : ctx.CharacterRecipeBooks.Where(r =>
 		            r.CharacterId == characterId && r.ClassIndex == _classIndex && r.Type == 1);
 
-			_dwarvenRecipeBook.clear();
+			_dwarvenRecipeBook.Clear();
 
 			RecipeData rd = RecipeData.getInstance();            
             foreach (var record in query)
@@ -7253,7 +7254,7 @@ public class Player: Playable
 						continue;
 					}
 					
-					storedSkills.add(skill.getReuseHashCode());
+					storedSkills.Add(skill.getReuseHashCode());
 					
 					TimeStamp t = getSkillReuseTimeStamp(skill.getReuseHashCode());
 
@@ -7286,7 +7287,7 @@ public class Player: Playable
 				TimeStamp t = ts.Value;
 				if ((t != null) && (currentTime < t.getStamp()))
 				{
-					storedSkills.add(hash);
+					storedSkills.Add(hash);
 
 					++buffIndex;
 					ctx.CharacterSkillReuses.Add(new CharacterSkillReuse()
@@ -7370,9 +7371,9 @@ public class Player: Playable
 		{
 			getAppearance().setNameColor(Config.OFFLINE_NAME_COLOR);
 		}
-		if (!Config.OFFLINE_PLAY_ABNORMAL_EFFECTS.isEmpty())
+		if (!Config.OFFLINE_PLAY_ABNORMAL_EFFECTS.IsDefaultOrEmpty)
 		{
-			getEffectList().startAbnormalVisualEffect(Config.OFFLINE_PLAY_ABNORMAL_EFFECTS[(Rnd.get(Config.OFFLINE_PLAY_ABNORMAL_EFFECTS.Length))]);
+			getEffectList().startAbnormalVisualEffect(Config.OFFLINE_PLAY_ABNORMAL_EFFECTS.GetRandomElement());
 		}
 		broadcastUserInfo();
 		
@@ -7556,7 +7557,7 @@ public class Player: Playable
 	 */
 	private void storeSkills(List<Skill> newSkills, int newClassIndex)
 	{
-		if (newSkills.isEmpty())
+		if (newSkills.Count == 0)
 		{
 			return;
 		}
@@ -7565,7 +7566,6 @@ public class Player: Playable
 		try
 		{
             int characterId = getObjectId();
-			const string ADD_NEW_SKILLS = "REPLACE INTO character_skills (charId,skill_id,skill_level,skill_sub_level,class_index) VALUES (?,?,?,?,?)";
 			using GameServerDbContext ctx = DbFactory.Instance.CreateDbContext();
 			foreach (Skill addSkill in newSkills)
 			{
@@ -8020,7 +8020,7 @@ public class Player: Playable
 	 */
 	private void recalcHennaStats()
 	{
-		_hennaBaseStats.clear();
+		_hennaBaseStats.Clear();
 		foreach (HennaPoten hennaPoten in _hennaPoten)
 		{
 			Henna henna = hennaPoten.getHenna();
@@ -8185,7 +8185,7 @@ public class Player: Playable
 	 */
 	public int getHennaValue(BaseStat stat)
 	{
-		return _hennaBaseStats.getOrDefault(stat, 0);
+		return _hennaBaseStats.GetValueOrDefault(stat);
 	}
 	
 	public int getAvailableHennaSlots()
@@ -8838,8 +8838,8 @@ public class Player: Playable
 	{
 		if (!_cubics.isEmpty())
 		{
-			_cubics.values().forEach(x => x.deactivate());
-			_cubics.clear();
+			_cubics.values().ForEach(x => x.deactivate());
+			_cubics.Clear();
 		}
 	}
 	
@@ -9216,7 +9216,7 @@ public class Player: Playable
 		
 		if (hasServitors())
 		{
-			getServitors().values().forEach(s => s.unSummon(this));
+			getServitors().values().ForEach(s => s.unSummon(this));
 		}
 		
 		// Remove Hide.
@@ -9224,8 +9224,8 @@ public class Player: Playable
 		
 		if (!_cubics.isEmpty())
 		{
-			_cubics.values().forEach(x => x.deactivate());
-			_cubics.clear();
+			_cubics.values().ForEach(x => x.deactivate());
+			_cubics.Clear();
 			sendPacket(new ExUserInfoCubicPacket(this));
 		}
 		
@@ -9611,11 +9611,11 @@ public class Player: Playable
 	{
 		if (value)
 		{
-			SkillTreeData.getInstance().getNobleSkillAutoGetTree().forEach(skill => addSkill(skill, false));
+			SkillTreeData.getInstance().getNobleSkillAutoGetTree().ForEach(skill => addSkill(skill, false));
 		}
 		else
 		{
-			SkillTreeData.getInstance().getNobleSkillTree().forEach(skill => removeSkill(skill, false, true));
+			SkillTreeData.getInstance().getNobleSkillTree().ForEach(skill => removeSkill(skill, false, true));
 		}
 		_noble = value;
 		sendSkillList();
@@ -9650,7 +9650,7 @@ public class Player: Playable
 		}
 		if (hasServitors())
 		{
-			getServitors().values().forEach(x => x.broadcastStatusUpdate());
+			getServitors().values().ForEach(x => x.broadcastStatusUpdate());
 		}
 	}
 	
@@ -9759,7 +9759,7 @@ public class Player: Playable
 				return false;
 			}
 			
-			if (getSubClasses().containsKey(classIndex))
+			if (getSubClasses().ContainsKey(classIndex))
 			{
 				return false;
 			}
@@ -10074,7 +10074,7 @@ public class Player: Playable
 			
 			if (hasServitors())
 			{
-				getServitors().values().forEach(s => s.unSummon(this));
+				getServitors().values().ForEach(s => s.unSummon(this));
 			}
 			
 			if (classIndex == 0)
@@ -10580,11 +10580,11 @@ public class Player: Playable
 			{
 				sendPacket(SystemMessageId.YOU_ARE_NO_LONGER_PROTECTED_FROM_AGGRESSIVE_MONSTERS);
 			}
-			if (Config.RESTORE_SERVITOR_ON_RECONNECT && !hasSummon() && CharSummonTable.getInstance().getServitors().containsKey(getObjectId()))
+			if (Config.RESTORE_SERVITOR_ON_RECONNECT && !hasSummon() && CharSummonTable.getInstance().getServitors().ContainsKey(getObjectId()))
 			{
 				CharSummonTable.getInstance().restoreServitor(this);
 			}
-			if (Config.RESTORE_PET_ON_RECONNECT && !hasSummon() && CharSummonTable.getInstance().getPets().containsKey(getObjectId()))
+			if (Config.RESTORE_PET_ON_RECONNECT && !hasSummon() && CharSummonTable.getInstance().getPets().ContainsKey(getObjectId()))
 			{
 				CharSummonTable.getInstance().restorePet(this);
 			}
@@ -10662,7 +10662,7 @@ public class Player: Playable
 			sendPacket(new PetSummonInfoPacket(_pet, 0));
 		}
 		
-		getServitors().values().forEach(s =>
+		getServitors().values().ForEach(s =>
 		{
 			s.setFollowStatus(false);
 			s.teleToLocation(Location, false);
@@ -10749,12 +10749,12 @@ public class Player: Playable
 	
 	public void setBlinkActive(bool value)
 	{
-		_blinkActive.set(value);
+		_blinkActive = value;
 	}
 	
 	public bool isBlinkActive()
 	{
-		return _blinkActive.get();
+		return _blinkActive;
 	}
 	
 	[MethodImpl(MethodImplOptions.Synchronized)]
@@ -11215,7 +11215,7 @@ public class Player: Playable
 					}
 				}
 				
-				getServitors().values().forEach(s =>
+				getServitors().values().ForEach(s =>
 				{
 					s.setRestoreSummon(true);
 					s.unSummon(this);
@@ -11646,7 +11646,7 @@ public class Player: Playable
 	 */
 	public int getChargedSouls(SoulType type)
 	{
-		return _souls.getOrDefault(type, 0);
+		return _souls.GetValueOrDefault(type);
 	}
 	
 	/**
@@ -11738,7 +11738,7 @@ public class Player: Playable
 	 */
 	public void clearSouls()
 	{
-		_souls.clear();
+		_souls.Clear();
 		stopSoulTask();
 		sendPacket(new EtcStatusUpdatePacket(this));
 	}
@@ -12116,7 +12116,7 @@ public class Player: Playable
 	
 	public void removeAllTransformSkills()
 	{
-		_transformSkills.clear();
+		_transformSkills.Clear();
 	}
 	
 	/**
@@ -12125,7 +12125,7 @@ public class Player: Playable
 	 */
 	public override Skill getKnownSkill(int skillId)
 	{
-		return !_transformSkills.isEmpty() ? _transformSkills.getOrDefault(skillId, base.getKnownSkill(skillId)) : base.getKnownSkill(skillId);
+		return _transformSkills.GetValueOrDefault(skillId, base.getKnownSkill(skillId));
 	}
 	
 	/**
@@ -12145,7 +12145,7 @@ public class Player: Playable
 					continue;
 				}
 				
-				filteredSkills.add(skill);
+				filteredSkills.Add(skill);
 			}
 			currentSkills = filteredSkills;
 			
@@ -12190,7 +12190,7 @@ public class Player: Playable
 				continue;
 			}
 			
-			finalSkills.add(skill);
+			finalSkills.Add(skill);
 		}
 		return finalSkills;
 	}
@@ -12614,7 +12614,7 @@ public class Player: Playable
 		int id;
 		for (id = 1; id <= _bookmarkslot; ++id)
 		{
-			if (!_tpbookmarks.containsKey(id))
+			if (!_tpbookmarks.ContainsKey(id))
 			{
 				break;
 			}
@@ -12700,7 +12700,7 @@ public class Player: Playable
 			}
 			if (hasServitors())
 			{
-				getServitors().values().forEach(s => rc1.addRelation(s, relation1, !isInsideZone(ZoneId.PEACE) || !isInsideZone(ZoneId.NO_PVP)));
+				getServitors().values().ForEach(s => rc1.addRelation(s, relation1, !isInsideZone(ZoneId.PEACE) || !isInsideZone(ZoneId.NO_PVP)));
 			}
 		}
 		player.sendPacket(rc1);
@@ -12716,7 +12716,7 @@ public class Player: Playable
 			}
 			if (hasServitors())
 			{
-				getServitors().values().forEach(s => rc2.addRelation(s, relation2, !player.isInsideZone(ZoneId.PEACE)));
+				getServitors().values().ForEach(s => rc2.addRelation(s, relation2, !player.isInsideZone(ZoneId.PEACE)));
 			}
 		}
 		sendPacket(rc2);
@@ -13002,7 +13002,7 @@ public class Player: Playable
 		{
 			_silenceModeExcluded = new();
 		}
-		_silenceModeExcluded.add(playerObjId);
+		_silenceModeExcluded.Add(playerObjId);
 	}
 	
 	private void storeRecipeShopList()
@@ -13043,7 +13043,7 @@ public class Player: Playable
 	{
 		if (_manufactureItems != null)
 		{
-			_manufactureItems.clear();
+			_manufactureItems.Clear();
 		}
 		
 		try 
@@ -14107,7 +14107,7 @@ public class Player: Playable
 	public bool hasRequest<T>()
 		where T: AbstractRequest
 	{
-		return _requests.containsKey(typeof(T));
+		return _requests.ContainsKey(typeof(T));
 	}
 	
 	/**
@@ -14397,7 +14397,7 @@ public class Player: Playable
 	{
 		lock (_questTimers)
 		{
-			_questTimers.add(questTimer);
+			_questTimers.Add(questTimer);
 		}
 	}
 	
@@ -14413,7 +14413,7 @@ public class Player: Playable
 	{
 		lock (_timerHolders)
 		{
-			_timerHolders.add(timer);
+			_timerHolders.Add(timer);
 		}
 	}
 	
@@ -14717,7 +14717,7 @@ public class Player: Playable
 				newHolder.setCritDamagePoints(record.CriticalDamagePoints);
 				newHolder.setInUse(record.IsInUse);
                 
-				restoredSpirits.add(newHolder);
+				restoredSpirits.Add(newHolder);
             }
 		}
 		catch (Exception e)
@@ -14725,7 +14725,7 @@ public class Player: Playable
 			LOGGER.Error(e);
 		}
 		
-		if (!restoredSpirits.isEmpty())
+		if (restoredSpirits.Count != 0)
 		{
 			_spirits = new ElementalSpirit[EnumUtil.GetValues<ElementalType>().Length - 1];
 			foreach (ElementalSpiritDataHolder spiritData in restoredSpirits)
@@ -14872,12 +14872,12 @@ public class Player: Playable
 	
 	public void setAutoPlaying(bool value)
 	{
-		_autoPlaying.set(value);
+		_autoPlaying = value;
 	}
 	
 	public bool isAutoPlaying()
 	{
-		return _autoPlaying.get();
+		return _autoPlaying;
 	}
 	
 	public void setResumedAutoPlay(bool value)
@@ -14898,20 +14898,20 @@ public class Player: Playable
 		}
 		
 		List<int> settings = getVariables().getIntegerList(PlayerVariables.AUTO_USE_SETTINGS);
-		if (settings.isEmpty())
+		if (settings.Count == 0)
 		{
 			return;
 		}
 		
-		int options = settings.get(0);
-		bool active = Config.RESUME_AUTO_PLAY && (settings.get(1) == 1);
-		bool pickUp = settings.get(2) == 1;
-		int nextTargetMode = settings.get(3);
-		bool shortRange = settings.get(4) == 1;
-		int potionPercent = settings.get(5);
-		bool respectfulHunting = settings.get(6) == 1;
-		int petPotionPercent = settings.size() < 8 ? 0 : settings.get(7);
-		int macroIndex = settings.size() < 9 ? 0 : settings.get(8);
+		int options = settings[0];
+		bool active = Config.RESUME_AUTO_PLAY && (settings[1] == 1);
+		bool pickUp = settings[2] == 1;
+		int nextTargetMode = settings[3];
+		bool shortRange = settings[4] == 1;
+		int potionPercent = settings[5];
+		bool respectfulHunting = settings[6] == 1;
+		int petPotionPercent = settings.Count < 8 ? 0 : settings[7];
+		int macroIndex = settings.Count < 9 ? 0 : settings[8];
 		
 		getAutoPlaySettings().setAutoPotionPercent(potionPercent);
 		getAutoPlaySettings().setOptions(options);
@@ -15047,7 +15047,7 @@ public class Player: Playable
 					int position = shortcut.getSlot() + (shortcut.getPage() * ShortCuts.MAX_SHORTCUTS_PER_BAR);
 					if (!positions.Contains(position))
 					{
-						positions.add(position);
+						positions.Add(position);
 					}
 				}
 			}
@@ -15231,7 +15231,7 @@ public class Player: Playable
 	
 	public void restorePetEvolvesByItem()
 	{
-		getInventory().getItems().forEach(it =>
+		getInventory().getItems().ForEach(it =>
 		{
 			// TODO: this needs to be optimized
 			
@@ -15422,7 +15422,7 @@ public class Player: Playable
 	
 	public void addCollectionFavorite(int id)
 	{
-		_collectionFavorites.add(id);
+		_collectionFavorites.Add(id);
 	}
 	
 	public void removeCollectionFavorite(int id)
@@ -15500,7 +15500,7 @@ public class Player: Playable
 				int collectionId = record.CollectionId;
 				if (CollectionData.getInstance().getCollection(collectionId) != null)
 				{
-					_collections.add(new PlayerCollectionData(collectionId, record.ItemId, record.Index));
+					_collections.Add(new PlayerCollectionData(collectionId, record.ItemId, record.Index));
 				}
             }
 		}
@@ -15597,7 +15597,7 @@ public class Player: Playable
 	{
 		if (_purgePoints != null)
 		{
-			_purgePoints.clear();
+			_purgePoints.Clear();
 		}
 		
 		try 
@@ -15670,7 +15670,7 @@ public class Player: Playable
 			List<int> list = new(Inventory.PAPERDOLL_TOTALSLOTS);
 			for (int i = 0; i < Inventory.PAPERDOLL_TOTALSLOTS; i++)
 			{
-				list.add(getInventory().getPaperdollObjectId(i));
+				list.Add(getInventory().getPaperdollObjectId(i));
 			}
 			getVariables().setIntegerList(PlayerVariables.DUAL_INVENTORY_SET_A, list);
 			_dualInventorySetA = list;
@@ -15685,7 +15685,7 @@ public class Player: Playable
 			List<int> list = new(Inventory.PAPERDOLL_TOTALSLOTS);
 			for (int i = 0; i < Inventory.PAPERDOLL_TOTALSLOTS; i++)
 			{
-				list.add(0);
+				list.Add(0);
 			}
 			getVariables().setIntegerList(PlayerVariables.DUAL_INVENTORY_SET_B, list);
 			_dualInventorySetB = list;
@@ -15703,7 +15703,7 @@ public class Player: Playable
 		for (int i = 0; i < Inventory.PAPERDOLL_TOTALSLOTS; i++)
 		{
 			int existingObjectId = getInventory().getPaperdollObjectId(i);
-			int itemObjectId = itemObjectIds.get(i);
+			int itemObjectId = itemObjectIds[i];
 			if (existingObjectId != itemObjectId)
 			{
 				changed = true;

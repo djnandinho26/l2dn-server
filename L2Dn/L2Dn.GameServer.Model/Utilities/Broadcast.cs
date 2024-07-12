@@ -77,7 +77,7 @@ public static class Broadcast
 							}
 							if (creature.hasServitors())
 							{
-								creature.getServitors().values().forEach(s => rc.addRelation(s, relation, isAutoAttackable));
+								creature.getServitors().Values.ForEach(s => rc.addRelation(s, relation, isAutoAttackable));
 							}
 						}
 						player.sendPacket(rc);
@@ -181,12 +181,12 @@ public static class Broadcast
 		toAllOnlinePlayers(text, false);
 	}
 	
-	public static void toAllOnlinePlayers(String text, bool isCritical)
+	public static void toAllOnlinePlayers(string text, bool isCritical)
 	{
 		toAllOnlinePlayers(new CreatureSayPacket(null, isCritical ? ChatType.CRITICAL_ANNOUNCE : ChatType.ANNOUNCEMENT, "", text));
 	}
 	
-	public static void toAllOnlinePlayersOnScreen(String text)
+	public static void toAllOnlinePlayersOnScreen(string text)
 	{
 		toAllOnlinePlayers(new ExShowScreenMessagePacket(text, 10000));
 	}

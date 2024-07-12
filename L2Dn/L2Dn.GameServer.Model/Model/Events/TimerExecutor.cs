@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using L2Dn.Extensions;
 using L2Dn.GameServer.Model.Actor;
 using L2Dn.GameServer.Model.Events.Timers;
 using L2Dn.GameServer.Utilities;
@@ -154,7 +155,7 @@ public class TimerExecutor<T>
 				timer.cancelTimer();
 			}
 		}
-		_timers.clear();
+		_timers.Clear();
 	}
 	
 	/**
@@ -194,7 +195,7 @@ public class TimerExecutor<T>
 			return false;
 		}
 		
-		timers.forEach(x => x.cancelTimer());
+		timers.ForEach(x => x.cancelTimer());
 		return true;
 	}
 	
@@ -231,7 +232,7 @@ public class TimerExecutor<T>
 	 */
 	private void removeAndCancelTimers(Predicate<TimerHolder<T>> condition)
 	{
-		Objects.requireNonNull(condition);
+		ArgumentNullException.ThrowIfNull(condition);
 		ICollection<Set<TimerHolder<T>>> allTimers = _timers.values();
 		foreach (Set<TimerHolder<T>> timers in allTimers)
 		{
@@ -241,8 +242,8 @@ public class TimerExecutor<T>
 	
 	private void removeAndCancelTimers(Set<TimerHolder<T>> timers, Predicate<TimerHolder<T>> condition)
 	{
-		Objects.requireNonNull(timers);
-		Objects.requireNonNull(condition);
+		ArgumentNullException.ThrowIfNull(timers);
+		ArgumentNullException.ThrowIfNull(condition);
 
 		List<TimerHolder<T>> oldTimes = timers.ToList();
 		foreach (TimerHolder<T> timer in oldTimes)

@@ -32,14 +32,14 @@ public class PetitionManager
 	public void clearCompletedPetitions()
 	{
 		int numPetitions = _pendingPetitions.size();
-		_completedPetitions.clear();
+		_completedPetitions.Clear();
 		LOGGER.Info(GetType().Name +": Completed petition data cleared. " + numPetitions + " petitions removed.");
 	}
 	
 	public void clearPendingPetitions()
 	{
 		int numPetitions = _pendingPetitions.size();
-		_pendingPetitions.clear();
+		_pendingPetitions.Clear();
 		LOGGER.Info(GetType().Name +": Pending petition queue cleared. " + numPetitions + " petitions removed.");
 	}
 	
@@ -277,17 +277,16 @@ public class PetitionManager
 	
 	private bool isValidPetition(int petitionId)
 	{
-		return _pendingPetitions.containsKey(petitionId);
+		return _pendingPetitions.ContainsKey(petitionId);
 	}
 	
 	public bool rejectPetition(Player respondingAdmin, int petitionId)
 	{
-		if (!isValidPetition(petitionId))
+		if (!_pendingPetitions.TryGetValue(petitionId, out Petition? currPetition))
 		{
 			return false;
 		}
 		
-		Petition currPetition = _pendingPetitions.get(petitionId);
 		if (currPetition.getResponder() != null)
 		{
 			return false;
@@ -297,7 +296,7 @@ public class PetitionManager
 		return (currPetition.endPetitionConsultation(PetitionState.RESPONDER_REJECT));
 	}
 	
-	public bool sendActivePetitionMessage(Player player, String messageText)
+	public bool sendActivePetitionMessage(Player player, string messageText)
 	{
 		// if (!isPlayerInConsultation(player))
 		// return false;
@@ -407,7 +406,7 @@ public class PetitionManager
 		player.sendPacket(htmlMsg);
 	}
 
-	public int submitPetition(Player petitioner, String petitionText, int petitionType)
+	public int submitPetition(Player petitioner, string petitionText, int petitionType)
 	{
 		// Create a new petition instance and add it to the list of pending petitions.
 		Petition newPetition = new Petition(petitioner, petitionText, petitionType);
@@ -415,7 +414,7 @@ public class PetitionManager
 		_pendingPetitions.put(newPetitionId, newPetition);
 		
 		// Notify all GMs that a new petition has been submitted.
-		String msgContent = petitioner.getName() + " has submitted a new petition."; // (ID: " + newPetitionId + ").";
+		string msgContent = petitioner.getName() + " has submitted a new petition."; // (ID: " + newPetitionId + ").";
 		AdminData.getInstance().broadcastToGMs(new CreatureSayPacket(petitioner, ChatType.HERO_VOICE, "Petition System", msgContent));
 		return newPetitionId;
 	}

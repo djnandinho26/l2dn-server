@@ -146,7 +146,7 @@ public class BlockList
 			return;
 		}
 		
-		String charName = CharInfoTable.getInstance().getNameById(targetId);
+		string charName = CharInfoTable.getInstance().getNameById(targetId);
 		if (listOwner.getFriendList().Contains(targetId))
 		{
 			listOwner.sendPacket(SystemMessageId.THIS_PLAYER_IS_ALREADY_REGISTERED_ON_YOUR_FRIENDS_LIST);
@@ -183,7 +183,7 @@ public class BlockList
 		
 		SystemMessagePacket sm;
 		
-		String charName = CharInfoTable.getInstance().getNameById(targetId);
+		string charName = CharInfoTable.getInstance().getNameById(targetId);
 		if (!listOwner.getBlockList().getBlockList().Contains(targetId))
 		{
 			sm = new SystemMessagePacket(SystemMessageId.THAT_IS_AN_INCORRECT_TARGET);
@@ -230,10 +230,12 @@ public class BlockList
 		{
 			return isBlocked(player, targetId);
 		}
-		if (!OFFLINE_LIST.containsKey(ownerId))
+
+		if (!OFFLINE_LIST.TryGetValue(ownerId, out Set<int>? set))
 		{
-			OFFLINE_LIST.put(ownerId, loadList(ownerId));
+			OFFLINE_LIST.put(ownerId, set = loadList(ownerId));
 		}
-		return OFFLINE_LIST.get(ownerId).Contains(targetId);
+
+		return set.Contains(targetId);
 	}
 }

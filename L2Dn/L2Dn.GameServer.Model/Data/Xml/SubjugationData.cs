@@ -28,7 +28,7 @@ public class SubjugationData: DataReaderBase
 		XDocument document = LoadXmlDocument(DataFileLocation.Data, "SubjugationData.xml");
 		document.Elements("list").Elements("purge").ForEach(parseElement);
 		
-		LOGGER.Info(GetType().Name + ": Loaded " + _subjugations.size() + " data.");
+		LOGGER.Info(GetType().Name + ": Loaded " + _subjugations.Count + " data.");
 	}
 
 	private void parseElement(XElement element)
@@ -45,7 +45,7 @@ public class SubjugationData: DataReaderBase
 			npcs.put(npcId, points);
 		});
 
-		_subjugations.add(new SubjugationHolder(category, hottimes, npcs));
+		_subjugations.Add(new SubjugationHolder(category, hottimes, npcs));
 	}
 
 	public SubjugationHolder getSubjugation(int category)

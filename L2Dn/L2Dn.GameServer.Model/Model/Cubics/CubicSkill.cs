@@ -57,7 +57,7 @@ public class CubicSkill: SkillHolder
             return false;
         }
 
-        if (_conditions.isEmpty())
+        if (_conditions.Count == 0)
         {
             return true;
         }
@@ -78,7 +78,7 @@ public class CubicSkill: SkillHolder
         _conditions.Add(condition);
     }
 
-    public override String ToString()
+    public override string ToString()
     {
         return "Cubic skill id: " + getSkillId() + " level: " + getSkillLevel() + " triggerRate: " + _triggerRate +
                " successRate: " + _successRate + " canUseOnStaticObjects: " + _canUseOnStaticObjects + " targetType: " +

@@ -14,9 +14,9 @@ public class Fisherman: Merchant
         setInstanceType(InstanceType.Fisherman);
     }
 
-    public override String getHtmlPath(int npcId, int value, Player player)
+    public override string getHtmlPath(int npcId, int value, Player player)
     {
-        String pom = "";
+        string pom = "";
         if (value == 0)
         {
             pom = npcId.ToString();
@@ -29,7 +29,7 @@ public class Fisherman: Merchant
         return "html/fisherman/" + pom + ".htm";
     }
 
-    public override void onBypassFeedback(Player player, String command)
+    public override void onBypassFeedback(Player player, string command)
     {
         if (command.equalsIgnoreCase("FishSkillList"))
         {
@@ -44,7 +44,7 @@ public class Fisherman: Merchant
     public static void showFishSkillList(Player player)
     {
         List<SkillLearn> skills = SkillTreeData.getInstance().getAvailableFishingSkills(player);
-        if (skills.isEmpty())
+        if (skills.Count == 0)
         {
             int minlLevel = SkillTreeData.getInstance()
                 .getMinLevelForNewSkill(player, SkillTreeData.getInstance().getFishingSkillTree());

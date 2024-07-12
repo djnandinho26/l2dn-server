@@ -24,14 +24,14 @@ namespace L2Dn.GameServer.Model.Quests;
  */
 public class LongTimeEvent: Quest
 {
-	protected String _eventName;
+	protected string _eventName;
 	protected DateRange _eventPeriod = null;
 	protected bool _active = false;
 	protected bool _enableShrines = false;
 	
 	// Messages
-	protected String _onEnterMsg = "";
-	protected String _endMsg = "";
+	protected string _onEnterMsg = "";
+	protected string _endMsg = "";
 	protected int _enterAnnounceId = -1;
 
 	// NPCs to spawn and their spawn points
@@ -130,9 +130,9 @@ public class LongTimeEvent: Quest
 		{
 			// dd MM-dd MM
 			string currentYear = DateTime.Today.Year.ToString();
-			String start = period.Split("-")[0] + " " + currentYear;
-			String end = period.Split("-")[1] + " " + currentYear;
-			String activePeriod = start + "-" + end;
+			string start = period.Split("-")[0] + " " + currentYear;
+			string end = period.Split("-")[1] + " " + currentYear;
+			string activePeriod = start + "-" + end;
 			_eventPeriod = DateRange.parse(activePeriod, "dd MM yyyy");
 		}
 
@@ -159,7 +159,7 @@ public class LongTimeEvent: Quest
 								int minCount = d.GetAttributeValueAsInt32("min");
 								int maxCount = d.GetAttributeValueAsInt32("max");
 								string chance = d.GetAttributeValueAsString("chance");
-								double finalChance = !chance.isEmpty() && chance.endsWith("%")
+								double finalChance = !string.IsNullOrEmpty(chance) && chance.endsWith("%")
 									? double.Parse(chance.Substring(0, chance.Length - 1))
 									: 0;
 								int minLevel = d.Attribute("minLevel")?.GetInt32() ?? 1;
@@ -195,7 +195,7 @@ public class LongTimeEvent: Quest
 									continue;
 								}
 
-								_dropList.add(new EventDropHolder(itemId, minCount, maxCount, finalChance, minLevel,
+								_dropList.Add(new EventDropHolder(itemId, minCount, maxCount, finalChance, minLevel,
 									maxLevel, monsterIds));
 							}
 							catch (FormatException nfe)
@@ -230,7 +230,7 @@ public class LongTimeEvent: Quest
 									continue;
 								}
 
-								_spawnList.add(
+								_spawnList.Add(
 									new NpcSpawn(npcId, new Location(xPos, yPos, zPos, heading), respawnTime));
 							}
 							catch (FormatException nfe)
@@ -248,8 +248,8 @@ public class LongTimeEvent: Quest
 					{
 						if (d.Name.LocalName.equalsIgnoreCase("add"))
 						{
-							String? msgType = d.Attribute("type")?.GetString();
-							String? msgText = d.Attribute("text")?.GetString();
+							string? msgType = d.Attribute("type")?.GetString();
+							string? msgText = d.Attribute("text")?.GetString();
 							if ((msgType != null) && (msgText != null))
 							{
 								if (msgType.equalsIgnoreCase("onEnd"))
@@ -282,7 +282,7 @@ public class LongTimeEvent: Quest
 						continue;
 					}
 
-					_destroyItemsOnEnd.add(itemId);
+					_destroyItemsOnEnd.Add(itemId);
 
 					// Add item deletion info to manager.
 					if (endtime > DateTime.UtcNow)
@@ -323,7 +323,7 @@ public class LongTimeEvent: Quest
 		EventDropManager.getInstance().addDrops(this, _dropList);
 		
 		// Add spawns on server start.
-		if (!_spawnList.isEmpty())
+		if (_spawnList.Count != 0)
 		{
 			GlobalEvents.Global.Subscribe(this, (Action<OnServerStart>)SpawnNpcs);
 		}
@@ -335,7 +335,7 @@ public class LongTimeEvent: Quest
 		}
 		
 		// Event enter announcement.
-		if (!_onEnterMsg.isEmpty())
+		if (!string.IsNullOrEmpty(_onEnterMsg))
 		{
 			// Send message on begin.
 			Broadcast.toAllOnlinePlayers(_onEnterMsg);
@@ -384,7 +384,7 @@ public class LongTimeEvent: Quest
 		destroyItemsOnEnd();
 		
 		// Send message on end.
-		if (!_endMsg.isEmpty())
+		if (!string.IsNullOrEmpty(_endMsg))
 		{
 			Broadcast.toAllOnlinePlayers(_endMsg);
 		}
@@ -398,7 +398,7 @@ public class LongTimeEvent: Quest
 	
 	protected void destroyItemsOnEnd()
 	{
-		if (!_destroyItemsOnEnd.isEmpty())
+		if (_destroyItemsOnEnd.Count != 0)
 		{
 			foreach (int itemId in _destroyItemsOnEnd)
 			{

@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using L2Dn.Extensions;
 using L2Dn.GameServer.Data.Xml;
 using L2Dn.GameServer.Model;
 using L2Dn.GameServer.Model.Actor.Templates;
@@ -35,7 +36,7 @@ public class SpawnTable
 	 */
 	public Set<Spawn> getSpawns(int npcId)
 	{
-		return _spawnTable.getOrDefault(npcId, new());
+		return _spawnTable.GetValueOrDefault(npcId, []);
 	}
 	
 	/**
@@ -325,7 +326,7 @@ public class SpawnTable
 			{
 				_spawnTable.remove(spawn.getId());
 			}
-			set.forEach(x => notifyRemoved(x));
+			set.ForEach(notifyRemoved);
 			return removed;
 		}
 		notifyRemoved(spawn);
@@ -346,7 +347,7 @@ public class SpawnTable
 	 * @param function the function to execute
 	 * @return {@code true} if all procedures were executed, {@code false} otherwise
 	 */
-	public bool forEachSpawn(Func<Spawn, Boolean> function)
+	public bool forEachSpawn(Func<Spawn, bool> function)
 	{
 		foreach (Set<Spawn> set in _spawnTable.values())
 		{

@@ -1,4 +1,5 @@
 using System.Text;
+using L2Dn.Extensions;
 using L2Dn.GameServer.Cache;
 using L2Dn.GameServer.Data.Xml;
 using L2Dn.GameServer.Enums;
@@ -21,8 +22,8 @@ namespace L2Dn.GameServer.Scripts.Handlers.CommunityBoard;
  */
 public class DropSearchBoard: IParseBoardHandler
 {
-	private const String NAVIGATION_PATH = "html/CommunityBoard/Custom/navigation.html";
-	private static readonly String[] COMMAND =
+	private const string NAVIGATION_PATH = "html/CommunityBoard/Custom/navigation.html";
+	private static readonly string[] COMMAND =
 	{
 		"_bbs_search_item",
 		"_bbs_search_drop",
@@ -55,7 +56,7 @@ public class DropSearchBoard: IParseBoardHandler
 		/**
 		 * only for debug
 		 */
-		public override String ToString()
+		public override string ToString()
 		{
 			return "DropHolder [itemId=" + itemId + ", npcId=" + npcId + ", npcLevel=" + npcLevel + ", min=" + min + ", max=" + max + ", chance=" + chance + ", isSpoil=" + isSpoil + "]";
 		}
@@ -73,7 +74,7 @@ public class DropSearchBoard: IParseBoardHandler
 	
 	private void buildDropIndex()
 	{
-		NpcData.getInstance().getTemplates(npc => npc.getDropGroups() != null).forEach(npcTemplate =>
+		NpcData.getInstance().getTemplates(npc => npc.getDropGroups() != null).ForEach(npcTemplate =>
 		{
 			foreach (DropGroupHolder dropGroup in npcTemplate.getDropGroups())
 			{
@@ -86,14 +87,14 @@ public class DropSearchBoard: IParseBoardHandler
                 }
 			}
 		});
-		NpcData.getInstance().getTemplates(npc => npc.getDropList() != null).forEach(npcTemplate =>
+		NpcData.getInstance().getTemplates(npc => npc.getDropList() != null).ForEach(npcTemplate =>
 		{
 			foreach (DropHolder dropHolder in npcTemplate.getDropList())
 			{
 				addToDropList(npcTemplate, dropHolder);
 			}
 		});
-		NpcData.getInstance().getTemplates(npc => npc.getSpoilList() != null).forEach(npcTemplate =>
+		NpcData.getInstance().getTemplates(npc => npc.getSpoilList() != null).ForEach(npcTemplate =>
 		{
 			foreach (DropHolder dropHolder in npcTemplate.getSpoilList())
 			{
@@ -101,7 +102,7 @@ public class DropSearchBoard: IParseBoardHandler
 			}
 		});
 
-        DROP_INDEX_CACHE.values().forEach(l
+        DROP_INDEX_CACHE.Values.ForEach(l
             => l.Sort((d1, d2) => d1.npcLevel.CompareTo(d2.npcLevel)));
     }
 	
@@ -119,22 +120,22 @@ public class DropSearchBoard: IParseBoardHandler
 			DROP_INDEX_CACHE.put(dropHolder.getItemId(), dropList);
 		}
 		
-		dropList.add(new CBDropHolder(npcTemplate, dropHolder));
+		dropList.Add(new CBDropHolder(npcTemplate, dropHolder));
 	}
 	
-	public bool parseCommunityBoardCommand(String command, Player player)
+	public bool parseCommunityBoardCommand(string command, Player player)
     {
-        String? navigation = HtmCache.getInstance().getHtm(NAVIGATION_PATH, player.getLang());
-		String[] @params = command.Split(" ");
-        String? html = HtmCache.getInstance()
+        string? navigation = HtmCache.getInstance().getHtm(NAVIGATION_PATH, player.getLang());
+		string[] @params = command.Split(" ");
+        string? html = HtmCache.getInstance()
             .getHtm("html/CommunityBoard/Custom/dropsearch/main.html", player.getLang());
         
 		switch (@params[0])
 		{
 			case "_bbs_search_item":
 			{
-				String itemName = buildItemName(@params);
-				String result = buildItemSearchResult(itemName);
+				string itemName = buildItemName(@params);
+				string result = buildItemSearchResult(itemName);
 				html = html.Replace("%searchResult%", result);
 				break;
 			}
@@ -143,14 +144,14 @@ public class DropSearchBoard: IParseBoardHandler
 				int itemId = int.Parse(@params[1]);
 				int page = int.Parse(@params[2]);
 				List<CBDropHolder> list = DROP_INDEX_CACHE.get(itemId);
-				int pages = list.size() / 14;
+				int pages = list.Count / 14;
 				if (pages == 0)
 				{
 					pages++;
 				}
 				
 				int start = (page - 1) * 14;
-				int end = Math.Min(list.size() - 1, start + 14);
+				int end = Math.Min(list.Count - 1, start + 14);
 				StringBuilder builder = new StringBuilder();
 				double dropAmountAdenaEffectBonus = player.getStat().getMul(Stat.BONUS_DROP_ADENA, 1);
 				double dropAmountEffectBonus = player.getStat().getMul(Stat.BONUS_DROP_AMOUNT, 1);
@@ -158,7 +159,7 @@ public class DropSearchBoard: IParseBoardHandler
 				double spoilRateEffectBonus = player.getStat().getMul(Stat.BONUS_SPOIL_RATE, 1);
 				for (int index = start; index <= end; index++)
 				{
-					CBDropHolder cbDropHolder = list.get(index);
+					CBDropHolder cbDropHolder = list[index];
 					
 					// real time server rate calculations
 					double rateChance = 1;
@@ -292,13 +293,13 @@ public class DropSearchBoard: IParseBoardHandler
 			{
 				int npcId = int.Parse(@params[1]);
 				List<NpcSpawnTemplate> spawnList = SpawnData.getInstance().getNpcSpawns(npc => npc.getId() == npcId);
-				if (spawnList.isEmpty())
+				if (spawnList.Count == 0)
 				{
 					player.sendMessage("Cannot find any spawn. Maybe dropped by a boss or instance monster.");
 				}
 				else
 				{
-					NpcSpawnTemplate spawn = spawnList.get(Rnd.get(spawnList.size()));
+					NpcSpawnTemplate spawn = spawnList.GetRandomElement();
 					Location? spawnLocation = spawn.getSpawnLocation();
 					if (spawnLocation != null)
 						player.getRadar().addMarker(spawnLocation.Value.X, spawnLocation.Value.Y, spawnLocation.Value.Z);
@@ -320,7 +321,7 @@ public class DropSearchBoard: IParseBoardHandler
 	 * @param itemName
 	 * @return
 	 */
-	private String buildItemSearchResult(String itemName)
+	private string buildItemSearchResult(string itemName)
 	{
 		int limit = 0;
 		List<ItemTemplate> items = new();
@@ -338,7 +339,7 @@ public class DropSearchBoard: IParseBoardHandler
 			
 			if (item.getName().toLowerCase().contains(itemName.toLowerCase()))
 			{
-				items.add(item);
+				items.Add(item);
 				limit++;
 			}
 			
@@ -348,14 +349,14 @@ public class DropSearchBoard: IParseBoardHandler
 			}
 		}
 		
-		if (items.isEmpty())
+		if (items.Count == 0)
 		{
 			return "<tr><td width=100 align=CENTER>No Match</td></tr>";
 		}
 		
 		int line = 0;
 		
-		StringBuilder builder = new StringBuilder(items.size() * 28);
+		StringBuilder builder = new StringBuilder(items.Count * 28);
 		int i = 0;
 		foreach (ItemTemplate item in items)
 		{
@@ -366,7 +367,7 @@ public class DropSearchBoard: IParseBoardHandler
 				builder.Append("<tr>");
 			}
 			
-			String icon = item.getIcon();
+			string icon = item.getIcon();
 			if (icon == null)
 			{
 				icon = "icon.etc_question_mark_i00";
@@ -406,12 +407,12 @@ public class DropSearchBoard: IParseBoardHandler
 	 * @param params
 	 * @return
 	 */
-	private String buildItemName(String[] @params)
+	private string buildItemName(string[] @params)
     {
         return string.Join(" ", @params);
 	}
 	
-	public String[] getCommunityBoardCommands()
+	public string[] getCommunityBoardCommands()
 	{
 		return COMMAND;
 	}

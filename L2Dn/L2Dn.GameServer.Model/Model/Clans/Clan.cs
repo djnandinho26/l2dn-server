@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using L2Dn.Extensions;
 using L2Dn.GameServer.CommunityBbs.Managers;
 using L2Dn.GameServer.Data.Sql;
 using L2Dn.GameServer.Data.Xml;
@@ -820,7 +821,7 @@ public class Clan: IIdentifiable, INamable
 	 */
 	public bool isMember(int id)
 	{
-		return ((id != 0) && _members.containsKey(id));
+		return ((id != 0) && _members.ContainsKey(id));
 	}
 	
 	/**
@@ -1574,7 +1575,7 @@ public class Clan: IIdentifiable, INamable
 	
 	public bool isAtWarWith(int clanId)
 	{
-		return _atWarWith.containsKey(clanId);
+		return _atWarWith.ContainsKey(clanId);
 	}
 	
 	public bool isAtWarWith(Clan clan)
@@ -1583,7 +1584,7 @@ public class Clan: IIdentifiable, INamable
 		{
 			return false;
 		}
-		return _atWarWith.containsKey(clan.getId());
+		return _atWarWith.ContainsKey(clan.getId());
 	}
 	
 	public int getHiredGuards()
@@ -2285,7 +2286,7 @@ public class Clan: IIdentifiable, INamable
 			return false;
 		}
 		
-		if (ClanTable.getInstance().getClanAllies(playerAllyId.Value).size() >= Config.ALT_MAX_NUM_OF_CLANS_IN_ALLY)
+		if (ClanTable.getInstance().getClanAllies(playerAllyId.Value).Count >= Config.ALT_MAX_NUM_OF_CLANS_IN_ALLY)
 		{
 			player.sendPacket(SystemMessageId.YOU_HAVE_EXCEEDED_THE_LIMIT);
 			return false;
@@ -2974,7 +2975,7 @@ public class Clan: IIdentifiable, INamable
 		getVariables().set("PREVIOUS_HUNTING_POINTS", getHuntingPoints());
 		
 		// Reset
-		_members.values().forEach(x => x.resetBonus());
+		_members.Values.ForEach(x => x.resetBonus());
 		getVariables().remove("HUNTING_POINTS");
 		
 		// force store

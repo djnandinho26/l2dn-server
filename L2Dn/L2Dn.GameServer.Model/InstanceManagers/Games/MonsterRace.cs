@@ -34,7 +34,7 @@ public class MonsterRace
 	protected readonly int[] _npcTemplates; // List holding npc templates, shuffled on a new race.
 	protected readonly List<HistoryInfo> _history = new(); // List holding old race records.
 	protected readonly Map<int, long> _betsPerLane = new(); // Map holding all bets for each lane ; values setted to 0 after every race.
-	protected readonly List<Double> _odds = new(); // List holding sorted odds per lane ; cleared at new odds calculation.
+	protected readonly List<double> _odds = new(); // List holding sorted odds per lane ; cleared at new odds calculation.
 	
 	protected int _raceNumber = 1;
 	protected int _finalCountdown = 0;
@@ -283,18 +283,18 @@ public class MonsterRace
 					_race._state = RaceState.RACE_END;
 					
 					// Populate history info with data, stores it in database.
-					HistoryInfo info = _race._history.get(_race._history.size() - 1);
+					HistoryInfo info = _race._history[^1];
 					info.setFirst(_race.getFirstPlace());
 					info.setSecond(_race.getSecondPlace());
-					info.setOddRate(_race._odds.get(_race.getFirstPlace() - 1));
+					info.setOddRate(_race._odds[_race.getFirstPlace() - 1]);
 					
 					_race.saveHistory(info);
 					_race.clearBets();
 					
-					SystemMessagePacket msg = new SystemMessagePacket(SystemMessageId.FIRST_PRIZE_GOES_TO_THE_PLAYER_IN_LANE_S1_SECOND_PRIZE_GOES_TO_THE_PLAYER_IN_LANE_S2);
+					SystemMessagePacket msg = new(SystemMessageId.FIRST_PRIZE_GOES_TO_THE_PLAYER_IN_LANE_S1_SECOND_PRIZE_GOES_TO_THE_PLAYER_IN_LANE_S2);
 					msg.Params.addInt(_race.getFirstPlace());
 					msg.Params.addInt(_race.getSecondPlace());
-					SystemMessagePacket msg2 = new SystemMessagePacket(SystemMessageId.MONSTER_RACE_S1_IS_FINISHED);
+					SystemMessagePacket msg2 = new(SystemMessageId.MONSTER_RACE_S1_IS_FINISHED);
 					msg2.Params.addInt(_race._raceNumber);
 					Broadcast.toAllPlayersInZoneType<DerbyTrackZone>().SendPackets(msg, msg2);
 					_race._raceNumber++;
@@ -319,7 +319,7 @@ public class MonsterRace
 	public void newRace()
 	{
 		// Edit _history.
-		_history.add(new HistoryInfo(_raceNumber, 0, 0, 0));
+		_history.Add(new HistoryInfo(_raceNumber, 0, 0, 0));
 		
 		// Randomize _npcTemplates.
 		Random.Shared.Shuffle(_npcTemplates);
@@ -388,7 +388,7 @@ public class MonsterRace
 			var records = ctx.DerbyHistory;
 			foreach (MonsterDerbyHistory record in records)
 			{
-				_history.add(new HistoryInfo(record.RaceId, record.First, record.Second, record.OddRate));
+				_history.Add(new HistoryInfo(record.RaceId, record.First, record.Second, record.OddRate));
 				_raceNumber++;
 			}
 		}
@@ -397,7 +397,7 @@ public class MonsterRace
 			LOGGER.Error("MonsterRace: Can't load history: " + e);
 		}
 		
-		LOGGER.Info("MonsterRace: loaded " + _history.size() + " records, currently on race #" + _raceNumber);
+		LOGGER.Info("MonsterRace: loaded " + _history.Count + " records, currently on race #" + _raceNumber);
 	}
 	
 	/**
@@ -497,7 +497,7 @@ public class MonsterRace
 	 */
 	public void setBetOnLane(int lane, long amount, bool saveOnDb)
 	{
-		long sum = (_betsPerLane.containsKey(lane)) ? _betsPerLane.get(lane) + amount : amount;
+		long sum = (_betsPerLane.TryGetValue(lane, out long bet)) ? bet + amount : amount;
 		
 		_betsPerLane.put(lane, sum);
 		
@@ -528,7 +528,7 @@ public class MonsterRace
 		// As we get the sum, we can now calculate the odd rate of each lane.
 		foreach (long amount  in sortedLanes.values())
 		{
-			_odds.add((amount == 0) ? 0D : Math.Max(1.25, (sumOfAllLanes * 0.7) / amount));
+			_odds.Add((amount == 0) ? 0D : Math.Max(1.25, (sumOfAllLanes * 0.7) / amount));
 		}
 	}
 	
@@ -572,7 +572,7 @@ public class MonsterRace
 		return _history;
 	}
 	
-	public List<Double> getOdds()
+	public List<double> getOdds()
 	{
 		return _odds;
 	}

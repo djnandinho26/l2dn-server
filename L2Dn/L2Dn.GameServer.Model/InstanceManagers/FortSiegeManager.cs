@@ -1,4 +1,5 @@
 using L2Dn.Configuration;
+using L2Dn.Extensions;
 using L2Dn.GameServer.Data.Xml;
 using L2Dn.GameServer.Db;
 using L2Dn.GameServer.Model;
@@ -233,7 +234,7 @@ public class FortSiegeManager
 			for (int i = 1; i < 5; i++)
 			{
 				string spawnParams = parser.getString(fort.getName().Replace(" ", "") + "Commander" + i);
-				if (spawnParams.isEmpty())
+				if (string.IsNullOrEmpty(spawnParams))
 				{
 					break;
 				}
@@ -247,7 +248,7 @@ public class FortSiegeManager
 					int z = int.Parse(st.nextToken());
 					int heading = int.Parse(st.nextToken());
 					int npcId = int.Parse(st.nextToken());
-					commanderSpawns.add(new FortSiegeSpawn(fort.getResidenceId(), new Location(x, y, z, heading), npcId, i));
+					commanderSpawns.Add(new FortSiegeSpawn(fort.getResidenceId(), new Location(x, y, z, heading), npcId, i));
 				}
 				catch (Exception e)
 				{
@@ -259,8 +260,8 @@ public class FortSiegeManager
 			
 			for (int i = 1; i < 4; i++)
 			{
-				String spawnParams = parser.getString(fort.getName().Replace(" ", "") + "Flag" + i);
-				if (spawnParams.isEmpty())
+				string spawnParams = parser.getString(fort.getName().Replace(" ", "") + "Flag" + i);
+				if (string.IsNullOrEmpty(spawnParams))
 				{
 					break;
 				}
@@ -272,7 +273,7 @@ public class FortSiegeManager
 					int y = int.Parse(st.nextToken());
 					int z = int.Parse(st.nextToken());
 					int flagId = int.Parse(st.nextToken());
-					flagSpawns.add(new CombatFlag(fort.getResidenceId(), x, y, z, 0, flagId));
+					flagSpawns.Add(new CombatFlag(fort.getResidenceId(), x, y, z, 0, flagId));
 				}
 				catch (Exception e)
 				{
@@ -434,7 +435,7 @@ public class FortSiegeManager
 			player.broadcastUserInfo();
 			InventoryUpdatePacket iu = new InventoryUpdatePacket();
 			player.sendInventoryUpdate(iu);
-			SpawnData.getInstance().getSpawns().forEach(spawnTemplate => spawnTemplate.getGroupsByName(flag.getVariables().getString(FortSiege.GREG_SPAWN_VAR, FortSiege.ORC_FORTRESS_GREG_BOTTOM_RIGHT_SPAWN)).forEach(holder =>
+			SpawnData.getInstance().getSpawns().ForEach(spawnTemplate => spawnTemplate.getGroupsByName(flag.getVariables().getString(FortSiege.GREG_SPAWN_VAR, FortSiege.ORC_FORTRESS_GREG_BOTTOM_RIGHT_SPAWN)).ForEach(holder =>
 			{
 				holder.spawnAll();
 				foreach (NpcSpawnTemplate nst in holder.getSpawns())

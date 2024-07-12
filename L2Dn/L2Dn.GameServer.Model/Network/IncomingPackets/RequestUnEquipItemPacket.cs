@@ -65,10 +65,10 @@ public struct RequestUnEquipItemPacket: IIncomingPacket<GameSession>
 		player.broadcastUserInfo();
 		
 		// This can be 0 if the user pressed the right mouse button twice very fast.
-		if (!unequipped.isEmpty())
+		if (unequipped.Count != 0)
 		{
 			SystemMessagePacket sm;
-			Item unequippedItem = unequipped.get(0);
+			Item unequippedItem = unequipped[0];
 			if (unequippedItem.getEnchantLevel() > 0)
 			{
 				sm = new SystemMessagePacket(SystemMessageId.S1_S2_UNEQUIPPED);

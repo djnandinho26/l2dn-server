@@ -18,11 +18,11 @@ public class AdminOnline: IAdminCommandHandler
 		"admin_online"
 	};
 	
-	public bool useAdminCommand(String command, Player activeChar)
+	public bool useAdminCommand(string command, Player activeChar)
 	{
 		if (command.equalsIgnoreCase("admin_online"))
 		{
-			List<String> ips = new();
+			List<string> ips = new();
 			int total = 0;
 			int online = 0;
 			int offline = 0;
@@ -32,10 +32,10 @@ public class AdminOnline: IAdminCommandHandler
 			int combat = 0;
 			foreach (Player player in World.getInstance().getPlayers())
 			{
-				String? ip = player.getClient()?.IpAddress.ToString();
+				string? ip = player.getClient()?.IpAddress.ToString();
 				if ((ip != null) && !ips.Contains(ip))
 				{
-					ips.add(ip);
+					ips.Add(ip);
 				}
 				
 				total++;
@@ -76,7 +76,7 @@ public class AdminOnline: IAdminCommandHandler
 			BuilderUtil.sendSysMessage(activeChar, "Total online: " + online);
 			BuilderUtil.sendSysMessage(activeChar, "Total offline: " + offline);
 			BuilderUtil.sendSysMessage(activeChar, "Max connected: " + World.MAX_CONNECTED_COUNT);
-			BuilderUtil.sendSysMessage(activeChar, "Unique IPs: " + ips.size());
+			BuilderUtil.sendSysMessage(activeChar, "Unique IPs: " + ips.Count);
 			BuilderUtil.sendSysMessage(activeChar, "In peace zone: " + peace);
 			BuilderUtil.sendSysMessage(activeChar, "Not in peace zone: " + notPeace);
 			BuilderUtil.sendSysMessage(activeChar, "In instances: " + instanced);
@@ -85,7 +85,7 @@ public class AdminOnline: IAdminCommandHandler
 		return true;
 	}
 	
-	public String[] getAdminCommandList()
+	public string[] getAdminCommandList()
 	{
 		return ADMIN_COMMANDS;
 	}

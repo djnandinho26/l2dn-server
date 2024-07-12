@@ -130,17 +130,17 @@ public class ClanEntryManager
 	
 	public Map<int, PledgeApplicantInfo> getApplicantListForClan(int clanId)
 	{
-		return _applicantList.getOrDefault(clanId, new());
+		return _applicantList.GetValueOrDefault(clanId, []);
 	}
 	
-	public PledgeApplicantInfo getPlayerApplication(int clanId, int playerId)
+	public PledgeApplicantInfo? getPlayerApplication(int clanId, int playerId)
 	{
-		return _applicantList.getOrDefault(clanId, new()).get(playerId);
+		return _applicantList.GetValueOrDefault(clanId)?.GetValueOrDefault(playerId);
 	}
 	
 	public bool removePlayerApplication(int clanId, int playerId)
 	{
-		Map<int, PledgeApplicantInfo> clanApplicantList = _applicantList.get(clanId);
+		Map<int, PledgeApplicantInfo>? clanApplicantList = _applicantList.GetValueOrDefault(clanId);
 		
 		try 
 		{
@@ -157,7 +157,7 @@ public class ClanEntryManager
 	
 	public bool addPlayerApplicationToClan(int clanId, PledgeApplicantInfo info)
 	{
-		if (!_playerLocked.containsKey(info.getPlayerId()))
+		if (!_playerLocked.ContainsKey(info.getPlayerId()))
 		{
 			_applicantList.computeIfAbsent(clanId, k => new()).put(info.getPlayerId(), info);
 			
@@ -188,7 +188,7 @@ public class ClanEntryManager
 	{
 		foreach (var entry in _applicantList)
 		{
-			if (entry.Value.containsKey(playerId))
+			if (entry.Value.ContainsKey(playerId))
 			{
 				return entry.Key;
 			}
@@ -198,7 +198,7 @@ public class ClanEntryManager
 	
 	public bool addToWaitingList(int playerId, PledgeWaitingInfo info)
 	{
-		if (!_playerLocked.containsKey(playerId))
+		if (!_playerLocked.ContainsKey(playerId))
 		{
 			try
 			{
@@ -224,7 +224,7 @@ public class ClanEntryManager
 	
 	public bool removeFromWaitingList(int playerId)
 	{
-		if (_waitingList.containsKey(playerId))
+		if (_waitingList.ContainsKey(playerId))
 		{
 			try
 			{
@@ -245,7 +245,7 @@ public class ClanEntryManager
 	
 	public bool addToClanList(int clanId, PledgeRecruitInfo info)
 	{
-		if (!_clanList.containsKey(clanId) && !_clanLocked.containsKey(clanId))
+		if (!_clanList.ContainsKey(clanId) && !_clanLocked.ContainsKey(clanId))
 		{
 			try
 			{
@@ -275,7 +275,7 @@ public class ClanEntryManager
 	
 	public bool updateClanList(int clanId, PledgeRecruitInfo info)
 	{
-		if (_clanList.containsKey(clanId) && !_clanLocked.containsKey(clanId))
+		if (_clanList.ContainsKey(clanId) && !_clanLocked.ContainsKey(clanId))
 		{
 			try
 			{
@@ -303,7 +303,7 @@ public class ClanEntryManager
 	
 	public bool removeFromClanList(int clanId)
 	{
-		if (_clanList.containsKey(clanId))
+		if (_clanList.ContainsKey(clanId))
 		{
 			try
 			{
@@ -330,7 +330,7 @@ public class ClanEntryManager
 			// TODO: Handle Role.
 			if ((p.getPlayerLvl() >= levelMin) && (p.getPlayerLvl() <= levelMax))
 			{
-				result.add(p);
+				result.Add(p);
 			}
 		}
 
@@ -362,20 +362,20 @@ public class ClanEntryManager
 		return result;
 	}
 	
-	public List<PledgeWaitingInfo> queryWaitingListByName(String name)
+	public List<PledgeWaitingInfo> queryWaitingListByName(string name)
 	{
 		List<PledgeWaitingInfo> result = new();
 		foreach (PledgeWaitingInfo p in _waitingList.values())
 		{
 			if (p.getPlayerName().toLowerCase().contains(name))
 			{
-				result.add(p);
+				result.Add(p);
 			}
 		}
 		return result;
 	}
 	
-	public List<PledgeRecruitInfo> getSortedClanListByName(String query, int type)
+	public List<PledgeRecruitInfo> getSortedClanListByName(string query, int type)
 	{
 		List<PledgeRecruitInfo> result = new();
 		if (type == 1)
@@ -384,7 +384,7 @@ public class ClanEntryManager
 			{
 				if (p.getClanName().toLowerCase().contains(query))
 				{
-					result.add(p);
+					result.Add(p);
 				}
 			}
 		}
@@ -394,7 +394,7 @@ public class ClanEntryManager
 			{
 				if (p.getClanLeaderName().toLowerCase().contains(query))
 				{
-					result.add(p);
+					result.Add(p);
 				}
 			}
 		}
@@ -424,9 +424,9 @@ public class ClanEntryManager
 	public List<PledgeRecruitInfo> getSortedClanList(int clanLevel, int karma, int sortByValue, bool descending)
 	{
 		List<PledgeRecruitInfo> sortedList = new();
-		for (int i = 0; i < sortedList.size(); i++)
+		for (int i = 0; i < sortedList.Count; i++)
 		{
-			PledgeRecruitInfo currentInfo = sortedList.get(i);
+			PledgeRecruitInfo currentInfo = sortedList[i];
 			if (((clanLevel < 0) && (karma >= 0) && (karma != currentInfo.getKarma())) || ((clanLevel >= 0) && (karma < 0) && (clanLevel != (currentInfo.getClan() != null ? currentInfo.getClanLevel() : 0))) || ((clanLevel >= 0) && (karma >= 0) && ((clanLevel != (currentInfo.getClan() != null ? currentInfo.getClanLevel() : 0)) || (karma != currentInfo.getKarma()))))
 			{
 				sortedList.RemoveAt(i--);

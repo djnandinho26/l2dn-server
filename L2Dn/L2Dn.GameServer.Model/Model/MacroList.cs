@@ -35,7 +35,7 @@ public class MacroList: IRestorable
 		if (macro.getId() == 0)
 		{
 			macro.setId(_macroId++);
-			while (_macroses.containsKey(macro.getId()))
+			while (_macroses.ContainsKey(macro.getId()))
 			{
 				macro.setId(_macroId++);
 			}
@@ -80,7 +80,7 @@ public class MacroList: IRestorable
 		
 		lock (_macroses)
 		{
-			if (allMacros.isEmpty())
+			if (allMacros.Count == 0)
 			{
 				_owner.sendPacket(new SendMacroListPacket(0, null, MacroUpdateType.LIST));
 			}
@@ -147,7 +147,7 @@ public class MacroList: IRestorable
 
 	public bool restoreMe()
 	{
-		_macroses.clear();
+		_macroses.Clear();
 		try
 		{
 			using GameServerDbContext ctx = DbFactory.Instance.CreateDbContext();
@@ -157,9 +157,9 @@ public class MacroList: IRestorable
 			{
 				int id = record.Id;
 				int? icon = record.Icon;
-				String name = record.Name;
-				String descr = record.Description;
-				String acronym = record.Acronym;
+				string name = record.Name;
+				string descr = record.Description;
+				string acronym = record.Acronym;
 				List<MacroCmd> commands = new();
 				StringTokenizer st1 = new StringTokenizer(record.Commands, ";");
 				while (st1.hasMoreTokens())
@@ -173,13 +173,13 @@ public class MacroList: IRestorable
 					MacroType type = (MacroType)int.Parse(st.nextToken());
 					int d1 = int.Parse(st.nextToken());
 					int d2 = int.Parse(st.nextToken());
-					String cmd = "";
+					string cmd = "";
 					if (st.hasMoreTokens())
 					{
 						cmd = st.nextToken();
 					}
 
-					commands.add(new MacroCmd(commands.size(), type, d1, d2, cmd));
+					commands.Add(new MacroCmd(commands.Count, type, d1, d2, cmd));
 				}
 
 				_macroses.put(id, new Macro(id, icon, name, descr, acronym, commands));

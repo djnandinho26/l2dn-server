@@ -1,4 +1,5 @@
-﻿using L2Dn.GameServer.Data;
+﻿using L2Dn.Extensions;
+using L2Dn.GameServer.Data;
 using L2Dn.GameServer.Data.Xml;
 using L2Dn.GameServer.InstanceManagers;
 using L2Dn.GameServer.Model.Actor;
@@ -82,7 +83,7 @@ public class NpcSpawnTemplate: IParameterized<StatSet>
 		int z = npc.Z;
 		if (npc is { XSpecified: true, YSpecified: true, ZSpecified: true })
 		{
-			_locations.add(new ChanceLocation(new Location(x, y, z, npc.Heading), 100));
+			_locations.Add(new ChanceLocation(new Location(x, y, z, npc.Heading), 100));
 		}
 		else
 		{
@@ -131,7 +132,7 @@ public class NpcSpawnTemplate: IParameterized<StatSet>
 	
 	public void addSpawnLocation(ChanceLocation loc)
 	{
-		_locations.add(loc);
+		_locations.Add(loc);
 	}
 	
 	public SpawnTemplate getSpawnTemplate()
@@ -221,7 +222,7 @@ public class NpcSpawnTemplate: IParameterized<StatSet>
 	
 	public void addMinion(MinionHolder minion)
 	{
-		_minions.add(minion);
+		_minions.Add(minion);
 	}
 	
 	public Set<Npc> getSpawnedNpcs()
@@ -251,13 +252,13 @@ public class NpcSpawnTemplate: IParameterized<StatSet>
 			return new Location(loc, -1);
 		}
 
-		if (!_group.getTerritories().isEmpty())
+		if (_group.getTerritories().Count != 0)
 		{
-			SpawnTerritory territory = _group.getTerritories().get(Rnd.get(_group.getTerritories().size()));
+			SpawnTerritory territory = _group.getTerritories().GetRandomElement();
 			for (int i = 0; i < 100; i++)
 			{
 				Location3D loc = territory.getRandomPoint();
-				if (_group.getBannedTerritories().isEmpty())
+				if (_group.getBannedTerritories().Count == 0)
 				{
 					return new Location(loc, -1);
 				}
@@ -278,13 +279,13 @@ public class NpcSpawnTemplate: IParameterized<StatSet>
 				}
 			}
 		}
-		else if (!_spawnTemplate.getTerritories().isEmpty())
+		else if (_spawnTemplate.getTerritories().Count != 0)
 		{
-			SpawnTerritory territory = _spawnTemplate.getTerritories().get(Rnd.get(_spawnTemplate.getTerritories().size()));
+			SpawnTerritory territory = _spawnTemplate.getTerritories().GetRandomElement();
 			for (int i = 0; i < 100; i++)
 			{
 				Location3D loc = territory.getRandomPoint();
-				if (_spawnTemplate.getBannedTerritories().isEmpty())
+				if (_spawnTemplate.getBannedTerritories().Count == 0)
 				{
 					return new Location(loc, -1);
 				}
@@ -419,13 +420,14 @@ public class NpcSpawnTemplate: IParameterized<StatSet>
 	
 	public void despawn()
 	{
-		_spawnedNpcs.forEach(npc =>
+		_spawnedNpcs.ForEach(npc =>
 		{
 			npc.getSpawn().stopRespawn();
 			SpawnTable.getInstance().deleteSpawn(npc.getSpawn(), false);
 			npc.deleteMe();
 		});
-		_spawnedNpcs.clear();
+
+		_spawnedNpcs.Clear();
 	}
 	
 	public void notifySpawnNpc(Npc npc)

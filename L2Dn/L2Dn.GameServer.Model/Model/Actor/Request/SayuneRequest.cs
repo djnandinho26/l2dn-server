@@ -14,11 +14,11 @@ public class SayuneRequest : AbstractRequest
 
 	public SayuneRequest(Player player, int mapId): base(player)
 	{
-		_mapId = mapId;
-		
-		SayuneEntry map = SayuneData.getInstance().getMap(_mapId);
-		Objects.requireNonNull(map);
+		SayuneEntry? map = SayuneData.getInstance().getMap(mapId);
+		if (map is null)
+			throw new ArgumentException("Invalid mapId", nameof(mapId));
 
+		_mapId = mapId;
 		foreach (SayuneEntry entry in map.getInnerEntries())
 			_possibleEntries.Enqueue(entry);
 	}
@@ -56,7 +56,7 @@ public class SayuneRequest : AbstractRequest
 	public void move(Player player, int pos)
 	{
 		SayuneEntry map = SayuneData.getInstance().getMap(_mapId);
-		if (map == null || map.getInnerEntries().isEmpty())
+		if (map == null || map.getInnerEntries().Count == 0)
 		{
 			player.sendMessage("MapId: " + _mapId + " was not found in the map!");
 			return;
@@ -98,7 +98,7 @@ public class SayuneRequest : AbstractRequest
 		
 		player.sendPacket(new ExFlyMovePacket(player, type, _mapId, locations));
 		
-		SayuneEntry activeEntry = locations.get(0);
+		SayuneEntry activeEntry = locations[0];
 		Broadcast.toKnownPlayersInRadius(player, new ExFlyMoveBroadcastPacket(player, type, map.getId(), activeEntry.Location), 1000);
 		player.setXYZ(activeEntry.Location.X, activeEntry.Location.Y, activeEntry.Location.Z);
 	}
@@ -106,7 +106,7 @@ public class SayuneRequest : AbstractRequest
 	public void onLogout()
 	{
 		SayuneEntry map = SayuneData.getInstance().getMap(_mapId);
-		if (map != null && !map.getInnerEntries().isEmpty())
+		if (map != null && map.getInnerEntries().Count != 0)
 		{
 			SayuneEntry nextEntry = findEntry(0);
 			if (_isSelecting || (nextEntry != null && nextEntry.isSelector()))
@@ -117,7 +117,7 @@ public class SayuneRequest : AbstractRequest
 			else
 			{
 				// Try to find last entry to set player, if not set him to first entry
-				SayuneEntry lastEntry = map.getInnerEntries().get(map.getInnerEntries().size() - 1);
+				SayuneEntry lastEntry = map.getInnerEntries()[^1];
 				if (lastEntry != null)
 				{
 					getActiveChar().setXYZ(lastEntry.Location.X, lastEntry.Location.Y, lastEntry.Location.Z);

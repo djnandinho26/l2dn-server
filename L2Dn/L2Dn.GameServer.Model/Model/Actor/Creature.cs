@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using L2Dn.Events;
+using L2Dn.Extensions;
 using L2Dn.GameServer.AI;
 using L2Dn.GameServer.Cache;
 using L2Dn.GameServer.Data.Xml;
@@ -1453,7 +1454,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IEventContainerProvi
 	 */
 	public void resetTimeStamps()
 	{
-		_reuseTimeStampsSkills.clear();
+		_reuseTimeStampsSkills.Clear();
 	}
 	
 	/**
@@ -1532,7 +1533,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IEventContainerProvi
 	 */
 	public void resetDisabledSkills()
 	{
-		_disabledSkills.clear();
+		_disabledSkills.Clear();
 	}
 	
 	/**
@@ -2112,7 +2113,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IEventContainerProvi
 	
 	public bool hasServitor(int objectId)
 	{
-		return getServitors().containsKey(objectId);
+		return getServitors().ContainsKey(objectId);
 	}
 	
 	/**
@@ -2352,7 +2353,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IEventContainerProvi
 			string t2 = "";
 			if (Config.SHOW_NPC_AGGRESSION)
 			{
-				if (!t1.isEmpty())
+				if (!string.IsNullOrEmpty(t1))
 				{
 					t2 += " ";
 				}
@@ -2367,7 +2368,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IEventContainerProvi
 				}
 			}
 			t1 += t2;
-			if (_title != null && !_title.isEmpty())
+			if (!string.IsNullOrEmpty(_title))
 			{
 				t1 += " " + _title;
 			}
@@ -2830,7 +2831,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IEventContainerProvi
 					
 					if (hasServitors() && hasAbnormalType(AbnormalType.ABILITY_CHANGE))
 					{
-						getServitors().values().forEach(x => x.broadcastStatusUpdate());
+						getServitors().Values.ForEach(x => x.broadcastStatusUpdate());
 					}
 				}
 				else if (isNpc())
@@ -2942,7 +2943,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IEventContainerProvi
 			return false;
 		}
 		
-		if (move.onGeodataPathIndex == (move.geoPath.size() - 1))
+		if (move.onGeodataPathIndex == (move.geoPath.Count - 1))
 		{
 			return false;
 		}
@@ -2977,12 +2978,12 @@ public abstract class Creature: WorldObject, ISkillsHolder, IEventContainerProvi
 	
 	public bool isCastingNow(SkillCastingType skillCastingType)
 	{
-		return _skillCasters.containsKey(skillCastingType);
+		return _skillCasters.ContainsKey(skillCastingType);
 	}
 	
 	public bool isCastingNow(Predicate<SkillCaster> filter)
 	{
-		foreach (SkillCaster skillCaster in _skillCasters.values())
+		foreach (SkillCaster skillCaster in _skillCasters.Values)
 		{
 			if (filter(skillCaster))
 			{
@@ -3132,7 +3133,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IEventContainerProvi
 			else // Mouse click movement.
 			{
 				// Stop movement when player has clicked far away and intersected with an obstacle.
-				double distance = MathUtil.hypot(dx, dy);
+				double distance = double.Hypot(dx, dy);
 				if (distance > 3000)
 				{
 					double angle = HeadingUtil.ConvertHeadingToDegrees(getHeading());
@@ -3183,8 +3184,8 @@ public abstract class Creature: WorldObject, ISkillsHolder, IEventContainerProvi
 						WorldRegion region = getWorldRegion();
 						if (region != null)
 						{
-							bool hasDoors = !region.getDoors().isEmpty();
-							bool hasFences = !region.getFences().isEmpty();
+							bool hasDoors = region.getDoors().Count != 0;
+							bool hasFences = region.getFences().Count != 0;
 							if (hasDoors || hasFences)
 							{
 								double angle = HeadingUtil.ConvertHeadingToDegrees(getHeading());
@@ -3588,7 +3589,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IEventContainerProvi
 						{
 							for (int sY = yMin; sY < yMax; sY += 500)
 							{
-								double tempDistance = MathUtil.hypot(sX - originalLoc.X, sY - originalLoc.Y);
+								double tempDistance = double.Hypot(sX - originalLoc.X, sY - originalLoc.Y);
 								if (tempDistance < shortDistance)
 								{
 									List<AbstractNodeLoc> tempPath = PathFinding.getInstance().findPath(curLoc, new Location3D(sX, sY, originalLoc.Z), getInstanceWorld(), false);
@@ -3664,7 +3665,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IEventContainerProvi
 		// Apply Z distance for flying or swimming for correct timing calculations
 		if ((_isFlying || isInWater) && !verticalMovementOnly)
 		{
-			distance = MathUtil.hypot(distance, dLoc.Z);
+			distance = double.Hypot(distance, dLoc.Z);
 		}
 		
 		// Calculate the number of ticks between the current position and the destination.
@@ -3736,8 +3737,8 @@ public abstract class Creature: WorldObject, ISkillsHolder, IEventContainerProvi
 		m.geoPathGty = md.geoPathGty;
 		m.geoPathAccurateTx = md.geoPathAccurateTx;
 		m.geoPathAccurateTy = md.geoPathAccurateTy;
-		Location3D geoNodeLocation = md.geoPath.get(m.onGeodataPathIndex).Location;
-		if (md.onGeodataPathIndex == md.geoPath.size() - 2)
+		Location3D geoNodeLocation = md.geoPath[m.onGeodataPathIndex].Location;
+		if (md.onGeodataPathIndex == md.geoPath.Count - 2)
 		{
 			m.xDestination = md.geoPathAccurateTx;
 			m.yDestination = md.geoPathAccurateTy;
@@ -3751,7 +3752,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IEventContainerProvi
 		}
 		
 		// Calculate and set the heading of the Creature.
-		double distance = MathUtil.hypot(m.xDestination - curX, m.yDestination - curY);
+		double distance = double.Hypot(m.xDestination - curX, m.yDestination - curY);
 		if (distance != 0)
 		{
 			setHeading(new Location2D(curX, curY).HeadingTo(new Location2D(m.xDestination, m.yDestination)));
@@ -3925,7 +3926,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IEventContainerProvi
 		CreatureAttackTaskManager.getInstance().onSecondHitTimeForDual(this, weapon, attack, hitTime, attackTime, delayForSecondAttack);
 		
 		// First dual attack is the first hit only.
-		Hit hit = attack.getHits().get(0);
+		Hit hit = attack.getHits()[0];
 		Creature target = (Creature) hit.getTarget();
 		if (target == null || target.isDead() || !isInSurroundingRegion(target))
 		{
@@ -3952,9 +3953,9 @@ public abstract class Creature: WorldObject, ISkillsHolder, IEventContainerProvi
 		}
 		
 		// Second dual attack is the remaining hits (first hit not included)
-		for (int i = 1; i < attack.getHits().size(); i++)
+		for (int i = 1; i < attack.getHits().Count; i++)
 		{
-			Hit hit = attack.getHits().get(i);
+			Hit hit = attack.getHits()[i];
 			Creature target = (Creature) hit.getTarget();
 			if (target == null || target.isDead() || !isInSurroundingRegion(target))
 			{
@@ -5344,7 +5345,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IEventContainerProvi
 	{
 		if (_summonedNpcs != null)
 		{
-			_summonedNpcs.clear();
+			_summonedNpcs.Clear();
 		}
 	}
 	
@@ -5382,7 +5383,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IEventContainerProvi
 		{
 			if (filter(skillCaster))
 			{
-				result.add(skillCaster);
+				result.Add(skillCaster);
 			}
 		}
 		return result;
@@ -5574,7 +5575,7 @@ public abstract class Creature: WorldObject, ISkillsHolder, IEventContainerProvi
 	
 	public bool isBlockedActionsAllowedSkill(Skill skill)
 	{
-		return _blockActionsAllowedSkills.containsKey(skill.getId());
+		return _blockActionsAllowedSkills.ContainsKey(skill.getId());
 	}
 	
 	protected void initSeenCreatures()

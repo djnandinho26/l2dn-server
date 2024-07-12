@@ -31,8 +31,8 @@ public class Olympiad
 	private static readonly Map<int, NobleData> NOBLES = new();
 	private static readonly Map<int, int> NOBLES_RANK = new();
 	
-	public const String OLYMPIAD_HTML_PATH = "html/olympiad/";
-	public const String UNCLAIMED_OLYMPIAD_POINTS_VAR = "UNCLAIMED_OLYMPIAD_POINTS";
+	public const string OLYMPIAD_HTML_PATH = "html/olympiad/";
+	public const string UNCLAIMED_OLYMPIAD_POINTS_VAR = "UNCLAIMED_OLYMPIAD_POINTS";
 	
 	private static readonly FrozenSet<int> HERO_IDS = CategoryData.getInstance().getCategoryByType(CategoryType.FOURTH_CLASS_GROUP);
 	
@@ -45,15 +45,15 @@ public class Olympiad
 	public static readonly int DEFAULT_POINTS = Config.ALT_OLY_START_POINTS;
 	protected static readonly int WEEKLY_POINTS = Config.ALT_OLY_WEEKLY_POINTS;
 	
-	public const String CHAR_ID = "charId";
-	public const String CLASS_ID = "class_id";
-	public const String CHAR_NAME = "char_name";
-	public const String POINTS = "olympiad_points";
-	public const String COMP_DONE = "competitions_done";
-	public const String COMP_WON = "competitions_won";
-	public const String COMP_LOST = "competitions_lost";
-	public const String COMP_DRAWN = "competitions_drawn";
-	public const String COMP_DONE_WEEK = "competitions_done_week";
+	public const string CHAR_ID = "charId";
+	public const string CLASS_ID = "class_id";
+	public const string CHAR_NAME = "char_name";
+	public const string POINTS = "olympiad_points";
+	public const string COMP_DONE = "competitions_done";
+	public const string COMP_WON = "competitions_won";
+	public const string COMP_LOST = "competitions_lost";
+	public const string COMP_DRAWN = "competitions_drawn";
+	public const string COMP_DONE_WEEK = "competitions_done_week";
 	
 	protected DateTime _olympiadEnd;
 	protected DateTime _validationEnd;
@@ -102,7 +102,7 @@ public class Olympiad
 	
 	private void load()
 	{
-		NOBLES.clear();
+		NOBLES.Clear();
 		
 		bool loaded = false;
 		try 
@@ -257,12 +257,12 @@ public class Olympiad
 	
 	public int getOlympiadRank(Player player)
 	{
-		return NOBLES_RANK.getOrDefault(player.getObjectId(), 0);
+		return NOBLES_RANK.GetValueOrDefault(player.getObjectId(), 0);
 	}
 	
 	public void loadNoblesRank()
 	{
-		NOBLES_RANK.clear();
+		NOBLES_RANK.Clear();
 		Map<int, int> tmpPlace = new();
 		try 
 		{
@@ -975,7 +975,7 @@ public class Olympiad
 					hero.set("LEGEND", charId == legendId ? 1 : 0);
 						
 					LOGGER_OLYMPIAD.Info("Hero " + query.Name + "," + charId + "," + heroClass);
-					heroesToBe.add(hero);
+					heroesToBe.Add(hero);
 				}
 			}
 		}
@@ -987,9 +987,9 @@ public class Olympiad
 		return heroesToBe;
 	}
 	
-	public List<String> getClassLeaderBoard(CharacterClass classId)
+	public List<string> getClassLeaderBoard(CharacterClass classId)
 	{
-		List<String> names = new();
+		List<string> names = new();
 		try 
 		{
 			using GameServerDbContext ctx = DbFactory.Instance.CreateDbContext();
@@ -1014,7 +1014,7 @@ public class Olympiad
 
 			foreach (string name in query.Take(10))
 			{
-				names.add(name);
+				names.Add(name);
 			}
 		}
 		catch (Exception e)
@@ -1031,7 +1031,7 @@ public class Olympiad
 			return 0;
 		}
 		
-		if (!NOBLES_RANK.containsKey(objectId))
+		if (!NOBLES_RANK.TryGetValue(objectId, out int nobleRank))
 		{
 			return 0;
 		}
@@ -1045,7 +1045,7 @@ public class Olympiad
 		// Hero point bonus
 		int points = Hero.getInstance().isHero(objectId) || Hero.getInstance().isUnclaimedHero(objectId) ? Config.ALT_OLY_HERO_POINTS : 0;
 		// Rank point bonus
-		switch (NOBLES_RANK.get(objectId))
+		switch (nobleRank)
 		{
 			case 1:
 			{
@@ -1085,7 +1085,7 @@ public class Olympiad
 	
 	public int getNoblePoints(Player player)
 	{
-		if (!NOBLES.containsKey(player.getObjectId()))
+		if (!NOBLES.ContainsKey(player.getObjectId()))
 		{
 			NobleData nobleData = new NobleData()
 			{
@@ -1124,29 +1124,17 @@ public class Olympiad
 	
 	public int getCompetitionDone(int objId)
 	{
-		if (!NOBLES.containsKey(objId))
-		{
-			return 0;
-		}
-		return NOBLES.get(objId).CompetitionsDone;
+		return !NOBLES.TryGetValue(objId, out NobleData? nobleData) ? 0 : nobleData.CompetitionsDone;
 	}
 	
 	public int getCompetitionWon(int objId)
 	{
-		if (!NOBLES.containsKey(objId))
-		{
-			return 0;
-		}
-		return NOBLES.get(objId).CompetitionsWon;
+		return !NOBLES.TryGetValue(objId, out NobleData? nobleData) ? 0 : nobleData.CompetitionsWon;
 	}
 	
 	public int getCompetitionLost(int objId)
 	{
-		if (!NOBLES.containsKey(objId))
-		{
-			return 0;
-		}
-		return NOBLES.get(objId).CompetitionsLost;
+		return !NOBLES.TryGetValue(objId, out NobleData? nobleData) ? 0 : nobleData.CompetitionsLost;
 	}
 	
 	/**
@@ -1156,11 +1144,7 @@ public class Olympiad
 	 */
 	public int getCompetitionDoneWeek(int objId)
 	{
-		if (!NOBLES.containsKey(objId))
-		{
-			return 0;
-		}
-		return NOBLES.get(objId).CompetitionsDoneWeek;
+		return !NOBLES.TryGetValue(objId, out NobleData? nobleData) ? 0 : nobleData.CompetitionsDoneWeek;
 	}
 	
 	/**
@@ -1184,7 +1168,7 @@ public class Olympiad
 		{
 			LOGGER.Warn("Olympiad System: Couldn't delete nobles from DB!");
 		}
-		NOBLES.clear();
+		NOBLES.Clear();
 	}
 	
 	/**

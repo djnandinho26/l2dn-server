@@ -35,7 +35,7 @@ public class EffectZone : ZoneType
 		_removeEffectsOnExit = false;
 	}
 	
-	public override void setParameter(String name, String value)
+	public override void setParameter(string name, string value)
 	{
 		switch (name)
 		{
@@ -71,13 +71,13 @@ public class EffectZone : ZoneType
 			}
 			case "skillIdLvl":
 			{
-				String[] propertySplit =
+				string[] propertySplit =
 					(value.EndsWith(';') ? value[..^1] : value).Split(";");
 				
 				_skills = new();
-				foreach (String skill in propertySplit)
+				foreach (string skill in propertySplit)
 				{
-					String[] skillSplit = skill.Split("-");
+					string[] skillSplit = skill.Split("-");
 					if (skillSplit.Length != 2)
 					{
 						LOGGER.Warn(GetType().Name + ": invalid config property -> skillsIdLvl \"" + skill + "\"");
@@ -90,7 +90,7 @@ public class EffectZone : ZoneType
 						}
 						catch (Exception nfe)
 						{
-							if (!skill.isEmpty())
+							if (!string.IsNullOrEmpty(skill))
 							{
 								LOGGER.Warn(GetType().Name + ": invalid config property -> skillsIdLvl \"" +
 								            skillSplit[0] + "\"" + skillSplit[1] + ": " + nfe);
@@ -155,12 +155,12 @@ public class EffectZone : ZoneType
 					creature.sendPacket(new EtcStatusUpdatePacket(creature.getActingPlayer()));
 				}
 			}
-			if (_removeEffectsOnExit && (_skills != null))
+			if (_removeEffectsOnExit && _skills != null)
 			{
 				foreach (var e in _skills)
 				{
 					Skill skill = SkillData.getInstance().getSkill(e.Key, e.Value);
-					if ((skill != null) && creature.isAffectedBySkill(skill.getId()))
+					if (skill != null && creature.isAffectedBySkill(skill.getId()))
 					{
 						creature.stopSkillEffects(SkillFinishType.REMOVED, skill.getId());
 					}
@@ -168,7 +168,7 @@ public class EffectZone : ZoneType
 			}
 		}
 		
-		if (getCharactersInside().isEmpty() && (_task != null))
+		if (getCharactersInside().Count == 0 && _task != null)
 		{
 			_task.cancel(true);
 			_task = null;
@@ -213,17 +213,17 @@ public class EffectZone : ZoneType
 	{
 		if (_skills != null)
 		{
-			_skills.clear();
+			_skills.Clear();
 		}
 	}
 	
 	public int getSkillLevel(int skillId)
 	{
-		if ((_skills == null) || !_skills.containsKey(skillId))
+		if (_skills == null || !_skills.TryGetValue(skillId, out int level))
 		{
 			return 0;
 		}
-		return _skills.get(skillId);
+		return level;
 	}
 	
 	private class ApplySkill: Runnable
@@ -246,7 +246,7 @@ public class EffectZone : ZoneType
 				return;
 			}
 			
-			if (_effectZone.getCharactersInside().isEmpty())
+			if (_effectZone.getCharactersInside().Count == 0)
 			{
 				if (_effectZone._task != null)
 				{
@@ -258,12 +258,12 @@ public class EffectZone : ZoneType
 			
 			foreach (Creature character in _effectZone.getCharactersInside())
 			{
-				if ((character != null) && character.isPlayer() && !character.isDead() && (Rnd.get(100) < _effectZone._chance))
+				if (character != null && character.isPlayer() && !character.isDead() && Rnd.get(100) < _effectZone._chance)
 				{
 					foreach (var e in _effectZone._skills)
 					{
 						Skill skill = SkillData.getInstance().getSkill(e.Key, e.Value);
-						if ((skill != null) && (_effectZone._bypassConditions || skill.checkCondition(character, character, false)))
+						if (skill != null && (_effectZone._bypassConditions || skill.checkCondition(character, character, false)))
 						{
 							if (character.getAffectedSkillLevel(skill.getId()) < skill.getLevel())
 							{

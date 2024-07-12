@@ -35,11 +35,11 @@ public class ItemCrystallizationData: DataReaderBase
 	
 	public void load()
 	{
-		_crystallizationTemplates.clear();
+		_crystallizationTemplates.Clear();
 		foreach (CrystalType crystalType in EnumUtil.GetValues<CrystalType>())
 			_crystallizationTemplates.put(crystalType, new());
 		
-		_items.clear();
+		_items.Clear();
 		
 		_weaponDestroyGroup = new RewardItemsOnFailure();
 		_armorDestroyGroup = new RewardItemsOnFailure();
@@ -87,7 +87,7 @@ public class ItemCrystallizationData: DataReaderBase
 			int itemId = el.GetAttributeValueAsInt32("id");
 			long itemCount = el.GetAttributeValueAsInt64("count");
 			double itemChance = el.GetAttributeValueAsDouble("chance");
-			crystallizeRewards.add(new ItemChanceHolder(itemId, itemChance, itemCount));
+			crystallizeRewards.Add(new ItemChanceHolder(itemId, itemChance, itemCount));
 		});
 
 		_crystallizationTemplates.get(crystalType).put(crystallizationType, crystallizeRewards);
@@ -103,7 +103,7 @@ public class ItemCrystallizationData: DataReaderBase
 			int itemId = el.GetAttributeValueAsInt32("id");
 			long itemCount = el.GetAttributeValueAsInt64("count");
 			double itemChance = el.GetAttributeValueAsDouble("chance");
-			crystallizeRewards.add(new ItemChanceHolder(itemId, itemChance, itemCount));
+			crystallizeRewards.Add(new ItemChanceHolder(itemId, itemChance, itemCount));
 		});
 
 		_items.put(id, new CrystallizationDataHolder(id, crystallizeRewards));
@@ -133,7 +133,7 @@ public class ItemCrystallizationData: DataReaderBase
 				count = (long)(count * countMul);
 			}
 			
-			rewards.add(new ItemChanceHolder(reward.getId(), chance, count));
+			rewards.Add(new ItemChanceHolder(reward.getId(), chance, count));
 		}
 		
 		return rewards;
@@ -145,7 +145,7 @@ public class ItemCrystallizationData: DataReaderBase
 		foreach (ItemTemplate item in ItemData.getInstance().getAllItems())
 		{
 			// Check if the data has not been generated.
-			if (((item is Weapon) || (item is Armor)) && item.isCrystallizable() && !_items.containsKey(item.getId()))
+			if (((item is Weapon) || (item is Armor)) && item.isCrystallizable() && !_items.ContainsKey(item.getId()))
 			{
 				List<ItemChanceHolder> holder = _crystallizationTemplates.get(item.getCrystalType()).get((item is Weapon) ? CrystallizationType.WEAPON : CrystallizationType.ARMOR);
 				if (holder != null)
@@ -201,7 +201,7 @@ public class ItemCrystallizationData: DataReaderBase
 			}
 			if (!found)
 			{
-				result.add(new ItemChanceHolder(crystalItemId, 100, item.getCrystalCount()));
+				result.Add(new ItemChanceHolder(crystalItemId, 100, item.getCrystalCount()));
 			}
 			
 			result.AddRange(items);
@@ -209,7 +209,7 @@ public class ItemCrystallizationData: DataReaderBase
 		else
 		{
 			// Add basic crystal reward.
-			result.add(new ItemChanceHolder(crystalItemId, 100, item.getCrystalCount()));
+			result.Add(new ItemChanceHolder(crystalItemId, 100, item.getCrystalCount()));
 		}
 		
 		return result;

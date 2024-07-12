@@ -91,7 +91,7 @@ public class SpawnTemplate: ITerritorized, IParameterized<StatSet>
 		{
 			if (group.getName() != null && group.getName().equalsIgnoreCase(name))
 			{
-				result.add(group);
+				result.Add(group);
 			}
 		}
 		return result;
@@ -147,7 +147,7 @@ public class SpawnTemplate: ITerritorized, IParameterized<StatSet>
 	
 	public void spawnAllIncludingNotDefault(Instance instance)
 	{
-		_groups.forEach(group => group.spawnAll(instance));
+		_groups.ForEach(group => group.spawnAll(instance));
 	}
 	
 	public void despawn(Predicate<SpawnGroup> groupFilter)
@@ -164,7 +164,7 @@ public class SpawnTemplate: ITerritorized, IParameterized<StatSet>
 	
 	public void despawnAll()
 	{
-		_groups.forEach(g => g.despawnAll());
+		_groups.ForEach(g => g.despawnAll());
 		notifyEvent(script => script.onSpawnDeactivate(this));
 	}
 	

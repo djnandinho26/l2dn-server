@@ -29,11 +29,11 @@ public class RestorationRandom: AbstractEffect
 			List<RestorationItemHolder> items = new();
 			foreach (StatSet item in group.getList<StatSet>("."))
 			{
-				items.add(new RestorationItemHolder(item.getInt(".id"), item.getInt(".count"),
+				items.Add(new RestorationItemHolder(item.getInt(".id"), item.getInt(".count"),
 					item.getInt(".minEnchant", 0), item.getInt(".maxEnchant", 0)));
 			}
 
-			_products.add(new ExtractableProductItem(items, group.getFloat(".chance")));
+			_products.Add(new ExtractableProductItem(items, group.getFloat(".chance")));
 		}
 	}
 
@@ -70,7 +70,7 @@ public class RestorationRandom: AbstractEffect
 		}
 		
 		Player player = effected.getActingPlayer();
-		if (creationList.isEmpty())
+		if (creationList.Count == 0)
 		{
 			player.sendPacket(SystemMessageId.FAILED_TO_CHANGE_THE_ITEM);
 			return;
@@ -92,7 +92,7 @@ public class RestorationRandom: AbstractEffect
 				newItem.setEnchantLevel(Rnd.get(createdItem.getMinEnchant(), createdItem.getMaxEnchant()));
 			}
 			
-			if (extractedItems.containsKey(newItem))
+			if (extractedItems.ContainsKey(newItem))
 			{
 				extractedItems.put(newItem, extractedItems.get(newItem) + itemCount);
 			}

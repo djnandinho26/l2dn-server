@@ -177,7 +177,7 @@ public class AutoPlayTaskManager
 								Weapon weapon = player.getActiveWeaponItem();
 								if (weapon != null)
 								{
-									int idleCount = IDLE_COUNT.getOrDefault(player, 0);
+									int idleCount = IDLE_COUNT.GetValueOrDefault(player);
 									if (idleCount > 10)
 									{
 										bool ranged = weapon.getItemType().isRanged();
@@ -285,11 +285,13 @@ public class AutoPlayTaskManager
 						}
 						
 						// Check creature target.
-						if (player.getAutoPlaySettings().isRespectfulHunting() && !nearby.isPlayable() && nearby.getTarget() != null && nearby.getTarget() != player && !player.getServitors().containsKey(nearby.getTarget().getObjectId()))
+						if (player.getAutoPlaySettings().isRespectfulHunting() && !nearby.isPlayable() &&
+						    nearby.getTarget() != null && nearby.getTarget() != player &&
+						    !player.getServitors().ContainsKey(nearby.getTarget().getObjectId()))
 						{
 							continue; // target
 						}
-						
+
 						// Check next target mode.
 						if (!isTargetModeValid(targetMode, player, nearby))
 						{

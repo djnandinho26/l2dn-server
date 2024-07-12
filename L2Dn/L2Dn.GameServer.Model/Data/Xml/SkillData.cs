@@ -153,17 +153,17 @@ public class SkillData: DataReaderBase
 	public List<Skill> getSiegeSkills(bool addNoble, bool hasCastle)
 	{
 		List<Skill> temp = new();
-		temp.add(_skills.get(getSkillHashCode((int)CommonSkill.SEAL_OF_RULER, 1)));
-		temp.add(_skills.get(getSkillHashCode(247, 1))); // Build Headquarters
+		temp.Add(_skills.get(getSkillHashCode((int)CommonSkill.SEAL_OF_RULER, 1)));
+		temp.Add(_skills.get(getSkillHashCode(247, 1))); // Build Headquarters
 		if (addNoble)
 		{
-			temp.add(_skills.get(getSkillHashCode(326, 1))); // Build Advanced Headquarters
+			temp.Add(_skills.get(getSkillHashCode(326, 1))); // Build Advanced Headquarters
 		}
 
 		if (hasCastle)
 		{
-			temp.add(_skills.get(getSkillHashCode(844, 1))); // Outpost Construction
-			temp.add(_skills.get(getSkillHashCode(845, 1))); // Outpost Demolition
+			temp.Add(_skills.get(getSkillHashCode(844, 1))); // Outpost Construction
+			temp.Add(_skills.get(getSkillHashCode(845, 1))); // Outpost Demolition
 		}
 
 		return temp;
@@ -177,8 +177,8 @@ public class SkillData: DataReaderBase
 	[MethodImpl(MethodImplOptions.Synchronized)]
 	public void load()
 	{
-		_skills.clear();
-		_skillsMaxLevel.clear();
+		_skills.Clear();
+		_skillsMaxLevel.Clear();
 
 		LoadXmlDocuments(DataFileLocation.Data, "stats/skills").ForEach(t =>
 		{
@@ -234,7 +234,7 @@ public class SkillData: DataReaderBase
 						skillNode.Elements("effect").ForEach(effectsNode =>
 						{
 							effectParamInfo.computeIfAbsent(effectScope.Value, k => new())
-								.add(parseNamedParamInfo(effectsNode, variableValues));
+								.Add(parseNamedParamInfo(effectsNode, variableValues));
 						});
 
 						break;
@@ -246,7 +246,7 @@ public class SkillData: DataReaderBase
 						skillNode.Elements("condition").ForEach(conditionNode =>
 						{
 							conditionParamInfo.computeIfAbsent(skillConditionScope.Value, k => new())
-								.add(parseNamedParamInfo(conditionNode, variableValues));
+								.Add(parseNamedParamInfo(conditionNode, variableValues));
 						});
 					}
 					else
@@ -266,7 +266,7 @@ public class SkillData: DataReaderBase
 			levels.computeIfAbsent(i, k => new()).add(0);
 		}
 
-		skillInfo.forEach(kvp =>
+		skillInfo.ForEach(kvp =>
 		{
 			int level = kvp.Key;
 			Map<int, StatSet> subLevelMap = kvp.Value;
@@ -275,7 +275,7 @@ public class SkillData: DataReaderBase
 				return;
 			}
 
-			subLevelMap.forEach(kvp2 =>
+			subLevelMap.ForEach(kvp2 =>
 			{
 				int subLevel = kvp2.Key;
 				StatSet statSet = kvp2.Value;
@@ -289,9 +289,9 @@ public class SkillData: DataReaderBase
 		});
 
 		effectParamInfo.values().Concat(conditionParamInfo.values()).ForEach(namedParamInfos =>
-			namedParamInfos.forEach(namedParamInfo =>
+			namedParamInfos.ForEach(namedParamInfo =>
 			{
-				namedParamInfo.getInfo().forEach(kvp =>
+				namedParamInfo.getInfo().ForEach(kvp =>
 				{
 					var (level, subLevelMap) = kvp;
 					if (level == -1)
@@ -299,7 +299,7 @@ public class SkillData: DataReaderBase
 						return;
 					}
 
-					subLevelMap.forEach(kvp2 =>
+					subLevelMap.ForEach(kvp2 =>
 					{
 						var (subLevel, statSet) = kvp2;
 						if (subLevel == -1)
@@ -330,14 +330,15 @@ public class SkillData: DataReaderBase
 				}
 			}));
 
-		levels.forEach(kvp => kvp.Value.forEach(subLevel =>
+		levels.ForEach(kvp => kvp.Value.ForEach(subLevel =>
 		{
+			// TODO: review code and refactor
 			var (level, subLevels) = kvp;
-			StatSet statSet = skillInfo.getOrDefault(level, new()).get(subLevel) ?? new StatSet();
-			skillInfo.getOrDefault(level, new()).getOrDefault(-1, StatSet.EMPTY_STATSET).getSet()
-				.forEach(x => statSet.getSet().TryAdd(x.Key, x.Value));
-			skillInfo.getOrDefault(-1, new()).getOrDefault(-1, StatSet.EMPTY_STATSET).getSet()
-				.forEach(x => statSet.getSet().TryAdd(x.Key, x.Value));
+			StatSet statSet = skillInfo.GetValueOrDefault(level, []).get(subLevel) ?? new StatSet();
+			skillInfo.GetValueOrDefault(level, new()).GetValueOrDefault(-1, StatSet.EMPTY_STATSET).getSet()
+				.ForEach(x => statSet.getSet().TryAdd(x.Key, x.Value));
+			skillInfo.GetValueOrDefault(-1, new()).GetValueOrDefault(-1, StatSet.EMPTY_STATSET).getSet()
+				.ForEach(x => statSet.getSet().TryAdd(x.Key, x.Value));
 			statSet.set(".level", level);
 			statSet.set(".subLevel", subLevel);
 			Skill skill = new Skill(statSet);
@@ -426,22 +427,23 @@ public class SkillData: DataReaderBase
 		Action<T, StatSet> consumer)
 		where T: notnull
 	{
-		paramInfo.forEach(kvp => kvp.Value.forEach(namedParamInfo =>
+		paramInfo.ForEach(kvp => kvp.Value.ForEach(namedParamInfo =>
 		{
+			// TODO: review code and refactor
 			var (scope, namedParamInfos) = kvp;
 			if ((((namedParamInfo.getFromLevel() == null) && (namedParamInfo.getToLevel() == null)) ||
 			     ((namedParamInfo.getFromLevel() <= level) && (namedParamInfo.getToLevel() >= level))) //
 			    && (((namedParamInfo.getFromSubLevel() == null) && (namedParamInfo.getToSubLevel() == null)) ||
 			        ((namedParamInfo.getFromSubLevel() <= subLevel) && (namedParamInfo.getToSubLevel() >= subLevel))))
 			{
-				StatSet @params = namedParamInfo.getInfo().getOrDefault(level, new()).get(subLevel) ?? new StatSet();
+				StatSet @params = namedParamInfo.getInfo().GetValueOrDefault(level, new()).get(subLevel) ?? new StatSet();
 
-				namedParamInfo.getInfo().getOrDefault(level, new())
-					.getOrDefault(-1, StatSet.EMPTY_STATSET).getSet()
-					.forEach(x => @params.getSet().TryAdd(x.Key, x.Value));
-				namedParamInfo.getInfo().getOrDefault(-1, new())
-					.getOrDefault(-1, StatSet.EMPTY_STATSET).getSet()
-					.forEach(x => @params.getSet().TryAdd(x.Key, x.Value));
+				namedParamInfo.getInfo().GetValueOrDefault(level, new())
+					.GetValueOrDefault(-1, StatSet.EMPTY_STATSET).getSet()
+					.ForEach(x => @params.getSet().TryAdd(x.Key, x.Value));
+				namedParamInfo.getInfo().GetValueOrDefault(-1, new())
+					.GetValueOrDefault(-1, StatSet.EMPTY_STATSET).getSet()
+					.ForEach(x => @params.getSet().TryAdd(x.Key, x.Value));
 				@params.set(".name", namedParamInfo.getName());
 				consumer(scope, @params);
 			}
@@ -468,13 +470,13 @@ public class SkillData: DataReaderBase
 		Map<int, Map<int, StatSet>> info)
 	{
 		Map<int, Map<int, object>> values = parseValues(element);
-		object generalValue = values.getOrDefault(-1, new()).get(-1);
+		object? generalValue = values.GetValueOrDefault(-1)?.GetValueOrDefault(-1);
 		if (generalValue != null)
 		{
 			string stringGeneralValue = generalValue?.ToString() ?? string.Empty;
 			if (stringGeneralValue.startsWith("@"))
 			{
-				Map<int, Map<int, object>> variableValue = variableValues.get(stringGeneralValue);
+				Map<int, Map<int, object>>? variableValue = variableValues.GetValueOrDefault(stringGeneralValue);
 				if (variableValue != null)
 				{
 					values = variableValue;
@@ -486,10 +488,10 @@ public class SkillData: DataReaderBase
 			}
 		}
 
-		values.forEach(kvp =>
+		values.ForEach(kvp =>
 		{
 			var (level, subLevelMap) = kvp;
-			kvp.Value.forEach(kvp2 =>
+			kvp.Value.ForEach(kvp2 =>
 			{
 				var (subLevel, value) = kvp2;
 				info.computeIfAbsent(level, k => new()).computeIfAbsent(subLevel, k => new StatSet())
@@ -536,7 +538,7 @@ public class SkillData: DataReaderBase
 								Map<string, double> variables = new();
 								variables.put("index", (i - fromLevel) + 1d);
 								variables.put("subIndex", (j - fromSubLevel) + 1d);
-								object @base = values.getOrDefault(i, new()).get(-1);
+								object? @base = values.GetValueOrDefault(i)?.GetValueOrDefault(-1);
 								string baseText = @base?.ToString() ?? string.Empty;
 								if ((@base != null) && !(@base is StatSet) && (!baseText.equalsIgnoreCase("true") &&
 								                                               !baseText.equalsIgnoreCase("false")))
@@ -573,7 +575,7 @@ public class SkillData: DataReaderBase
 		if (!element.HasElements && !string.IsNullOrEmpty(element.Value))
 		{
 			string value = element.Value.Trim();
-			if (!value.isEmpty())
+			if (!string.IsNullOrEmpty(value))
 			{
 				text = parseNodeValue(value, variables);
 			}
@@ -594,7 +596,7 @@ public class SkillData: DataReaderBase
 					object value = parseValue(n, false, true, variables);
 					if (value != null)
 					{
-						list.add(value);
+						list.Add(value);
 					}
 
 					break;

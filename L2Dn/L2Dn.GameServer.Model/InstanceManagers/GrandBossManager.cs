@@ -76,11 +76,7 @@ public class GrandBossManager: IStorable
 
 	public int getStatus(int bossId)
 	{
-		if (!_bossStatus.containsKey(bossId))
-		{
-			return -1;
-		}
-		return _bossStatus.get(bossId);
+		return _bossStatus.GetValueOrDefault(bossId, -1);
 	}
 	
 	public void setStatus(int bossId, int status)
@@ -193,9 +189,9 @@ public class GrandBossManager: IStorable
 	{
 		storeMe();
 		
-		_bosses.clear();
-		_storedInfo.clear();
-		_bossStatus.clear();
+		_bosses.Clear();
+		_storedInfo.Clear();
+		_bossStatus.Clear();
 	}
 	
 	/**

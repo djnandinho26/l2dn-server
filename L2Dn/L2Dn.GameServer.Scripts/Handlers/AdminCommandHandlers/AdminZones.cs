@@ -70,7 +70,7 @@ public class AdminZones: AbstractScript, IAdminCommandHandler
 						{
 							name += st.nextToken() + " ";
 						}
-						if (!name.isEmpty())
+						if (!string.IsNullOrEmpty(name))
 						{
 							name = name.Substring(0, name.Length - 1);
 						}
@@ -246,7 +246,7 @@ public class AdminZones: AbstractScript, IAdminCommandHandler
 			}
 		}
 		
-		if ((zoneType != null) && (zoneType.getZone() is ZoneNPoly))
+		if (zoneType != null && zoneType.getZone() is ZoneNPoly)
 		{
 			ZoneNPoly zone = (ZoneNPoly) zoneType.getZone();
 			ZoneNodeHolder holder = _zones.computeIfAbsent(activeChar.getObjectId(), val => new ZoneNodeHolder(activeChar));
@@ -318,7 +318,7 @@ public class AdminZones: AbstractScript, IAdminCommandHandler
 		ZoneNodeHolder holder = _zones.get(activeChar.getObjectId());
 		if (holder != null)
 		{
-			if (holder.getNodes().size() < 3)
+			if (holder.getNodes().Count < 3)
 			{
 				BuilderUtil.sendSysMessage(activeChar, "In order to visualize this zone you must have at least 3 points.");
 				return;
@@ -331,10 +331,10 @@ public class AdminZones: AbstractScript, IAdminCommandHandler
 			Location3D nextLoc;
 			
 			List<Location3D> list = holder.getNodes();
-			for (int i = 1; i < list.size(); i++)
+			for (int i = 1; i < list.Count; i++)
 			{
-				prevLoc = list.get(i - 1);
-				nextLoc = list.get(i);
+				prevLoc = list[i - 1];
+				nextLoc = list[i];
 				if (holder.getMinZ() != 0)
 				{
 					exsp.addLine("Min Point " + i + " > " + (i + 1), Colors.CYAN, true, prevLoc.X, prevLoc.Y, holder.getMinZ(), nextLoc.X, nextLoc.Y, holder.getMinZ());
@@ -346,17 +346,17 @@ public class AdminZones: AbstractScript, IAdminCommandHandler
 				}
 			}
 			
-			prevLoc = list.get(list.size() - 1);
-			nextLoc = list.get(0);
+			prevLoc = list[^1];
+			nextLoc = list[0];
 			if (holder.getMinZ() != 0)
 			{
-				exsp.addLine("Min Point " + list.size() + " > 1", Colors.CYAN, true, prevLoc.X, prevLoc.Y, holder.getMinZ(), nextLoc.X, nextLoc.Y, holder.getMinZ());
+				exsp.addLine("Min Point " + list.Count + " > 1", Colors.CYAN, true, prevLoc.X, prevLoc.Y, holder.getMinZ(), nextLoc.X, nextLoc.Y, holder.getMinZ());
 			}
 			
-			exsp.addLine("Point " + list.size() + " > 1", Colors.White, true, prevLoc.X, prevLoc.Y, prevLoc.Z, nextLoc.X, nextLoc.Y, nextLoc.Z);
+			exsp.addLine("Point " + list.Count + " > 1", Colors.White, true, prevLoc.X, prevLoc.Y, prevLoc.Z, nextLoc.X, nextLoc.Y, nextLoc.Z);
 			if (holder.getMaxZ() != 0)
 			{
-				exsp.addLine("Max Point " + list.size() + " > 1", Colors.RED, true, prevLoc.X, prevLoc.Y, holder.getMaxZ(), nextLoc.X, nextLoc.Y, holder.getMaxZ());
+				exsp.addLine("Max Point " + list.Count + " > 1", Colors.RED, true, prevLoc.X, prevLoc.Y, holder.getMaxZ(), nextLoc.X, nextLoc.Y, holder.getMaxZ());
 			}
 			
 			activeChar.sendPacket(exsp);
@@ -395,7 +395,7 @@ public class AdminZones: AbstractScript, IAdminCommandHandler
 			{
 				holder.getNodes().Remove(loc);
 				BuilderUtil.sendSysMessage(activeChar, "Node " + index + " has been removed!");
-				if (holder.getNodes().isEmpty())
+				if (holder.getNodes().Count == 0)
 				{
 					BuilderUtil.sendSysMessage(activeChar, "Since node list is empty destroying session!");
 					_zones.remove(activeChar.getObjectId());
@@ -410,9 +410,9 @@ public class AdminZones: AbstractScript, IAdminCommandHandler
 	private void dumpPoints(Player activeChar)
 	{
 		ZoneNodeHolder holder = _zones.get(activeChar.getObjectId());
-		if ((holder != null) && !holder.getNodes().isEmpty())
+		if (holder != null && holder.getNodes().Count != 0)
 		{
-			if (holder.getName().isEmpty())
+			if (string.IsNullOrEmpty(holder.getName()))
 			{
 				BuilderUtil.sendSysMessage(activeChar, "Set name first!");
 				return;
@@ -492,7 +492,7 @@ public class AdminZones: AbstractScript, IAdminCommandHandler
 	public void onPlayerDlgAnswer(OnPlayerDlgAnswer ev)
 	{
 		Player player = ev.getPlayer();
-		if (player.removeAction(PlayerAction.ADMIN_SHOW_TERRITORY) && (ev.getAnswer() == 1))
+		if (player.removeAction(PlayerAction.ADMIN_SHOW_TERRITORY) && ev.getAnswer() == 1)
 		{
 			ZoneNodeHolder holder = _zones.get(player.getObjectId());
 			if (holder != null)

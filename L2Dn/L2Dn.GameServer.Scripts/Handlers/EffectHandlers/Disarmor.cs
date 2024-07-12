@@ -25,8 +25,8 @@ public class Disarmor: AbstractEffect
 	{
 		_unequippedItems = new();
 		
-		String slot = @params.getString("slot", "chest");
-		_slot = ItemData.SLOTS.getOrDefault(slot, (long) ItemTemplate.SLOT_NONE);
+		string slot = @params.getString("slot", "chest");
+		_slot = ItemData.SLOTS.GetValueOrDefault(slot, ItemTemplate.SLOT_NONE);
 		if (_slot == ItemTemplate.SLOT_NONE)
 		{
 			LOGGER.Error("Unknown bodypart slot for effect: " + slot);
@@ -47,14 +47,14 @@ public class Disarmor: AbstractEffect
 		
 		Player player = effected.getActingPlayer();
 		List<Item> unequipped = player.getInventory().unEquipItemInBodySlotAndRecord(_slot);
-		if (!unequipped.isEmpty())
+		if (unequipped.Count != 0)
 		{
 			InventoryUpdatePacket iu = new InventoryUpdatePacket(unequipped.Select(x => new ItemInfo(x, ItemChangeType.MODIFIED)).ToList());
 			player.sendInventoryUpdate(iu);
 			player.broadcastUserInfo();
 			
 			SystemMessagePacket sm;
-			Item unequippedItem = unequipped.get(0);
+			Item unequippedItem = unequipped[0];
 			if (unequippedItem.getEnchantLevel() > 0)
 			{
 				sm = new SystemMessagePacket(SystemMessageId.S1_S2_UNEQUIPPED);

@@ -26,10 +26,10 @@ public class ResistSkill: AbstractEffect
 			{
 				break;
 			}
-			_skills.add(new SkillHolder(skillId, skillLevel));
+			_skills.Add(new SkillHolder(skillId, skillLevel));
 		}
 		
-		if (_skills.isEmpty())
+		if (_skills.Count == 0)
 		{
 			throw new ArgumentException(GetType().Name + ": Without parameters!");
 		}

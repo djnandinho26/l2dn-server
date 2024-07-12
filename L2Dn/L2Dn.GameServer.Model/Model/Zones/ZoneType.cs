@@ -190,7 +190,7 @@ public abstract class ZoneType: IEventContainerProvider
 		}
 		
 		// Check level
-		if ((creature.getLevel() < _minLevel) || (creature.getLevel() > _maxLevel))
+		if (creature.getLevel() < _minLevel || creature.getLevel() > _maxLevel)
 		{
 			if (creature.isPlayer())
 			{
@@ -330,7 +330,7 @@ public abstract class ZoneType: IEventContainerProvider
 	 */
 	public bool isInsideZone(int x, int y, int z)
 	{
-		return (_zone != null) && _zone.isInsideZone(x, y, z) && !isInsideBlockedZone(x, y, z);
+		return _zone != null && _zone.isInsideZone(x, y, z) && !isInsideBlockedZone(x, y, z);
 	}
 	
 	/**
@@ -341,7 +341,7 @@ public abstract class ZoneType: IEventContainerProvider
 	 */
 	public bool isInsideBlockedZone(int x, int y, int z)
 	{
-		if ((_blockedZones == null) || _blockedZones.isEmpty())
+		if (_blockedZones == null || _blockedZones.Count == 0)
 		{
 			return false;
 		}
@@ -434,7 +434,7 @@ public abstract class ZoneType: IEventContainerProvider
 	public void removeCharacter(Creature creature)
 	{
 		// Was the character inside this zone?
-		if (_characterList.containsKey(creature.getObjectId()))
+		if (_characterList.ContainsKey(creature.getObjectId()))
 		{
 			// Notify to scripts.
 			if (_eventContainer.HasSubscribers<OnZoneExit>())
@@ -457,7 +457,7 @@ public abstract class ZoneType: IEventContainerProvider
 	 */
 	public bool isCharacterInZone(Creature creature)
 	{
-		return _characterList.containsKey(creature.getObjectId());
+		return _characterList.ContainsKey(creature.getObjectId());
 	}
 	
 	public virtual AbstractZoneSettings getSettings()
@@ -509,9 +509,9 @@ public abstract class ZoneType: IEventContainerProvider
 		List<Player> players = new();
 		foreach (Creature ch in _characterList.values())
 		{
-			if ((ch != null) && ch.isPlayer())
+			if (ch != null && ch.isPlayer())
 			{
-				players.add(ch.getActingPlayer());
+				players.Add(ch.getActingPlayer());
 			}
 		}
 		return players;
@@ -531,7 +531,7 @@ public abstract class ZoneType: IEventContainerProvider
 		
 		foreach (Creature creature in _characterList.values())
 		{
-			if ((creature != null) && creature.isPlayer())
+			if (creature != null && creature.isPlayer())
 			{
 				creature.sendPacket(packet);
 			}
@@ -599,16 +599,17 @@ public abstract class ZoneType: IEventContainerProvider
 	{
 		if (_enabledInInstance != null)
 		{
-			return _enabledInInstance.getOrDefault(instanceId, _enabled);
+			return _enabledInInstance.GetValueOrDefault(instanceId, _enabled);
 		}
+
 		return _enabled;
 	}
 	
 	public virtual void oustAllPlayers()
 	{
-		foreach (Creature obj in _characterList.values())
+		foreach (Creature obj in _characterList.Values)
 		{
-			if ((obj != null) && obj.isPlayer() && obj.getActingPlayer().isOnline())
+			if (obj != null && obj.isPlayer() && obj.getActingPlayer().isOnline())
 			{
 				obj.getActingPlayer().teleToLocation(TeleportWhereType.TOWN);
 			}
@@ -627,7 +628,7 @@ public abstract class ZoneType: IEventContainerProvider
 		
 		foreach (Creature creature in _characterList.values())
 		{
-			if ((creature != null) && creature.isPlayer())
+			if (creature != null && creature.isPlayer())
 			{
 				Player player = creature.getActingPlayer();
 				if (player.isOnline())
