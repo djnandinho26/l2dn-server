@@ -22,7 +22,7 @@ public class SkillChannelized
 	
 	public int getChannerlizersSize(int skillId)
 	{
-		return getChannelizers(skillId).size();
+		return getChannelizers(skillId).Count;
 	}
 	
 	public Map<int, Creature> getChannelizers(int skillId)
@@ -32,9 +32,9 @@ public class SkillChannelized
 	
 	public void abortChannelization()
 	{
-		foreach (Map<int, Creature> map in _channelizers.values())
+		foreach (Map<int, Creature> map in _channelizers.Values)
 		{
-			foreach (Creature channelizer in map.values())
+			foreach (Creature channelizer in map.Values)
 			{
 				channelizer.abortCast();
 			}
@@ -44,7 +44,7 @@ public class SkillChannelized
 	
 	public bool isChannelized()
 	{
-		foreach (Map<int, Creature> map in _channelizers.values())
+		foreach (Map<int, Creature> map in _channelizers.Values)
 		{
 			if (!map.isEmpty())
 			{

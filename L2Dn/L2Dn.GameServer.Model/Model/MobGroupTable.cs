@@ -31,12 +31,12 @@ public class MobGroupTable
 	
     public int getGroupCount()
     {
-        return _groupMap.size();
+        return _groupMap.Count;
     }
 	
     public MobGroup getGroupForMob(ControllableMob mobInst)
     {
-        foreach (MobGroup mobGroup in _groupMap.values())
+        foreach (MobGroup mobGroup in _groupMap.Values)
         {
             if (mobGroup.isGroupMember(mobInst))
             {
@@ -48,7 +48,7 @@ public class MobGroupTable
 	
     public ICollection<MobGroup> getGroups()
     {
-        return _groupMap.values();
+        return _groupMap.Values;
     }
 	
     public bool removeGroup(int groupKey)

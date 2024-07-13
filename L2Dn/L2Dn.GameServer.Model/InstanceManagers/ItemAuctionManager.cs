@@ -49,7 +49,7 @@ public class ItemAuctionManager: DataReaderBase
 		LoadXmlDocument(DataFileLocation.Data, "ItemAuctions.xml").Elements("list").Elements("instance")
 			.ForEach(parseElement);
 
-		LOGGER.Info(GetType().Name +": Loaded " + _managerInstances.size() + " instances.");
+		LOGGER.Info(GetType().Name +": Loaded " + _managerInstances.Count + " instances.");
 	}
 	
 	private void parseElement(XElement element)
@@ -71,7 +71,7 @@ public class ItemAuctionManager: DataReaderBase
 	
 	public void shutdown()
 	{
-		foreach (ItemAuctionInstance instance in _managerInstances.values())
+		foreach (ItemAuctionInstance instance in _managerInstances.Values)
 		{
 			instance.shutdown();
 		}

@@ -18,8 +18,8 @@ public readonly struct ExPledgeWaitingListPacket: IOutgoingPacket
     {
         writer.WritePacketCode(OutgoingPacketCodes.EX_PLEDGE_WAITING_LIST);
         
-        writer.WriteInt32(_pledgePlayerRecruitInfos.size());
-        foreach (PledgeApplicantInfo recruitInfo in _pledgePlayerRecruitInfos.values())
+        writer.WriteInt32(_pledgePlayerRecruitInfos.Count);
+        foreach (PledgeApplicantInfo recruitInfo in _pledgePlayerRecruitInfos.Values)
         {
             writer.WriteInt32(recruitInfo.getPlayerId());
             writer.WriteString(recruitInfo.getPlayerName());

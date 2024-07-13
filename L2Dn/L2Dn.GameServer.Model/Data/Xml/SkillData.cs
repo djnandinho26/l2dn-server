@@ -193,7 +193,7 @@ public class SkillData: DataReaderBase
 			});
 		}
 
-		LOGGER.Info(GetType().Name + ": Loaded " + _skills.size() + " Skills.");
+		LOGGER.Info(GetType().Name + ": Loaded " + _skills.Count + " Skills.");
 	}
 
 	public void reload()
@@ -288,7 +288,7 @@ public class SkillData: DataReaderBase
 			});
 		});
 
-		effectParamInfo.values().Concat(conditionParamInfo.values()).ForEach(namedParamInfos =>
+		effectParamInfo.Values.Concat(conditionParamInfo.Values).ForEach(namedParamInfos =>
 			namedParamInfos.ForEach(namedParamInfo =>
 			{
 				namedParamInfo.getInfo().ForEach(kvp =>

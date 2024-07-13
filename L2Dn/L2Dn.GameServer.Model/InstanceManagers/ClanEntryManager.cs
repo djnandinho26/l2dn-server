@@ -48,7 +48,7 @@ public class ClanEntryManager
 					removeFromClanList(clanId);
 				}
 			}
-			LOGGER.Info(GetType().Name +": Loaded " + _clanList.size() + " clan entries.");
+			LOGGER.Info(GetType().Name +": Loaded " + _clanList.Count + " clan entries.");
 		}
 		catch (Exception e)
 		{
@@ -76,7 +76,7 @@ public class ClanEntryManager
 						record.Class, record.CharacterName));
 			}
 			
-			LOGGER.Info(GetType().Name +": Loaded " + _waitingList.size() + " players in waiting list.");
+			LOGGER.Info(GetType().Name +": Loaded " + _waitingList.Count + " players in waiting list.");
 		}
 		catch (Exception e)
 		{
@@ -105,7 +105,7 @@ public class ClanEntryManager
 						record.Karma, record.ClanId, record.Message));
 			}
 			
-			LOGGER.Info(GetType().Name +": Loaded " + _applicantList.size() + " player applications.");
+			LOGGER.Info(GetType().Name +": Loaded " + _applicantList.Count + " player applications.");
 		}
 		catch (Exception e)
 		{
@@ -325,7 +325,7 @@ public class ClanEntryManager
 	public List<PledgeWaitingInfo> getSortedWaitingList(int levelMin, int levelMax, int role, int sortByValue, bool descending)
 	{
 		List<PledgeWaitingInfo> result = new();
-		foreach (PledgeWaitingInfo p in _waitingList.values())
+		foreach (PledgeWaitingInfo p in _waitingList.Values)
 		{
 			// TODO: Handle Role.
 			if ((p.getPlayerLvl() >= levelMin) && (p.getPlayerLvl() <= levelMax))
@@ -365,7 +365,7 @@ public class ClanEntryManager
 	public List<PledgeWaitingInfo> queryWaitingListByName(string name)
 	{
 		List<PledgeWaitingInfo> result = new();
-		foreach (PledgeWaitingInfo p in _waitingList.values())
+		foreach (PledgeWaitingInfo p in _waitingList.Values)
 		{
 			if (p.getPlayerName().toLowerCase().contains(name))
 			{
@@ -380,7 +380,7 @@ public class ClanEntryManager
 		List<PledgeRecruitInfo> result = new();
 		if (type == 1)
 		{
-			foreach (PledgeRecruitInfo p in _clanList.values())
+			foreach (PledgeRecruitInfo p in _clanList.Values)
 			{
 				if (p.getClanName().toLowerCase().contains(query))
 				{
@@ -390,7 +390,7 @@ public class ClanEntryManager
 		}
 		else
 		{
-			foreach (PledgeRecruitInfo p in _clanList.values())
+			foreach (PledgeRecruitInfo p in _clanList.Values)
 			{
 				if (p.getClanLeaderName().toLowerCase().contains(query))
 				{
@@ -418,7 +418,7 @@ public class ClanEntryManager
 	
 	public List<PledgeRecruitInfo> getUnSortedClanList()
 	{
-		return _clanList.values().ToList();
+		return _clanList.Values.ToList();
 	}
 	
 	public List<PledgeRecruitInfo> getSortedClanList(int clanLevel, int karma, int sortByValue, bool descending)

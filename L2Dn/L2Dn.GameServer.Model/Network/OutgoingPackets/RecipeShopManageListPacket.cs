@@ -66,8 +66,8 @@ public readonly struct RecipeShopManageListPacket: IOutgoingPacket
         }
         else
         {
-            writer.WriteInt32(_seller.getManufactureItems().size());
-            foreach (ManufactureItem item in _seller.getManufactureItems().values())
+            writer.WriteInt32(_seller.getManufactureItems().Count);
+            foreach (ManufactureItem item in _seller.getManufactureItems().Values)
             {
                 writer.WriteInt32(item.getRecipeId());
                 writer.WriteInt32(0);

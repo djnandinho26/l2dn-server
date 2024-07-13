@@ -78,7 +78,7 @@ public class SchemeBufferTable: DataReaderBase
 			LOGGER.Warn("SchemeBufferTable: Failed to load buff schemes: " + e);
 		}
 
-		LOGGER.Info("SchemeBufferTable: Loaded " + count + " players schemes and " + _availableBuffs.size() +
+		LOGGER.Info("SchemeBufferTable: Loaded " + count + " players schemes and " + _availableBuffs.Count +
 		            " available buffs.");
 	}
 
@@ -121,7 +121,7 @@ public class SchemeBufferTable: DataReaderBase
 		{
 			_schemesTable.put(playerId, new(StringComparer.InvariantCultureIgnoreCase));
 		}
-		else if (_schemesTable.get(playerId).size() >= Config.BUFFER_MAX_SCHEMES)
+		else if (_schemesTable.get(playerId).Count >= Config.BUFFER_MAX_SCHEMES)
 		{
 			return;
 		}
@@ -185,7 +185,7 @@ public class SchemeBufferTable: DataReaderBase
 	public List<int> getSkillsIdsByType(string groupType)
 	{
 		List<int> skills = new();
-		foreach (BuffSkillHolder skill in _availableBuffs.values())
+		foreach (BuffSkillHolder skill in _availableBuffs.Values)
 		{
 			if (skill.getType().equalsIgnoreCase(groupType))
 			{
@@ -202,7 +202,7 @@ public class SchemeBufferTable: DataReaderBase
 	public List<string> getSkillTypes()
 	{
 		List<string> skillTypes = new();
-		foreach (BuffSkillHolder skill in _availableBuffs.values())
+		foreach (BuffSkillHolder skill in _availableBuffs.Values)
 		{
 			if (!skillTypes.Contains(skill.getType()))
 			{

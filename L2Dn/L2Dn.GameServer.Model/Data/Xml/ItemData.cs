@@ -115,10 +115,10 @@ public class ItemData: DataReaderBase
 		}
 
 		buildFastLookupTable();
-		LOGGER.Info(GetType().Name + ": Loaded " + _etcItems.size() + " Etc Items");
-		LOGGER.Info(GetType().Name + ": Loaded " + _armors.size() + " Armor Items");
-		LOGGER.Info(GetType().Name + ": Loaded " + _weapons.size() + " Weapon Items");
-		LOGGER.Info(GetType().Name + ": Loaded " + (_etcItems.size() + _armors.size() + _weapons.size()) +
+		LOGGER.Info(GetType().Name + ": Loaded " + _etcItems.Count + " Etc Items");
+		LOGGER.Info(GetType().Name + ": Loaded " + _armors.Count + " Armor Items");
+		LOGGER.Info(GetType().Name + ": Loaded " + _weapons.Count + " Weapon Items");
+		LOGGER.Info(GetType().Name + ": Loaded " + (_etcItems.Count + _armors.Count + _weapons.Count) +
 		            " Items in total.");
 	}
 
@@ -1250,19 +1250,19 @@ public class ItemData: DataReaderBase
 		_allTemplates = new ItemTemplate[maxId + 1];
 		
 		// Insert armor item in Fast Look Up Table
-		foreach (Armor item in _armors.values())
+		foreach (Armor item in _armors.Values)
 		{
 			_allTemplates[item.getId()] = item;
 		}
 		
 		// Insert weapon item in Fast Look Up Table
-		foreach (Weapon item in _weapons.values())
+		foreach (Weapon item in _weapons.Values)
 		{
 			_allTemplates[item.getId()] = item;
 		}
 		
 		// Insert etcItem item in Fast Look Up Table
-		foreach (EtcItem item in _etcItems.values())
+		foreach (EtcItem item in _etcItems.Values)
 		{
 			_allTemplates[item.getId()] = item;
 		}
@@ -1554,7 +1554,7 @@ public class ItemData: DataReaderBase
 	
 	public ICollection<Armor> getAllArmors()
 	{
-		return _armors.values();
+		return _armors.Values;
 	}
 	
 	public ICollection<int> getAllWeaponsId()
@@ -1564,7 +1564,7 @@ public class ItemData: DataReaderBase
 	
 	public ICollection<Weapon> getAllWeapons()
 	{
-		return _weapons.values();
+		return _weapons.Values;
 	}
 	
 	public ICollection<int> getAllEtcItemsId()
@@ -1574,7 +1574,7 @@ public class ItemData: DataReaderBase
 	
 	public ICollection<EtcItem> getAllEtcItems()
 	{
-		return _etcItems.values();
+		return _etcItems.Values;
 	}
 	
 	public ItemTemplate[] getAllItems()

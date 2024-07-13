@@ -40,8 +40,8 @@ public readonly struct ExShowSellCropListPacket: IOutgoingPacket
         writer.WritePacketCode(OutgoingPacketCodes.EX_SHOW_SELL_CROP_LIST);
         
         writer.WriteInt32(_manorId); // manor id
-        writer.WriteInt32(_cropsItems.size()); // size
-        foreach (Item item in _cropsItems.values())
+        writer.WriteInt32(_cropsItems.Count); // size
+        foreach (Item item in _cropsItems.Values)
         {
             Seed seed = CastleManorManager.getInstance().getSeedByCrop(item.getId());
             writer.WriteInt32(item.getObjectId()); // Object id

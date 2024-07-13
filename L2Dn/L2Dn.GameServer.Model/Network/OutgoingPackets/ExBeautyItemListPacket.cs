@@ -20,10 +20,10 @@ public readonly struct ExBeautyItemListPacket: IOutgoingPacket
     {
         _colorData = new Map<int, List<BeautyItem>>();
         _beautyData = BeautyShopData.getInstance().getBeautyData(player.getRace(), player.getAppearance().getSex());
-        foreach (BeautyItem hair in _beautyData.getHairList().values())
+        foreach (BeautyItem hair in _beautyData.getHairList().Values)
         {
             List<BeautyItem> colors = new();
-            foreach (BeautyItem color in hair.getColors().values())
+            foreach (BeautyItem color in hair.getColors().Values)
             {
                 colors.Add(color);
                 _colorCount++;
@@ -38,8 +38,8 @@ public readonly struct ExBeautyItemListPacket: IOutgoingPacket
         writer.WritePacketCode(OutgoingPacketCodes.EX_BEAUTY_ITEM_LIST);
         
         writer.WriteInt32(HAIR_TYPE);
-        writer.WriteInt32(_beautyData.getHairList().size());
-        foreach (BeautyItem hair in _beautyData.getHairList().values())
+        writer.WriteInt32(_beautyData.getHairList().Count);
+        foreach (BeautyItem hair in _beautyData.getHairList().Values)
         {
             writer.WriteInt32(0); // ?
             writer.WriteInt32(hair.getId());
@@ -49,8 +49,8 @@ public readonly struct ExBeautyItemListPacket: IOutgoingPacket
             writer.WriteInt32(1); // Limit
         }
         writer.WriteInt32(FACE_TYPE);
-        writer.WriteInt32(_beautyData.getFaceList().size());
-        foreach (BeautyItem face in _beautyData.getFaceList().values())
+        writer.WriteInt32(_beautyData.getFaceList().Count);
+        foreach (BeautyItem face in _beautyData.getFaceList().Values)
         {
             writer.WriteInt32(0); // ?
             writer.WriteInt32(face.getId());

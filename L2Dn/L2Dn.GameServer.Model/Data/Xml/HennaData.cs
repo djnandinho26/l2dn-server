@@ -40,7 +40,7 @@ public class HennaData: DataReaderBase
 		XDocument document = LoadXmlDocument(DataFileLocation.Data, "stats/hennaList.xml");
 		document.Elements("list").Elements("henna").ForEach(parseElement);
 		
-		LOGGER.Info(GetType().Name + ": Loaded " + _hennaDyeIdList.size() + " henna data.");
+		LOGGER.Info(GetType().Name + ": Loaded " + _hennaDyeIdList.Count + " henna data.");
 	}
 	
 	/**
@@ -135,7 +135,7 @@ public class HennaData: DataReaderBase
 	public List<Henna> getHennaList(Player player)
 	{
 		List<Henna> list = new();
-		foreach (Henna henna in _hennaDyeIdList.values())
+		foreach (Henna henna in _hennaDyeIdList.Values)
 		{
 			if (henna.isAllowedClass(player))
 			{

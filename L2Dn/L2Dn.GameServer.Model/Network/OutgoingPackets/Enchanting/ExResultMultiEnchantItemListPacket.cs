@@ -82,12 +82,12 @@ public readonly struct ExResultMultiEnchantItemListPacket: IOutgoingPacket
 		writer.WriteByte(1);
 		
 		/* EnchantSuccessItem */
-		if (_failureReward.size() == 0)
+		if (_failureReward.Count == 0)
 		{
-			writer.WriteInt32(_successEnchant.size());
-			if (_successEnchant.size() != 0)
+			writer.WriteInt32(_successEnchant.Count);
+			if (_successEnchant.Count != 0)
 			{
-				foreach (int[] success in _successEnchant.values())
+				foreach (int[] success in _successEnchant.Values)
 				{
 					writer.WriteInt32(success[0]);
 					writer.WriteInt32(success[1]);
@@ -100,10 +100,10 @@ public readonly struct ExResultMultiEnchantItemListPacket: IOutgoingPacket
 		}
 		
 		/* EnchantFailItem */
-		writer.WriteInt32(_failureEnchant.size());
-		if (_failureEnchant.size() != 0)
+		writer.WriteInt32(_failureEnchant.Count);
+		if (_failureEnchant.Count != 0)
 		{
-			foreach (int failure in _failureEnchant.values())
+			foreach (int failure in _failureEnchant.Values)
 			{
 				writer.WriteInt32(failure);
 				writer.WriteInt32(0);
@@ -115,11 +115,11 @@ public readonly struct ExResultMultiEnchantItemListPacket: IOutgoingPacket
 		}
 		
 		/* EnchantFailRewardItem */
-		if (((_successEnchant.size() == 0) && (request.getMultiFailItemsCount() != 0)) || (_isResult && (request.getMultiFailItemsCount() != 0)))
+		if (((_successEnchant.Count == 0) && (request.getMultiFailItemsCount() != 0)) || (_isResult && (request.getMultiFailItemsCount() != 0)))
 		{
 			writer.WriteInt32(request.getMultiFailItemsCount());
 			var failureReward = request.getMultiEnchantFailItems();
-			foreach (ItemHolder failure in failureReward.values())
+			foreach (ItemHolder failure in failureReward.Values)
 			{
 				writer.WriteInt32(failure.getId());
 				writer.WriteInt32((int) failure.getCount());
@@ -138,7 +138,7 @@ public readonly struct ExResultMultiEnchantItemListPacket: IOutgoingPacket
 		
 		/* EnchantFailChallengePointInfo */
 		
-		writer.WriteInt32(_failChallengePointInfoList.size());
+		writer.WriteInt32(_failChallengePointInfoList.Count);
 		foreach (var item in _failChallengePointInfoList)
 		{
 			writer.WriteInt32(item.Key);

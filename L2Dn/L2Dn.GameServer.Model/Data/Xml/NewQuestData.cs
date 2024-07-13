@@ -30,7 +30,7 @@ public class NewQuestData: DataReaderBase
 		XDocument document = LoadXmlDocument(DataFileLocation.Data, "NewQuestData.xml");
 		document.Elements("list").Elements("quest").ForEach(parseElement);
 		
-		LOGGER.Info(GetType().Name + ": Loaded " + _newQuestData.size() + " new quest data.");
+		LOGGER.Info(GetType().Name + ": Loaded " + _newQuestData.Count + " new quest data.");
 	}
 	
 	private void parseElement(XElement element)
@@ -46,7 +46,7 @@ public class NewQuestData: DataReaderBase
 	
 	public ICollection<NewQuest> getQuests()
 	{
-		return _newQuestData.values();
+		return _newQuestData.Values;
 	}
 	
 	/**
@@ -55,7 +55,7 @@ public class NewQuestData: DataReaderBase
 	 */
 	public static NewQuestData getInstance()
 	{
-		return NewQuestData.SingletonHolder.INSTANCE;
+		return SingletonHolder.INSTANCE;
 	}
 	
 	private static class SingletonHolder

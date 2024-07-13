@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using L2Dn.Extensions;
 using L2Dn.GameServer.CommunityBbs.Managers;
 using L2Dn.GameServer.Data.Xml;
 using L2Dn.GameServer.Db;
@@ -73,7 +74,7 @@ public class ClanTable
 	 */
 	public ICollection<Clan> getClans()
 	{
-		return _clans.values();
+		return _clans.Values;
 	}
 	
 	/**
@@ -82,7 +83,7 @@ public class ClanTable
 	 */
 	public int getClanCount()
 	{
-		return _clans.size();
+		return _clans.Count;
 	}
 	
 	/**
@@ -96,7 +97,7 @@ public class ClanTable
 	
 	public Clan getClanByName(string clanName)
 	{
-		foreach (Clan clan in _clans.values())
+		foreach (Clan clan in _clans.Values)
 		{
 			if (clan.getName().equalsIgnoreCase(clanName))
 			{
@@ -134,7 +135,7 @@ public class ClanTable
 			player.sendPacket(SystemMessageId.YOU_MUST_WAIT_10_DAYS_BEFORE_CREATING_A_NEW_CLAN);
 			return null;
 		}
-		if (!Util.isAlphaNumeric(clanName) || (clanName.Length < 2))
+		if (string.IsNullOrEmpty(clanName) || !clanName.ContainsAlphaNumericOnly() || clanName.Length < 2)
 		{
 			player.sendPacket(SystemMessageId.CLAN_NAME_IS_INVALID);
 			return null;
@@ -293,7 +294,7 @@ public class ClanTable
 	
 	public bool isAllyExists(string allyName)
 	{
-		foreach (Clan clan in _clans.values())
+		foreach (Clan clan in _clans.Values)
 		{
 			if ((clan.getAllyName() != null) && clan.getAllyName().equalsIgnoreCase(allyName))
 			{
@@ -389,7 +390,7 @@ public class ClanTable
 	 */
 	private void allianceCheck()
 	{
-		foreach (Clan clan in _clans.values())
+		foreach (Clan clan in _clans.Values)
 		{
 			int? allyId = clan.getAllyId();
 			if ((allyId != null) && (clan.getId() != allyId) && !_clans.ContainsKey(allyId.Value))
@@ -408,7 +409,7 @@ public class ClanTable
 		List<Clan> clanAllies = new();
 		if (allianceId != 0)
 		{
-			foreach (Clan clan in _clans.values())
+			foreach (Clan clan in _clans.Values)
 			{
 				if ((clan != null) && (clan.getAllyId() == allianceId))
 				{
@@ -421,11 +422,11 @@ public class ClanTable
 	
 	public void shutdown()
 	{
-		foreach (Clan clan in _clans.values())
+		foreach (Clan clan in _clans.Values)
 		{
 			clan.updateClanInDB();
 			clan.getVariables().storeMe();
-			foreach (ClanWar war in clan.getWarList().values())
+			foreach (ClanWar war in clan.getWarList().Values)
 			{
 				storeClanWars(war);
 			}

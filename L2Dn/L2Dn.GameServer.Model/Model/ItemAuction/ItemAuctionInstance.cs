@@ -127,7 +127,7 @@ public class ItemAuctionInstance
 			return;
 		}
 		
-		LOGGER.Info(GetType().Name + ": Loaded " + _items.Count + " item(s) and registered " + _auctions.size() + " auction(s) for instance " + _instanceId);
+		LOGGER.Info(GetType().Name + ": Loaded " + _items.Count + " item(s) and registered " + _auctions.Count + " auction(s) for instance " + _instanceId);
 		checkAndSetCurrentAndNextAuction();
 	}
 	
@@ -165,7 +165,7 @@ public class ItemAuctionInstance
 	
 	protected void checkAndSetCurrentAndNextAuction()
 	{
-		ItemAuction[] auctions = _auctions.values().ToArray();
+		ItemAuction[] auctions = _auctions.Values.ToArray();
 		
 		ItemAuction currentAuction = null;
 		ItemAuction nextAuction = null;
@@ -318,7 +318,7 @@ public class ItemAuctionInstance
 		
 		lock (_auctions)
 		{
-			auctions = _auctions.values();
+			auctions = _auctions.Values;
 		}
 		
 		return auctions;

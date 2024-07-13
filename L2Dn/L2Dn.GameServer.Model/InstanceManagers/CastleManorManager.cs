@@ -81,7 +81,7 @@ public class CastleManorManager: DataReaderBase, IStorable
 		XDocument document = LoadXmlDocument(DataFileLocation.Data, "Seeds.xml");
 		document.Elements("list").Elements("castle").ForEach(parseElement);
 		
-		LOGGER.Info(GetType().Name +": Loaded " + _seeds.size() + " seeds.");
+		LOGGER.Info(GetType().Name +": Loaded " + _seeds.Count + " seeds.");
 	}
 
 	private void parseElement(XElement element)
@@ -650,7 +650,7 @@ public class CastleManorManager: DataReaderBase, IStorable
 	{
 		List<Seed> seeds = new();
 		List<int> cropIds = new();
-		foreach (Seed seed in _seeds.values())
+		foreach (Seed seed in _seeds.Values)
 		{
 			if (!cropIds.Contains(seed.getCropId()))
 			{
@@ -665,7 +665,7 @@ public class CastleManorManager: DataReaderBase, IStorable
 	public Set<Seed> getSeedsForCastle(int castleId)
 	{
 		Set<Seed> result = new();
-		foreach (Seed seed in _seeds.values())
+		foreach (Seed seed in _seeds.Values)
 		{
 			if (seed.getCastleId() == castleId)
 			{
@@ -685,7 +685,7 @@ public class CastleManorManager: DataReaderBase, IStorable
 	public Set<int> getCropIds()
 	{
 		Set<int> result = new();
-		foreach (Seed seed in _seeds.values())
+		foreach (Seed seed in _seeds.Values)
 		{
 			result.add(seed.getCropId());
 		}
@@ -711,7 +711,7 @@ public class CastleManorManager: DataReaderBase, IStorable
 	
 	public Seed getSeedByCrop(int cropId)
 	{
-		foreach (Seed s in _seeds.values())
+		foreach (Seed s in _seeds.Values)
 		{
 			if (s.getCropId() == cropId)
 			{
