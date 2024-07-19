@@ -51,36 +51,4 @@ public static class CommonUtil
 		long input = Math.Clamp(inputValue, inputMin, inputMax);
 		return (((input - inputMin) * (outputMax - outputMin)) / (inputMax - inputMin)) + outputMin;
 	}
-
-	/**
-	 * @param <T>
-	 * @param array - the array to look into
-	 * @param obj - the object to search for
-	 * @return {@code true} if the {@code array} contains the {@code obj}, {@code false} otherwise.
-	 */
-	public static bool contains<T>(T[] array, T obj)
-	{
-		foreach (T element in array)
-		{
-			if (element.Equals(obj))
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	public static int parseNextInt(StringTokenizer st, int defaultVal)
-	{
-		try
-		{
-			string value = st.nextToken().Trim();
-			return int.Parse(value);
-		}
-		catch (Exception e)
-		{
-			return defaultVal;
-		}
-	}
 }
