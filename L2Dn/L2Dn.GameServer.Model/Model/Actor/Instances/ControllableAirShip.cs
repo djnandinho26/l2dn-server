@@ -27,7 +27,7 @@ public class ControllableAirShip : AirShip
 	
 	public ControllableAirShip(CreatureTemplate template, int ownerId): base(template)
 	{
-		setInstanceType(InstanceType.ControllableAirShip);
+		InstanceType = InstanceType.ControllableAirShip;
 		_ownerId = ownerId;
 		_helmId = IdManager.getInstance().getNextId(); // not forget to release !
 	}
@@ -53,7 +53,7 @@ public class ControllableAirShip : AirShip
 		{
 			return false;
 		}
-		return player.getClanId() == _ownerId || player.getObjectId() == _ownerId;
+		return player.getClanId() == _ownerId || player.ObjectId == _ownerId;
 	}
 	
 	public override int getOwnerId()
@@ -68,7 +68,7 @@ public class ControllableAirShip : AirShip
 	
 	public override int getCaptainId()
 	{
-		return _captain != null ? _captain.getObjectId() : 0;
+		return _captain != null ? _captain.ObjectId : 0;
 	}
 	
 	public override int getHelmObjectId()
@@ -251,13 +251,6 @@ public class ControllableAirShip : AirShip
 		
 		broadcastPacket(new DeleteObjectPacket(_helmId));
 		return true;
-	}
-	
-	public override void refreshId()
-	{
-		base.refreshId();
-		IdManager.getInstance().releaseId(_helmId);
-		_helmId = IdManager.getInstance().getNextId();
 	}
 	
 	public override void sendInfo(Player player)

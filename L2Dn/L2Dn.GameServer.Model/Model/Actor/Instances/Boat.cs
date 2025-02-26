@@ -13,7 +13,7 @@ public class Boat: Vehicle
 
     public Boat(CreatureTemplate template): base(template)
     {
-        setInstanceType(InstanceType.Boat);
+        InstanceType = InstanceType.Boat;
         setAI(new BoatAI(this));
     }
 
@@ -57,7 +57,7 @@ public class Boat: Vehicle
     {
         base.stopMove(loc);
 
-        broadcastPacket(new VehicleStartedPacket(getObjectId(), 0));
+        broadcastPacket(new VehicleStartedPacket(ObjectId, 0));
         broadcastPacket(new VehicleInfoPacket(this));
     }
 

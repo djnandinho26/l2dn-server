@@ -32,7 +32,7 @@ public class Door : Creature
 	
 	public Door(DoorTemplate template, bool? isOpened = null): base(template)
 	{
-		setInstanceType(InstanceType.Door);
+		InstanceType = InstanceType.Door;
 		setInvul(false);
 		setLethalable(false);
 		_open = isOpened ?? template.isOpenByDefault();
@@ -662,7 +662,7 @@ public class Door : Creature
 		sb.Append("[");
 		sb.Append(getTemplate().getId());
 		sb.Append("](");
-		sb.Append(getObjectId());
+		sb.Append(ObjectId);
 		sb.Append(")");
 		return sb.ToString();
 	}

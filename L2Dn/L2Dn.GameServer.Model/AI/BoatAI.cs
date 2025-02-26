@@ -1,5 +1,4 @@
-﻿using L2Dn.GameServer.Model;
-using L2Dn.GameServer.Model.Actor;
+﻿using L2Dn.GameServer.Model.Actor;
 using L2Dn.GameServer.Model.Actor.Instances;
 using L2Dn.GameServer.Network.OutgoingPackets;
 using L2Dn.Geometry;
@@ -18,7 +17,7 @@ public class BoatAI: VehicleAI
         {
             if (!_clientMoving)
             {
-                _actor.broadcastPacket(new VehicleStartedPacket(getActor().getObjectId(), 1));
+                _actor.broadcastPacket(new VehicleStartedPacket(getActor().ObjectId, 1));
             }
 
             _clientMoving = true;
@@ -37,7 +36,7 @@ public class BoatAI: VehicleAI
         if (_clientMoving || (loc != null))
         {
             _clientMoving = false;
-            _actor.broadcastPacket(new VehicleStartedPacket(getActor().getObjectId(), 0));
+            _actor.broadcastPacket(new VehicleStartedPacket(getActor().ObjectId, 0));
             _actor.broadcastPacket(new VehicleInfoPacket(getActor()));
         }
     }
